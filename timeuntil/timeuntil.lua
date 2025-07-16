@@ -1,3 +1,4 @@
+
 -------------- Original Author: Strawberry --------------
 ----------------- Discord: exec_noir --------------------
 if API_TYPE == nil then
@@ -208,21 +209,23 @@ local eventsName = {
 				GR = "迷雾",
 				CR = "征兆",
 				Hiram = "Hiram T6",
+		                aegis = "烛台",
 				SG_CR = "安塔伦",
+		                whalesong = "鲸鱼",
 				JMG = "JMG",
 				Lusca = "阿肯",
 				BD = "黑龙",
-				Kraken = "克拉肯",
-				Leviathan = "利维坦",
-				Charybdis = "卡里迪斯",
-				Anthalon_G = "庭院安塔伦",
 				Halcy = "黄金",
 				RD = "红龙",
 				Abyssal_Atk = "深渊",
 				Hasla = "翡翠谷征兆",
 				Akasch = "守山",
 				Prairie = "大草原",
-				Wonderland = "Wonderland"
+		                Kraken = "克拉肯",
+				Leviathan = "利维坦",
+				Charybdis = "卡里迪斯",
+				Anthalon_G = "庭院安塔伦",
+				Wonderland = "仙境"
 			}				
 }
 
