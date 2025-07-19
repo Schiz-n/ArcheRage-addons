@@ -83,7 +83,9 @@ function gearListWindow:OnUpdate(dt)
         --X2Chat:DispatchChatMessage(CMF_SYSTEM, dump(gearToEquip))
         imBusy = true
         if #gearToEquip > 0 then
+            --X2Chat:DispatchChatMessage(CMF_SYSTEM, "Equipping: " .. dump(gearToEquip[1]))
             local itemToEquip = table.remove(gearToEquip, 1)
+            --X2Chat:DispatchChatMessage(CMF_SYSTEM, "Equipping: " .. dump(itemToEquip))
             X2Bag:EquipBagItem(itemToEquip.posInBag, itemToEquip.alternative)
             --X2Chat:DispatchChatMessage(CMF_SYSTEM, "Equipping: " .. dump(itemToEquip))
         end
@@ -97,6 +99,7 @@ gearListWindow:SetHandler("OnUpdate", gearListWindow.OnUpdate)
 --welcome to race condition central
 
 local function isItemInSet(item)
+    --X2Chat:DispatchChatMessage(CMF_SYSTEM, dump(fullSetToEquip))
     for _, setItem in ipairs(fullSetToEquip) do
         if item.name == setItem.name then--and item.grade == setItem.grade then
             return true, setItem.alternative or false
@@ -105,9 +108,46 @@ local function isItemInSet(item)
     return false, false
 end
 
+local function markSecondAsAlternative(setIndex)
+    local equippedIndex = 0
+    --setIndex does not correlate with real equipped gear
+    --this fixes that, under 14 is earring & ring, above 14 is weapon
+    if setIndex > 14 then
+        equippedIndex = setIndex + 1
+    else
+        equippedIndex = setIndex -1
+    end
+    local nameToFind = fullSetToEquip[setIndex].name
+    if nameToFind ~= fullSetToEquip[setIndex+1].name then
+        return
+    end
+
+    local itemInMainSlot = X2Equipment:GetEquippedItemTooltipInfo(equippedIndex, true)
+    local mainSlotItemName = itemInMainSlot.name
+    local forceAlt = false
+    if mainSlotItemName == nameToFind then
+        forceAlt = true
+    end
+
+
+    local foundOnce = false
+    for _, item in ipairs(gearToEquip) do
+        if item.name == nameToFind then
+            if not foundOnce then
+                foundOnce = true
+                if forceAlt == true then
+                    item.alternative = true
+                    return
+                end
+            else
+                item.alternative = true
+                return 
+            end
+        end
+    end
+end
 
 local function getGearFromInventory()
-    local ignored_numbers = {}
     for posInBag = 1, 150 do
         local item = X2Bag:GetBagItemInfo(1, posInBag)
         if item then
@@ -118,6 +158,9 @@ local function getGearFromInventory()
             end
         end
     end
+    markSecondAsAlternative(11) --earring
+    markSecondAsAlternative(13) --ring
+    markSecondAsAlternative(15) --weapon
 end
 
 
@@ -127,8 +170,6 @@ local function equipGear(setName)
     getGearFromInventory()
     return true
 end
-
-
 local function getEquippedGearArray()
     local items = {}
     local gear_pieces = {1, 3, 4, 8, 6, 9, 5, 7, 15, 2, 10, 11, 12, 13, 16, 17, 18, 19, 28}
