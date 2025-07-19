@@ -83,7 +83,9 @@ function gearListWindow:OnUpdate(dt)
         --X2Chat:DispatchChatMessage(CMF_SYSTEM, dump(gearToEquip))
         imBusy = true
         if #gearToEquip > 0 then
+            --X2Chat:DispatchChatMessage(CMF_SYSTEM, "Equipping: " .. dump(gearToEquip[1]))
             local itemToEquip = table.remove(gearToEquip, 1)
+            --X2Chat:DispatchChatMessage(CMF_SYSTEM, "Equipping: " .. dump(itemToEquip))
             X2Bag:EquipBagItem(itemToEquip.posInBag, itemToEquip.alternative)
             --X2Chat:DispatchChatMessage(CMF_SYSTEM, "Equipping: " .. dump(itemToEquip))
         end
@@ -97,6 +99,7 @@ gearListWindow:SetHandler("OnUpdate", gearListWindow.OnUpdate)
 --welcome to race condition central
 
 local function isItemInSet(item)
+    --X2Chat:DispatchChatMessage(CMF_SYSTEM, dump(fullSetToEquip))
     for _, setItem in ipairs(fullSetToEquip) do
         if item.name == setItem.name then--and item.grade == setItem.grade then
             return true, setItem.alternative or false
@@ -105,6 +108,24 @@ local function isItemInSet(item)
     return false, false
 end
 
+local function markSecondAsAlternative(setIndex)
+    local nameToFind = fullSetToEquip[setIndex].name
+    if fullSetToEquip[setIndex].name ~= fullSetToEquip[setIndex+1].name then
+        return
+    end
+    local foundOnce = false
+
+    for _, item in ipairs(gearToEquip) do
+        if item.name == nameToFind then
+            if not foundOnce then
+                foundOnce = true  -- first one, skip
+            else
+                item.alternative = true  -- second one
+                return  -- done
+            end
+        end
+    end
+end
 
 local function getGearFromInventory()
     local ignored_numbers = {}
@@ -118,6 +139,9 @@ local function getGearFromInventory()
             end
         end
     end
+    markSecondAsAlternative(11) --earring
+    markSecondAsAlternative(13) --ring
+    markSecondAsAlternative(15) --weapon
 end
 
 
