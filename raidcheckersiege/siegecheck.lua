@@ -1,6 +1,3 @@
---todo
---statue (red, blue | nuia haranya pirate)
---drum, goblet, food (max rank, table rank, max-1 rank), resi/toughness book
 -------------- Original Author: Strawberry --------------
 ----------------- Discord: exec_noir --------------------
 if API_TYPE == nil then
@@ -104,3 +101,4 @@ local siegeCheckerButton = CreateSimpleButton("Siege Equips", 700, -200)
 function siegeCheckerButton:OnClick()
         checkBuffs()
 end
+siegeCheckerButton:SetHandler("OnClick", siegeCheckerButton.OnClick)
