@@ -209,7 +209,7 @@ buffAnchor:SetHandler("OnUpdate", buffAnchor.OnUpdate)
 ---------------------- Settings handler --------------------------------
 local languageSetting = "English"
 --language strings
-local BUFFADDGUIDE = "bigger/smaller/left/right/up/down \n showall/list/add/remove [buffid] [comment(optional)]"
+local BUFFADDGUIDE = " bigger/smaller/left/right/up/down \n showall/list/add/remove [buffid] [comment(optional)]"
 local INVALIDCOMMAND = "Invalid command. !debuff / !buff / !showids / !import / !export"
 local BUFFLOADSUCCESS = "Buffs loaded successfully."
 local TABLE_EMPTY = "buffs.lua not found. Starting with an empty buffs table."
@@ -228,7 +228,7 @@ local LOADSUCCESS = "Succesfully loaded debuff plugin. Author: Strawberry"
 languageSetting = X2Locale:GetLocale()
 
 if languageSetting == "zh_cn" then
-    BUFFADDGUIDE = "bigger/smaller/left/right/up/down \n showall/list/add/remove [buffid] [备注（可选]"
+    BUFFADDGUIDE = " bigger/smaller/left/right/up/down \n showall/list/add/remove [buffid] [备注（可选]"
     INVALIDCOMMAND = "无效的指令。 !export / !debuff / !buff / !showids"
     BUFFLOADSUCCESS = "增益效果加载成功。"
     TABLE_EMPTY = "未找到 buffs.lua。将从空的增益效果表开始。"
@@ -244,7 +244,7 @@ if languageSetting == "zh_cn" then
     SHOWING_ALL = "切换显示所有 "
     LOADSUCCESS = "成功加载了 debuff 插件。作者: Strawberry"
 elseif languageSetting == "ru" then
-    BUFFADDGUIDE = "bigger/smaller/left/right/up/down \n showall/list/add/remove [buffid] [комментарий (необязательно)]"
+    BUFFADDGUIDE = " bigger/smaller/left/right/up/down \n showall/list/add/remove [buffid] [комментарий (необязательно)]"
     INVALIDCOMMAND = "Неверная команда.  !debuff / !buff / !showids / !import / !export"
     BUFFLOADSUCCESS = "Бафы успешно загружены."
     TABLE_EMPTY = "Файл buffs.lua не найден. Начинаем с пустой таблицы бафов."
