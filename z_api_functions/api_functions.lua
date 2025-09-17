@@ -163,6 +163,10 @@ FireAddon(name)
 ReloadAddon(name)
 ChatLog(logMessage)
 AddEscMenuButton(categoryId, uiContentType, iconKey, name)
+GetName()
+LoadData(key)
+SaveData(key, table)
+ClearData(key)
 ----------------------------------------------------------------------------------------
 
 Available/not allowed functions
@@ -432,6 +436,9 @@ Allowed functions
 ----------------------------------------------------------------------------------------
 GetBuffTooltip(buffType, itemLevel)
 GetAllMyActabilityInfos()
+IsActiveAbility(index)
+GetActiveAbility()
+GetMyActabilityInfo(actAbilityGroupType)
 ----------------------------------------------------------------------------------------
 
 Available/not allowed functions
@@ -453,11 +460,9 @@ CanBuyAbilityChange()
 GetAbilityChangeCost()
 GetAbilitySetChangeCost()
 NumActiveAbility()
-GetActiveAbility()
 GetActiveAbilityForSkillAlert()
 GetAbilityInfo(abilIndex)
 GetAllCombatAbility()
-IsActiveAbility(index)
 GetAbilityLevel(abilityStr)
 GetRecommendAbility(activeAbil, category)
 CancelPlayerBuff(buffId)
@@ -466,7 +471,6 @@ IsAbilityChanger()
 GetRaceSkillCount(raceStr, genderStr)
 GetRaceSkillType(raceStr, genderStr, index)
 GetActabilityViewInfo()
-GetMyActabilityInfo(actAbilityGroupType)
 GetMinActabilityPoint(actAbilityGroupType)
 GetMaxActabilityPoint(actAbilityGroupType)
 GetPassiveBuffInfo(passiveBuffType)
@@ -685,6 +689,8 @@ GetSearchedItemPage()
 GetSearchedItemCount()
 GetSearchedItemTotalCount()
 GetSearchedItemInfo(idx)
+GetLowestPrice(itemType, itemGrade)
+AskMarketPrice(itemType, itemGrade, askMarketPriceUi)
 ----------------------------------------------------------------------------------------
 
 Available/not allowed functions
@@ -716,7 +722,6 @@ SetPrice(bid, direct)
 SetPricePartition(direct, maxStack)
 GetPartitionPriceByCount(direct, itemStackCount, bidCount)
 CalcDeposit(start, direct, duration)
-GetLowestPrice(itemType, itemGrade)
 HasPostAuthority()
 RequirePostAuthority()
 IsShowDirectPriceRangeEdit()
@@ -730,7 +735,6 @@ GetCurrencyForBid()
 ToggleAuction()
 GetAsrGoldLabels()
 GetAsrVolLabels()
-AskMarketPrice(itemType, itemGrade, askMarketPriceUi)
 GetMarkerPricePeriod()
 GetPostType()
 SetPostType(postType)
@@ -2370,10 +2374,24 @@ IsTopLevelHero()
 
 Global variables
 ----------------------------------------------------------------------------------------
+HOTKEY_ACTION
 ----------------------------------------------------------------------------------------
 
 Allowed functions
 ----------------------------------------------------------------------------------------
+GetOptionBinding(action, index, option, arg)
+GetOptionBindingButton(buttonName, index)
+SetOptionBindingWithIndex(action, key, index, arg)
+SetOptionBindingButtonWithIndex(buttonName, key)
+EnableHotkey(enable)
+IsOverridableAction(action)
+IsValidActionName(action)
+GetBindingUiEvent(actionName, index)
+SetBindingUiEvent(actionName, key)
+SetBindingUiEventWithIndex(actionName, key, index)
+GetOptionBindingUiEvent(actionName, index)
+SetOptionBindingUiEvent(actionName, key)
+SetOptionBindingUiEventWithIndex(actionName, key)
 ----------------------------------------------------------------------------------------
 
 Available/not allowed functions
@@ -2384,27 +2402,20 @@ BindingToOption()
 OptionToBinding()
 RemoveOptionBinding(action, index, arg)
 GetBinding(action, index)
-GetOptionBinding(action, index, option, arg)
 GetBindingSpell(spellName, index)
 GetBindingButton(buttonName, index)
-GetOptionBindingButton(buttonName, index)
 SetBinding(action, key)
 SetOptionBinding(action, key)
 SetBindingSpell(spellName, key)
 SetBindingButton(buttonName, key)
 SetOptionBindingButton(buttonName, key)
-SetOptionBindingButtonWithIndex(buttonName, key)
 SetBindingItem(itemName, key)
 SetTemporaryBindingButton(buttonName, key)
 GetTemporaryBindingButton(buttonName, index)
 SetBindingWithIndex(action, key, index)
-SetOptionBindingWithIndex(action, key, index, arg)
 SetBindingSpellWithIndex(spellName, key, index)
 SetBindingButtonWithIndex(buttonName, key, index)
 SetBindingItemWithIndex(itemName, key, index)
-EnableHotkey(enable)
-IsValidActionName(action)
-IsOverridableAction(action)
 ExcuteActionHandler(action)
 ----------------------------------------------------------------------------------------
 
@@ -4445,11 +4456,13 @@ SIK_DESCRIPTION
 Allowed functions
 ----------------------------------------------------------------------------------------
 GetSkillTooltip(skillId, itemType)
+Info(skillId)
+GetCooldown(skillId, ignoreGlobalCooldown)
+GetMateCooldown(skillId, ignoreGlobalCooldown, mateType)
 ----------------------------------------------------------------------------------------
 
 Available/not allowed functions
 ----------------------------------------------------------------------------------------
-Info(skillId)
 ----------------------------------------------------------------------------------------
 
 
@@ -5042,7 +5055,7 @@ UnitHiddenBuffTooltip(unit, buffIndex)
 UnitRemovableDebuffTooltip(unit, buffIndex)
 UnitRemovableDebuff(unit, buffIndex)
 UnitRemovableDebuffCount(unit)
-GetUnitWorldPositionByTarget(unit)
+GetUnitWorldPositionByTarget(unit, isLocal)
 GetUnitScreenPosition(unit)
 GetTargetAbilityTemplates(target)
 GetTargetUnitId()
