@@ -40,7 +40,9 @@ local timePassed = 0
 function questChecker:OnUpdate(dt)
     timePassed = timePassed + dt
     if timePassed > 1000 then
-       if isQuestOpen(7736) or isQuestOpen(7737) then
+      local nuianQuestOne = 7736
+      local haraniQuestOne = 7737
+       if isQuestOpen(nuianQuestOne) or isQuestOpen(haraniQuestOne) or X2Quest:IsCompleted(nuianQuestOne) or X2Quest:IsCompleted(haraniQuestOne) then
            lblNoQuest:Show(false)
        else
            lblNoQuest:Show(true)
