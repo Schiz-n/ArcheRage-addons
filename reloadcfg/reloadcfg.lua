@@ -18,7 +18,9 @@ function applySystemConfig(filePath)
             local variable, value = line:match("([%w_]+)%s*=%s*(.+)")
             if variable and value then
             	--X2Chat:DispatchChatMessage(CMF_SYSTEM, "Setting " .. tostring(variable) .. " to " .. tostring(value))
-                X2Option:SetConsoleVariable(variable, value)
+                if variable ~= "r_driver" and variable ~= "next_r_Driver" then
+                    X2Option:SetConsoleVariable(variable, value)
+                end
             end
         end
     end
