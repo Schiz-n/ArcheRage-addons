@@ -4,6 +4,9 @@ The **Target Debuff Tracker** is a tool that tracks buffs and debuffs of the sel
 
 ![Buff track example](https://i.imgur.com/mgAFbsp.png)
 
+Usage tutorial thanks to Taylor/justinqwqq: 
+https://www.youtube.com/watch?v=zMb8eXqwnTk
+
 ## Features
 
 - **Supports multiple clients**: English, Chinese, and Russian.
