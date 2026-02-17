@@ -144,11 +144,11 @@ local GoDown = CreateButton(modelViewer, "GoDown", "TOPRIGHT", -90, controlBarYO
 
 local Zoomer2 = CreateButton(modelViewer, "Zoomer2", "TOPRIGHT", -60, controlBarYOffset+30, ">",
     nil, nil, nil,
-    function() modelViewer:ZoomInOut(0.1) end)
+    function() modelViewer:AdjustCameraPos(-0.1, 0, 0) end)
 
 local Zoomer3 = CreateButton(modelViewer, "Zoomer3", "TOPRIGHT", -120, controlBarYOffset+30, "<",
     nil, nil, nil,
-    function() modelViewer:ZoomInOut(-0.1) end)
+    function() modelViewer:AdjustCameraPos(0.1, 0, 0) end)
 
 local StopButton = CreateButton(modelViewer, "StopButton", "TOPRIGHT", -220, controlBarYOffset, "S",
     nil, nil, nil,
@@ -159,7 +159,7 @@ local Cookbutton = CreateButton(modelViewer, "Cookbutton", "TOPRIGHT", -280, con
     function() modelViewer:SetBeautyShopMode(true) end)
 local Cookbutton2 = CreateButton(modelViewer, "Cookbutton2", "TOPRIGHT", -320, controlBarYOffset, "2",
     nil, nil, nil,
-    function() modelViewer:SetIngameShopMode(true) end)
+    function() modelViewer:SetIngameShopCamMode(true) end)
 local Cookbutton3 = CreateButton(modelViewer, "Cookbutton3", "TOPRIGHT", -360, controlBarYOffset, "3",
     nil, nil, nil,
     function() modelViewer:SetDisableColorGrading(true) end)
