@@ -3,6 +3,10 @@
  READONLY: can not be changed by the user
 -------------------------
 
+Command: uc_set_yaw 
+script: 
+help: 
+
 variable: e_GI 
 type: int
 current: 1
@@ -73,7 +77,7 @@ help: if this is 1, it will print the amount of commands for the blend-buffer
 
 variable: e_modelview_Prefab_light_offset_from_center 
 type: float
-current: 1
+current: 5
 help: modelview Prefab light offset from the box's center
 
 variable: p_wireframe_distance 
@@ -460,6 +464,21 @@ type: float
 current: 0.984314
 help: Reflected light colour (red).
 
+variable: e_modelview_Prefab_sunlight_color_x 
+type: float
+current: 3
+help: x modelview sunlight color
+
+variable: e_modelview_Prefab_sunlight_color_y 
+type: float
+current: 3
+help: y modelview sunlight color
+
+variable: e_modelview_Prefab_sunlight_color_z 
+type: float
+current: 3
+help: z modelview sunlight color
+
 variable: e_terrain_layer_test 
 type: int
 current: 1
@@ -469,6 +488,11 @@ variable: e_view_dist_ratio_detail
 type: float
 current: 30
 help: View distance ratio for detail objects
+
+variable: e_modelview_Prefab_sunlight_multiple 
+type: float
+current: 1.88
+help: modelview sunlight specular multiplier
 
 variable: sys_float_exceptions 
 type: int
@@ -1337,6 +1361,11 @@ type: int
 current: 1
 help: Draw brushes
 
+variable: e_modelview_Prefab_add_scale_ratio 
+type: float
+current: 0
+help: modelview prefab add scale ratio
+
 variable: name_tag_hp_color_multiplier_on_bgmode 
 type: float
 current: 0.5
@@ -1766,7 +1795,7 @@ help: Glossiness value below which reflections are disabled
 
 variable: name_tag_hp_width_on_bgmode 
 type: float
-current: 80
+current: 158
 help: nametag hp bar width on bgmode
 
 variable: ca_DrawSkeleton 
@@ -1894,7 +1923,7 @@ help: 0x01 skip normal texture and 0x02 gloss texture when in low quality shader
 
 variable: e_modelview_Prefab_light_color_rgb 
 type: float
-current: 7
+current: 0
 help: modelview Prefab light source red, green, and blue color
 
 variable: es_FarPhysTimeout 
@@ -2074,7 +2103,7 @@ help: delay for zh cn letter
 
 variable: e_time_of_day 
 type: float
-current: 1.30747
+current: 14.4646
 help: Current Time of Day
 
 variable: ca_Test 
@@ -2406,7 +2435,7 @@ help: View dist ratio for shadow maps for character
 
 variable: ai_AmbientFireQuota DUMPTODISK
 type: int
-current: 3
+current: 2
 help: Number of units allowed to hit the player at a time.
 
 variable: g_showUpdateState 
@@ -2436,7 +2465,7 @@ help: [0,1] turn on/off facial streaming
 
 variable: r_ShaderEmailTags 
 type: string
-current: Build Version: 9.5.2.3
+current: Build Version: 10.0.2.9
 help: Adds optional tags to shader error emails e.g. own name or build run
 Usage: r_ShaderEmailTags "some set of tags or text" 
 Default is build version 
@@ -2786,7 +2815,7 @@ help:
 
 variable: ai_SOMSpeedCombat SAVEGAME
 type: float
-current: 0.2
+current: 4.5
 help: Multiplier for the speed of increase of the Stealth-O-Meter after the AI has seen the enemy.
 Usage: ai_SOMSpeedCombat 4.5
 Default is 4.5. A lower value causes the AI to react to the enemy
@@ -3057,11 +3086,6 @@ variable: use_data_mining_manager
 type: int
 current: 1
 help: 
-
-variable: departure_server_passport 
-type: int
-current: 0
-help: departure_server_passport
 
 variable: g_customizer_enable_cutscene 
 type: int
@@ -3382,6 +3406,11 @@ type: float
 current: 2
 help: At least how near to object MVD dissolve effect triggers (10% of MVD, clamped to this)
 
+variable: departure_server_passport_high 
+type: int
+current: 0
+help: departure_server_passport_high
+
 variable: r_Reflections DUMPTODISK
 type: int
 current: 1
@@ -3544,7 +3573,7 @@ help:
 
 variable: r_Gamma DUMPTODISK
 type: float
-current: 1.0001
+current: 1
 help: Adjusts the graphics card gamma correction (fast, needs hardware support, affects also HUD and desktop)
 Usage: r_Gamma 1.0
 1 off (default), try values like 1.6 or 2.2
@@ -4468,6 +4497,21 @@ type: int
 current: 0
 help: Enable movement detection in interest system
 
+variable: e_modelview_Prefab_sunlight_dir_x 
+type: float
+current: -0.207
+help: x modelview sunlight direction
+
+variable: e_modelview_Prefab_sunlight_dir_y 
+type: float
+current: -0.756
+help: y modelview sunlight direction
+
+variable: e_modelview_Prefab_sunlight_dir_z 
+type: float
+current: 0.621
+help: z modelview sunlight direction
+
 variable: e_decals_merge 
 type: int
 current: 1
@@ -4630,7 +4674,7 @@ help: (null)
 
 variable: s_GameMasterVolume DUMPTODISK
 type: float
-current: 0.500096
+current: 0.200001
 help: Allows for setting the application's master volume.
 Usage: s_GameMasterVolume [0...1]
 Default is 1 (full volume).
@@ -5004,7 +5048,7 @@ help: modelview Prefab scale
 
 variable: cl_account DUMPTODISK
 type: string
-current: nugoss
+current: admin
 help: Client account used when connecting to server
 
 variable: e_ambient_multiplier_no_point_lights 
@@ -5192,7 +5236,7 @@ help: AuthServer address
 
 variable: auth_serverport DUMPTODISK
 type: int
-current: 1437
+current: 1237
 help: AuthServer port
 
 variable: cam_target 
@@ -5289,7 +5333,7 @@ help: Server address
 
 variable: cl_serverport DUMPTODISK
 type: int
-current: 1439
+current: 1239
 help: Server address
 
 variable: g_quickGame_debug 
@@ -6392,7 +6436,7 @@ help:
 
 variable: ShowGameTime 
 type: int
-current: 1
+current: 0
 help: show game time
 
 variable: g_procedural_breaking 
@@ -6742,6 +6786,11 @@ type: int
 current: 0
 help: 
 
+variable: departure_server_passport_low 
+type: int
+current: 0
+help: departure_server_passport_low
+
 variable: es_MaxPhysDistInvisible 
 type: float
 current: 25
@@ -6807,7 +6856,7 @@ help: Render mesh cache size in MB
 
 variable: e_modelview_Prefab_light_number 
 type: int
-current: 5
+current: 8
 help: modelview Prefab light the number of light entities
 
 variable: e_vegetation_node_level 
@@ -7215,7 +7264,7 @@ help: distance helper
 
 variable: e_modelview_Prefab_light_radius 
 type: float
-current: 10
+current: 15
 help: modelview Prefab light source radius
 
 variable: mate_x_offset 
@@ -7355,7 +7404,7 @@ help: AI radar draw distance in meters, default=20m.
 
 variable: ai_SOMSpeedRelaxed SAVEGAME
 type: float
-current: 0.8
+current: 1.5
 help: Multiplier for the speed of increase of the Stealth-O-Meter before the AI has seen the enemy.
 Usage: ai_SOMSpeedRelaxed 1.5
 Default is 4.5. A lower value causes the AI to react to the enemy
@@ -7472,7 +7521,7 @@ help: Controls the size of the bokeh artifacts (default 4).
 
 variable: s_GameSFXVolume 
 type: float
-current: 0.500096
+current: 0.200001
 help: Controls the sfx volume for game use.
 Usage: s_GameSFXVolume 0.5
 Default is 1, which is full volume.
@@ -8218,7 +8267,7 @@ help: SunDir update ratio
 
 variable: ShowServerTime 
 type: int
-current: 1
+current: 0
 help: show server time
 
 variable: p_skip_redundant_colldet 
@@ -8978,7 +9027,7 @@ help: Stiffness of the spongy obstruct geometry
 
 variable: s_MusicVolume DUMPTODISK
 type: float
-current: 0.200096
+current: 0.700001
 help: Sets the music volume from 0 to 1 in the games option.
 Usage: s_MusicVolume 0.2
 Default is 1.0
@@ -9426,7 +9475,7 @@ help: Enable/disable vehicle mounted weapon camera debug draw
 
 variable: cr_sensitivity 
 type: float
-current: 20.0002
+current: 20
 help: 
 
 variable: swim_side_speed_mul 
@@ -9470,7 +9519,7 @@ help:
 
 variable: cl_account_id 
 type: string
-current: 2315
+current: 1
 help: Account ID string for authenticated client
 
 variable: r_MultiThreadFlush 
@@ -9683,6 +9732,11 @@ type: int
 current: 0
 help: 
 
+variable: e_modelview_Prefab_init_rot_x_for_flat_objects 
+type: float
+current: -45
+help: modelview prefab initial rotation x value for flat objects
+
 variable: camera_limit_fadeout_distance 
 type: float
 current: 3
@@ -9743,7 +9797,7 @@ help: Force sprite distance and other values used for some specific screen resol
 
 variable: option_anti_aliasing 
 type: int
-current: 3
+current: 1
 help: Console variable group to apply settings to multiple variables
 
 option_anti_aliasing [1/2/3/4/5/6/7/8/9/10/11/12/13/x]:
@@ -9809,7 +9863,7 @@ help: How much time should non-snapped positions take to synchronize completely?
 
 variable: s_CinemaVolume DUMPTODISK
 type: float
-current: 0.700096
+current: 0.700001
 help: Sets the percentile volume of the cinema sound.
 Usage: s_CinemaVolume 0.7
 Default is 1, which is full volume.
@@ -10886,7 +10940,7 @@ help: mixed normals report
 
 variable: s_GameDialogVolume 
 type: float
-current: 0.500096
+current: 0.200001
 help: Controls the dialog volume for game use.
 Usage: s_GameDialogVolume 0.5
 Default is 1, which is full volume.
@@ -10964,6 +11018,11 @@ current: 0.7
 help: Controls at what fill ratio sound data is unloaded.
 Usage: s_MemoryPoolSoundSecondaryRatio [0..1]
 Default is 0.7.
+
+variable: show_raid_command_message 
+type: int
+current: 1
+help: show raid command message
 
 variable: s_NoFocusVolume 
 type: float
@@ -12039,7 +12098,7 @@ help: show debug information of environment system
 
 variable: sys_max_fps DUMPTODISK
 type: float
-current: 150
+current: 120
 help: max frame per second for prevent overheat
 
 variable: tab_targeting_history_max 
@@ -12524,7 +12583,7 @@ help: ocean wind direction
 
 variable: ai_AmbientFireUpdateInterval DUMPTODISK
 type: float
-current: 0.5
+current: 2
 help: Ambient fire update interval. Controls how often puppet's ambient fire status is updated.
 
 variable: r_ReflectionsOffset 
@@ -13411,7 +13470,7 @@ help:
 
 variable: r_fxaa 
 type: int
-current: 2
+current: 0
 help: Toggles fxaa antialiasing
 
 
@@ -13626,7 +13685,7 @@ help: Specifies whether the energy added by the simple solver is limited (0 or 1
 
 variable: s_GameMusicVolume 
 type: float
-current: 0.500096
+current: 0.200001
 help: Controls the music volume for game use.
 Usage: s_GameMusicVolume 0.2
 Default is 1.0
@@ -13648,7 +13707,7 @@ Default is 64.
 
 variable: cl_web_session_key 
 type: string
-current: 1229A405719FA62E9CE477D0F6A6DBEA
+current: 2555396B33273B145FD2574276AE0094
 help: web session key
 
 variable: s_ObstructionVisArea 
@@ -14307,7 +14366,7 @@ help: if set to 1, will run validation on animation data
 
 variable: ui_scale 
 type: float
-current: 1.0001
+current: 1
 help: ui scale
 
 variable: sys_flush_system_file_cache 
@@ -14711,7 +14770,7 @@ Usage: MemStats [0..]
 
 variable: s_GameVehicleMusicVolume 
 type: float
-current: 0.500096
+current: 0.200001
 help: Controls the vehicle music volume for game use.
 Usage: s_GameVehicleMusicVolume 1.0
 Default is 1, which is full volume.
@@ -14754,7 +14813,7 @@ help: max custom model with clone mode
 
 variable: s_GameMIDIVolume 
 type: float
-current: 0.500096
+current: 0.200001
 help: Controls the MIDI volume for game use.
 Usage: s_GameMIDIVolume 1.0
 Default is 1, which is full volume.
@@ -15064,7 +15123,7 @@ Usage: s_HDRFalloff [0..1.0f]Default is 1.0f
 variable: custom_skill_queue 
 type: int
 current: 1
-help: enable/disable custom skill queue
+help: custom skill queue - 0: disable, 1 : enable except combo, 2 : enable to all
 
 variable: optimization_skeleton_effect 
 type: int
@@ -15110,7 +15169,7 @@ help: Safe fall speed (in all modes, including strength jump on flat ground).
 
 variable: ai_UseAlternativeReadability SAVEGAME
 type: int
-current: 1
+current: 0
 help: Switch between normal and alternative SoundPack for AI readability.
 
 variable: movement_verify_airstanding_error_rate 
@@ -15297,13 +15356,13 @@ help: draws the world position of the character (before update)
 
 variable: r_WindowX DUMPTODISK
 type: int
-current: 323
+current: 317
 help: Sets the window x position.
 Usage: r_WindowX [100/200/..]
 
 variable: r_WindowY DUMPTODISK
 type: int
-current: 102
+current: 165
 help: Sets the window y position.
 Usage: r_WindowY [100/200/..]
 
@@ -15521,6 +15580,11 @@ type: float
 current: 0.1
 help: 
 
+variable: e_show_modelview_commands 
+type: int
+current: 0
+help: show modelview commands
+
 variable: camera_max_dist 
 type: float
 current: 10
@@ -15547,7 +15611,7 @@ although the path may actually exist.
 
 variable: s_GameCinemaVolume 
 type: float
-current: 0.500096
+current: 0.200001
 help: Controls the cinema volume for game use.
 Usage: s_GameCinemaVolume 1.0
 Default is 1, which is full volume.
@@ -15655,7 +15719,7 @@ help: Enable/disable preview of custom resolution rendering in viewport(0 - no p
 
 variable: cl_world_cookie 
 type: int
-current: 427287575
+current: 0
 help: world cookie
 
 variable: ai_DrawShooting 
@@ -15850,7 +15914,7 @@ help: Distance across the sky the shooting star travels.
 
 variable: name_tag_hp_height_on_bgmode 
 type: float
-current: 30
+current: 38
 help: nametag hp bar height on bgmode
 
 variable: r_CloudsDebug 
@@ -15978,7 +16042,7 @@ help:
 
 variable: g_difficultyLevel READONLY
 type: int
-current: 2
+current: 0
 help: Difficulty level
 
 variable: profile 
@@ -16388,7 +16452,7 @@ help:
 
 variable: cl_immigration_passport_hash 
 type: string
-current: õâ8≥ë-ZÅ›Éiµ–iúe
+current: I3MaAzOLâ»M≠Y7Î0ÎCb
 help: cl_immigration_passport_hash
 
 variable: option_character_privacy_status 

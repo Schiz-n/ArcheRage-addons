@@ -144,6 +144,9 @@ UIC_STABLER
 UIC_COMMUNITY
 UIC_OPTIMIZATION
 UIC_ENTER_SECOND_PASSWORD
+UIC_LABOR_POWER_BAR
+UIC_REOPEN_RANDOM_BOX
+UIC_ITEM_PIN
 ----------------------------------------------------------------------------------------
 
 Allowed functions
@@ -162,11 +165,11 @@ SaveAddonInfos()
 FireAddon(name)
 ReloadAddon(name)
 ChatLog(logMessage)
-AddEscMenuButton(categoryId, uiContentType, iconKey, name)
 GetName()
 LoadData(key)
 SaveData(key, table)
 ClearData(key)
+AddEscMenuButton(categoryId, uiContentType, iconKey, name)
 ----------------------------------------------------------------------------------------
 
 Available/not allowed functions
@@ -340,6 +343,7 @@ GetFrameRate()
 GetViewCameraPos()
 GetViewCameraDir()
 GetViewCameraAngles()
+GetUIScaleRange()
 GetUIScale()
 SetUIScale(scale, immediatlyeApply)
 SetViewCameraFov(fov)
@@ -434,10 +438,10 @@ ABILITY_ACTIVATION_LEVEL_3
 
 Allowed functions
 ----------------------------------------------------------------------------------------
+GetActiveAbility()
+IsActiveAbility(index)
 GetBuffTooltip(buffType, itemLevel)
 GetAllMyActabilityInfos()
-IsActiveAbility(index)
-GetActiveAbility()
 GetMyActabilityInfo(actAbilityGroupType)
 ----------------------------------------------------------------------------------------
 
@@ -458,7 +462,7 @@ GetResetSkillsCost(index)
 SwapAbility(oldAbility, newAbility)
 CanBuyAbilityChange()
 GetAbilityChangeCost()
-GetAbilitySetChangeCost()
+GetAbilitySetChangeCost(saveIndex)
 NumActiveAbility()
 GetActiveAbilityForSkillAlert()
 GetAbilityInfo(abilIndex)
@@ -836,6 +840,10 @@ HandleSelectiveItems()
 SetSelectiveItem(idx, checked)
 SetSelectiveTryCount(count)
 IsBagSlotDimCheck(slotIdx)
+SetPin(slotIdx)
+CheckPin(slotIdx)
+RemovePin(slotIdx)
+RemoveAllPin()
 ----------------------------------------------------------------------------------------
 
 
@@ -933,7 +941,6 @@ GetMyKillstreakSkillsInfos()
 IsInInstantGame()
 RequestInstanceGame(instanceType)
 CancelInstanceGame()
-GetGameMode()
 GetProgressEntireInfo(miniScoreboard)
 GetProgressTimeInfo()
 GetProgressScoreInfo(miniScoreboard)
@@ -1127,6 +1134,7 @@ ExpandSpecialtyTradeSlot()
 GetMySpecialtyTradeInfo()
 GetChargeInfo()
 IsButlerHarvestItem(slotIndex)
+CalcConsumePoints(actabilityGroup, consumeP)
 ----------------------------------------------------------------------------------------
 
 
@@ -1293,6 +1301,8 @@ LOCALE_TH
 LOCALE_IND
 LOCALE_EN_SG
 CIK_DEFAULT
+CMSP_LEFT
+CMSP_RIGHT
 ----------------------------------------------------------------------------------------
 
 Allowed functions
@@ -1644,7 +1654,7 @@ DLG_TASK_REVERT_LOOK_ITEM
 DLG_TASK_INDUN_DIRECT_TEL
 DLG_TASK_INDUN_ENTRANCE
 DLG_TASK_CONFIRM_APPLY_INSTANT_GAME
-DLG_TASK_BATTLE_FIELD_RESET_VISIT_COUNT
+DLG_TASK_UPDATE_INSTANCE_VISIT_COUNT
 DLG_TASK_CONFIRM_ROTATE_HOUSE
 DLG_TASK_HAND_OVER_TEAM_OWNER
 DLG_TASK_ZONE_PERMISSION
@@ -1912,10 +1922,13 @@ EST_BODY
 EST_BEARD
 EST_BACKPACK
 EST_COSPLAY
+EST_RACE_COSPLAY
 ----------------------------------------------------------------------------------------
 
 Allowed functions
 ----------------------------------------------------------------------------------------
+MateUnequipItem(unit, equipSlot)
+PickupMateEquippedItem(unit, equipSlot)
 GetEquippedItemTooltipInfo(equipSlot, targetEquippedItem)
 GetEquippedItemType(equipSlot)
 ----------------------------------------------------------------------------------------
@@ -1924,8 +1937,6 @@ Available/not allowed functions
 ----------------------------------------------------------------------------------------
 SwapPrelimEquipments()
 IsMateEquippableSlot(unit, equipSlot)
-MateUnequipItem(unit, equipSlot)
-PickupMateEquippedItem(unit, equipSlot)
 GetEquippedItemInfo(unit, equipSlot)
 GetEquippedItemTooltipText(unit, equipSlot)
 GetPreliminaryItemTooltipText(equipSlot)
@@ -2374,18 +2385,20 @@ IsTopLevelHero()
 
 Global variables
 ----------------------------------------------------------------------------------------
-HOTKEY_ACTION
 ----------------------------------------------------------------------------------------
 
 Allowed functions
 ----------------------------------------------------------------------------------------
+SaveHotKey()
+BindingToOption()
+OptionToBinding()
 GetOptionBinding(action, index, option, arg)
 GetOptionBindingButton(buttonName, index)
-SetOptionBindingWithIndex(action, key, index, arg)
 SetOptionBindingButtonWithIndex(buttonName, key)
+SetOptionBindingWithIndex(action, key, index, arg)
 EnableHotkey(enable)
-IsOverridableAction(action)
 IsValidActionName(action)
+IsOverridableAction(action)
 GetBindingUiEvent(actionName, index)
 SetBindingUiEvent(actionName, key)
 SetBindingUiEventWithIndex(actionName, key, index)
@@ -2397,9 +2410,6 @@ SetOptionBindingUiEventWithIndex(actionName, key)
 Available/not allowed functions
 ----------------------------------------------------------------------------------------
 InitOptionHotKey()
-SaveHotKey()
-BindingToOption()
-OptionToBinding()
 RemoveOptionBinding(action, index, arg)
 GetBinding(action, index)
 GetBindingSpell(spellName, index)
@@ -2469,6 +2479,7 @@ IsWarmUpPeriod()
 IsCastle()
 IsDominionCastle()
 IsExpeditionHouse()
+IsFreeDemolishHouse()
 GetTaxations(additionalTaxRate)
 GetHouseConstructionStepInfo()
 GetTaxItem()
@@ -2553,8 +2564,7 @@ GetTotalRound()
 GetRoundInfo()
 GetRoundLeftTime()
 GetTimeLimitRound()
-GetNpcInfoBroadcastingCountOfLeftTime()
-GetNpcInfoBroadcastingCountOfStack()
+GetIndunPlayingInfo()
 SetInstanceGameDifficult(difficult)
 ----------------------------------------------------------------------------------------
 
@@ -2676,6 +2686,27 @@ GetInputLanguage()
 
 
 ----------------------------------------------------------------------------------------
+-- X2Instance
+----------------------------------------------------------------------------------------
+
+Global variables
+----------------------------------------------------------------------------------------
+IVT_PERMIT
+IVT_RESET
+----------------------------------------------------------------------------------------
+
+Allowed functions
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+
+Available/not allowed functions
+----------------------------------------------------------------------------------------
+GetPointInfo(instanceFactionType)
+GetInstanceSummaryInfo()
+----------------------------------------------------------------------------------------
+
+
+----------------------------------------------------------------------------------------
 -- X2Interaction
 ----------------------------------------------------------------------------------------
 
@@ -2783,6 +2814,9 @@ IsInSecurityUnlockMode()
 EnterSlaveEquipChangeMode()
 LeaveSlaveEquipChangeMode()
 IsInSlaveEquipChangeMode()
+EnterPinMode()
+LeavePinMode()
+IsInPinMode()
 GroupTypes()
 GroupName(itemGroupType)
 GroupDescription(itemGroupType)
@@ -3405,6 +3439,7 @@ FILTER_STRUCTURE
 Allowed functions
 ----------------------------------------------------------------------------------------
 GetZoneStateInfoByZoneId(zoneId)
+ShowWorldmapLocation(zoneGroupId, x, y, z)
 ----------------------------------------------------------------------------------------
 
 Available/not allowed functions
@@ -3737,6 +3772,7 @@ OIT_OPTION_OPTIMIZATION_ENABLE
 OIT_OPTION_SHOW_COMBAT_RESOURCE_WINDOW
 OIT_OPTION_CHARACTER_PRIVACY_STATUS
 OIT_GIVEN_QUEST_DISTANCE_DISPLAY_MODE
+OIT_SHOW_RAID_COMMAND_MESSAGE
 OIT_OPTION_DISABLE_PRIVATE_MESSAGE_MUSIC
 OIT_OPTION_USE_KR_FONTS
 OIT_OPTION_ENABLE_COMBAT_CHAT_LOG
@@ -3756,6 +3792,75 @@ OISLT_CHARACTER
 OISLT_SYSTEM
 OISLT_CHARACTER_MODE
 MAX_ACTION_BAR_COUNT
+HA_MOVEFORWARD
+HA_MOVEBACK
+HA_MOVELEFT
+HA_MOVERIGHT
+HA_TURNLEFT
+HA_TURNRIGHT
+HA_JUMP
+HA_AUTORUN
+HA_DOWN
+HA_TOGGLE_WALK
+HA_ACTIVATE_WEAPON
+HA_SWAP_PRELIMINARY_EQUIPMENT
+HA_DO_INTERACTION_1
+HA_DO_INTERACTION_2
+HA_DO_INTERACTION_3
+HA_DO_INTERACTION_4
+HA_OPEN_TARGET_EQUIPMENT
+HA_ROUND_TARGET
+HA_CYCLE_HOSTILE_FORWARD
+HA_CYCLE_HOSTILE_BACKWARD
+HA_CYCLE_FRIENDLY_FORWARD
+HA_CYCLE_FRIENDLY_BACKWARD
+HA_SET_WATCH_TARGET
+HA_CYCLE_HOSTILE_HEAD_MARKER_FORWARD
+HA_CYCLE_HOSTILE_HEAD_MARKER_BACKWARD
+HA_FRONT_CAMERA
+HA_LEFT_CAMERA
+HA_RIGHT_CAMERA
+HA_BACK_CAMERA
+HA_CYCLE_CAMERA_COUNTER_CLOCKWISE
+HA_CYCLE_CAMERA_CLOCKWISE
+HA_ZOOM_IN
+HA_ZOOM_OUT
+HA_TOGGLE_CHARACTER
+HA_TOGGLE_BAG
+HA_TOGGLE_CHRONICLE_BOOK
+HA_TOGGLE_SPELLBOOK
+HA_TOGGLE_WORLDMAP
+HA_TOGGLE_CRAFT_BOOK
+HA_TOGGLE_COMMON_FARM_INFO
+HA_TOGGLE_SPECIALTY_INFO
+HA_TOGGLE_RANKING
+HA_TOGGLE_ACHIEVEMENT
+HA_TOGGLE_BUTLER_INFO
+HA_TOGGLE_COMMUNITY_EXPEDITION_TAB
+HA_TOGGLE_RAID_TEAM_MANAGER
+HA_TOGGLE_COMMUNITY
+HA_TOGGLE_COMMUNITY_FACTION_TAB
+HA_TOGGLE_COMMUNITY_FAMILY_TAB
+HA_TOGGLE_HERO
+HA_TOGGLE_INGAMESHOP
+HA_TOGGLE_RANDOM_SHOP
+HA_TOGGLE_AUCTION
+HA_TOGGLE_BATTLE_FIELD
+HA_TOGGLE_MAIL
+HA_TOGGLE_WEB_MESSENGER
+HA_TOGGLE_WEB_PLAY_DIARY
+HA_TOGGLE_WEB_PLAY_DIARY_INSTANT
+HA_TOGGLE_WEB_WIKI
+HA_OPEN_CHAT
+HA_OPEN_CONFIG
+HA_ACTION_BAR_PAGE_PREV
+HA_ACTION_BAR_PAGE_NEXT
+HA_TOGGLE_NAMETAG
+HA_TOGGLE_SHOW_GUIDE_DECAL
+HA_TOGGLE_RAID_FRAME
+HA_CHANGE_ROADMAP_SIZE
+HA_REPLY_LAST_WHISPERED
+HA_REPLY_LAST_WHISPER
 ----------------------------------------------------------------------------------------
 
 Allowed functions
@@ -3786,7 +3891,8 @@ IsPixelSyncSupported()
 HasOceanSimulateOption()
 OptimizationEnable(enable)
 GetSubOptionItemList(modeOptionId, selected)
-GetOptionInfo(optionType)
+GetOptionInfo(optionItemType)
+GetHotkeyInfo(hotkeyActionType)
 GetConsoleVariable(name)
 SetConsoleVariable(name, value)
 ----------------------------------------------------------------------------------------
@@ -3814,6 +3920,7 @@ SCREEN_WORLD
 SCREEN_INTRO
 SCREEN_BASE
 INSTANT_TIME_EXPEDITION_REJOIN
+INSTANT_TIME_FACTION_CHANGE
 APPELATION_ROUTE_TYPE_QUEST_CONTEXTS
 APPELATION_ROUTE_TYPE_ACHIEVEMENTS
 APPELATION_ROUTE_TYPE_MERCHANT_PACKS
@@ -3837,15 +3944,16 @@ Allowed functions
 ----------------------------------------------------------------------------------------
 GetUnitAppellationRouteList()
 GetAppellationCount()
-GetAppellations(routeFilter, pageIndex)
-GetAppellationsCount(routeFilter)
+GetAppellations(routeFilter, keyword, pageIndex)
+GetAppellationsCount(routeFilter, keyword)
 ChangeAppellation(nameType, effectType)
 GetShowingAppellation()
 GetEffectAppellation()
 GetAppellationMyLevelInfo()
 GetAppellationBuffInfoByLevels()
 GetAppellationRouteInfo(type)
-GetAppellationStampInfo()
+GetAppellationStampInfos()
+GetAppellationStampInfo(stampId)
 GetAppellationMyStamp()
 GetAppellationChangeItemInfo()
 GetStampChangeItemInfo()
@@ -3953,6 +4061,16 @@ SetSpecialty(enter)
 IsAccountRestrictState()
 GetAccountRestrictInfo()
 GetCharacterPrivacyStatus()
+IsCharTransform()
+IsActiveReopenRandomBox()
+GetReopenRandomBoxInfo()
+GetReopenRandomBoxLifeTime()
+GetReopenRandomBoxGroupRateInfo()
+ReceiveReopenRandomBoxItem()
+RefreshReopenRandomBox(isCharge)
+UpdateRegistFavoriteList(isRegist, goodType)
+GetReopenRandomBoxName(packType)
+GetReopenRandomBoxFavoriteState(goodType)
 ----------------------------------------------------------------------------------------
 
 
@@ -4206,6 +4324,7 @@ GetQuestNotifierLimit()
 IsReadyForCompleteQuest(questType)
 GetMaxLimitCountInfo()
 GetMainQuestListCount()
+IsAllCompleteMainQuest()
 GetMainQuestType(idx)
 GetMainQuestVecIndex(type)
 GetZoneQuestVecIndex(type)
@@ -4327,6 +4446,8 @@ HOUSING_LIST_FILTER_PUBLIC
 
 Allowed functions
 ----------------------------------------------------------------------------------------
+RefreshResidentMembers(zoneGroupType, bool, int)
+GetResidentMembers(zoneGroupType, bool, int)
 RequestHousingTradeList(zoneGroupType, filterindex, searchWord)
 FilterHousingTradeList(filterindex, searchWord)
 GetResidentBoardContent(boardType)
@@ -4335,8 +4456,6 @@ GetResidentBoardContent(boardType)
 Available/not allowed functions
 ----------------------------------------------------------------------------------------
 GetResidentDesc(zoneGroupType)
-RefreshResidentMembers(zoneGroupType, bool, int)
-GetResidentMembers(zoneGroupType, bool, int)
 GetResidentZoneList(zoneGroupType)
 FireNuonsArrow(zoneGroupType)
 GetHousingTradeRefreshTime()
@@ -4585,6 +4704,7 @@ CURRENCY_AA_POINT
 CURRENCY_GOLD_WITH_AA_POINT
 CURRENCY_CONTRIBUTION_POINT
 CURRENCY_ITEM_POINT
+GAMEPOINT_LEADERSHIP
 SHOP_OPEN_NORMAL
 SHOP_OPEN_LIVINGPOINT
 SHOP_OPEN_HONORPOINT
@@ -4613,6 +4733,7 @@ Available/not allowed functions
 SetStoreOpenType(shopToOpen)
 GetStoreOpenType()
 GetStoreCurrency()
+GetCurrencyStr(currency)
 GetStoreNpcItemList()
 BuyStoreItemWithStack(goodIndex, stackSize, currencies)
 SellStoreItem(items, count, isEquipSlot)
@@ -4774,8 +4895,6 @@ GetTeamDiceBidRule()
 GetRaidRecruitTypeList()
 GetRaidRecruitSubTypeList(recruitTypeList, recruitSubType, bExceptSiege)
 GetRaidRecruitSubType(recruitType, recruitSubType)
-GetRaidRecruitLimitLevelList()
-GetRaidRecruitLimitGearPointList()
 GetRaidRecruitHeadcountList()
 GetRaidRecruitExpense(hour, minute)
 RaidRecruitAdd(type, subType, headcount, limitLevel, autoJoin, msg, hour, minute, limitGearPoint)
@@ -5095,6 +5214,7 @@ IsMe(unit)
 IsReporter(unit)
 IsFirstHitByMeOrMyTeam(unit)
 ShowHelmet(show)
+ShowIpnir(show)
 ChangeCosplayVisual(cosplayVisual)
 ShowableEquipInfo(unit)
 UnitAttr(unit, str)
@@ -5151,6 +5271,7 @@ IsLifeAlertEffect(val1, val2)
 StopChangeVisualRaceSkill()
 RequestChangeVisualRace(race, skill, item)
 RequestResetVisualRace()
+IsInGlobalWorld()
 ----------------------------------------------------------------------------------------
 
 
