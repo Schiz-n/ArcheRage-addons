@@ -21,14 +21,12 @@ ADDON:ImportAPI(API_TYPE.HOTKEY.id)
 
 local testButton = CreateSimpleButton("loadtest", 700, -300)
 function testButton:OnClick()
-    local filePath = "../Documents/Addon/autorole/someguy.lua"
-    local fileWithFunctions = io.open(filePath, "r")
-    local fileAsString = fileWithFunctions:read("*a")
-    fileWithFunctions:close()
-    fileAsString = fileAsString:gsub("^\239\187\191", "")
-    local fileFunction, err = loadstring(fileAsString)
-    fileFunction()
+	local filePath = "../Documents/Addon/autorole/someguy.lua"
+	local fileWithFunctions = io.open(filePath, "r")
+	local fileAsString = fileWithFunctions:read("*a")
+	fileWithFunctions:close()
+	fileAsString = fileAsString:gsub("^\239\187\191", "")
+	local fileFunction, err = loadstring(fileAsString)
+	fileFunction()
 end
 testButton:SetHandler("OnClick", testButton.OnClick)
-
-

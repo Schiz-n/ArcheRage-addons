@@ -20,8 +20,8 @@ musicWindow:SetExtent(400, 30)
 musicWindow:AddAnchor("LEFT", "UIParent", "LEFT", 650, -420)
 musicWindow:SetCloseOnEscape(false)
 local background = musicWindow:CreateColorDrawable(0, 0, 0, 0.5, "background")
-      background:AddAnchor("TOPLEFT", musicWindow, 0, 0)
-      background:AddAnchor("BOTTOMRIGHT", musicWindow, 0, 0)
+background:AddAnchor("TOPLEFT", musicWindow, 0, 0)
+background:AddAnchor("BOTTOMRIGHT", musicWindow, 0, 0)
 local musicEdit = nil
 musicEdit = musicWindow:CreateChildWidget("editboxmultiline", "musicEdit", 0, true)
 musicEdit:SetInset(5, 9, 25, 8)
@@ -31,14 +31,14 @@ musicEdit:AddAnchor("BOTTOM", musicWindow, 0, 0)
 musicWindow:Show(true)
 
 local function OnEnterPressed()
-  local someText = musicEdit:GetText()
-  someText = someText:match("^%s*(.-)%s*$")
-  local wordOne, wordTwo = someText:match("(%S+)%s+(%S+)")
-  if someText ~= nil and wordTwo == nil then
-    X2Sound:PlayUISound(someText, true)
-  end
+	local someText = musicEdit:GetText()
+	someText = someText:match("^%s*(.-)%s*$")
+	local wordOne, wordTwo = someText:match("(%S+)%s+(%S+)")
+	if someText ~= nil and wordTwo == nil then
+		X2Sound:PlayUISound(someText, true)
+	end
 
-  musicEdit:Clear()
-  musicEdit:SetText(" ")
+	musicEdit:Clear()
+	musicEdit:SetText(" ")
 end
 musicEdit:SetHandler("OnEnterPressed", OnEnterPressed)

@@ -1,0 +1,43 @@
+#!/usr/bin/env sh
+set -eu
+
+FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\\.lua$' || true)
+
+if [ -z "$FILES" ]; then
+  exit 0
+fi
+
+echo "Running luacheck on staged Lua files..."
+if command -v luacheck >/dev/null 2>&1; then
+  # shellcheck disable=SC2086
+  luacheck $FILES
+  exit $?
+fi
+
+if ! command -v wsl >/dev/null 2>&1; then
+  echo "luacheck is not installed and WSL is unavailable."
+  echo "Install luacheck or install WSL + luacheck in Ubuntu."
+  exit 1
+fi
+
+REPO_WIN_PATH=$(pwd -W 2>/dev/null || true)
+if [ -z "$REPO_WIN_PATH" ]; then
+  echo "Could not determine Windows repo path for WSL fallback."
+  exit 1
+fi
+
+REPO_WSL_PATH=$(wsl wslpath -a "$REPO_WIN_PATH" | tr -d '\r')
+if [ -z "$REPO_WSL_PATH" ]; then
+  echo "Could not translate repo path to WSL path."
+  exit 1
+fi
+
+WSL_FILES=""
+while IFS= read -r file; do
+  escaped_file=$(printf "%s" "$file" | sed "s/'/'\\\\''/g")
+  WSL_FILES="$WSL_FILES '$escaped_file'"
+done <<EOF
+$FILES
+EOF
+
+wsl -d Ubuntu -- bash -lc "cd '$REPO_WSL_PATH' && luacheck $WSL_FILES"

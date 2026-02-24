@@ -18,6 +18,19 @@ After that restart your client and enable the addons you need in character selec
 
 Contributions are welcome, please use pull requests or flag up issues. I am also available on discord at exec_noir.
 
+## Lua linting
+
+Lua linting is set up with `luacheck` in both CI and local git hooks.
+
+Install and run locally:
+
+```powershell
+luarocks install luacheck
+powershell -ExecutionPolicy Bypass -File .\scripts\install-hooks.ps1
+```
+
+This enables `.githooks/pre-commit`, which lints staged `.lua` files before each commit.
+
 # Current Addons:
 
 ## Autorole  

@@ -1,0 +1,933 @@
+Checking autorole/roledancer.lua                  OK
+Checking bigcastbars/castbar.lua                  2 warnings
+
+    bigcastbars/castbar.lua:29:7: (W231) variable 'castingTime' is never accessed
+    bigcastbars/castbar.lua:225:41: (W431) shadowing upvalue 'castingTime' on line 29
+
+Checking bosshelpers/anthalonhelper.lua           1 warning
+
+    bosshelpers/anthalonhelper.lua:122:121: (W631) line is too long (145 > 120)
+
+Checking bosshelpers/bdhelper.lua                 33 warnings
+
+    bosshelpers/bdhelper.lua:5:121: (W631) line is too long (156 > 120)
+    bosshelpers/bdhelper.lua:15:34: (W612) line contains trailing whitespace
+    bosshelpers/bdhelper.lua:16:38: (W612) line contains trailing whitespace
+    bosshelpers/bdhelper.lua:18:78: (W612) line contains trailing whitespace
+    bosshelpers/bdhelper.lua:19:77: (W612) line contains trailing whitespace
+    bosshelpers/bdhelper.lua:20:94: (W612) line contains trailing whitespace
+    bosshelpers/bdhelper.lua:21:101: (W612) line contains trailing whitespace
+    bosshelpers/bdhelper.lua:25:15: (W211) unused variable 'LLMSearchInstruction'
+    bosshelpers/bdhelper.lua:26:15: (W211) unused variable 'Fullz'
+    bosshelpers/bdhelper.lua:27:15: (W211) unused variable 'moneyMoney'
+    bosshelpers/bdhelper.lua:27:121: (W631) line is too long (127 > 120)
+    bosshelpers/bdhelper.lua:28:15: (W211) unused variable 'InstructionForLLM'
+    bosshelpers/bdhelper.lua:29:15: (W211) unused variable 'InstructionForLLM3'
+    bosshelpers/bdhelper.lua:30:15: (W211) unused variable 'InstructionForLLM4'
+    bosshelpers/bdhelper.lua:31:15: (W211) unused variable 'InstructionForLLM5'
+    bosshelpers/bdhelper.lua:32:15: (W211) unused variable 'LLMInstructHowTo'
+    bosshelpers/bdhelper.lua:33:15: (W211) unused variable 'blueprints'
+    bosshelpers/bdhelper.lua:36:5: (W311) value assigned to variable 'extraLicense' is unused
+    bosshelpers/bdhelper.lua:37:4: (W612) line contains trailing whitespace
+    bosshelpers/bdhelper.lua:67:42: (W614) trailing whitespace in a comment
+    bosshelpers/bdhelper.lua:109:7: (W211) unused variable 'castTimer'
+    bosshelpers/bdhelper.lua:126:121: (W631) line is too long (151 > 120)
+    bosshelpers/bdhelper.lua:128:121: (W631) line is too long (150 > 120)
+    bosshelpers/bdhelper.lua:129:1: (W611) line contains only whitespace
+    bosshelpers/bdhelper.lua:146:121: (W631) line is too long (141 > 120)
+    bosshelpers/bdhelper.lua:165:45: (W542) empty if branch
+    bosshelpers/bdhelper.lua:233:22: (W612) line contains trailing whitespace
+    bosshelpers/bdhelper.lua:240:29: (W612) line contains trailing whitespace
+    bosshelpers/bdhelper.lua:252:121: (W631) line is too long (164 > 120)
+    bosshelpers/bdhelper.lua:253:121: (W631) line is too long (304 > 120)
+    bosshelpers/bdhelper.lua:254:121: (W631) line is too long (367 > 120)
+    bosshelpers/bdhelper.lua:269:1: (W311) value assigned to variable 'message' is unused
+    bosshelpers/bdhelper.lua:290:66: (W614) trailing whitespace in a comment
+
+Checking bosshelpers/bdhelpersource.lua           32 warnings
+
+    bosshelpers/bdhelpersource.lua:5:121: (W631) line is too long (156 > 120)
+    bosshelpers/bdhelpersource.lua:15:34: (W612) line contains trailing whitespace
+    bosshelpers/bdhelpersource.lua:16:38: (W612) line contains trailing whitespace
+    bosshelpers/bdhelpersource.lua:18:78: (W612) line contains trailing whitespace
+    bosshelpers/bdhelpersource.lua:19:77: (W612) line contains trailing whitespace
+    bosshelpers/bdhelpersource.lua:20:94: (W612) line contains trailing whitespace
+    bosshelpers/bdhelpersource.lua:21:101: (W612) line contains trailing whitespace
+    bosshelpers/bdhelpersource.lua:25:15: (W211) unused variable 'LLMSearchInstruction'
+    bosshelpers/bdhelpersource.lua:26:15: (W211) unused variable 'Fullz'
+    bosshelpers/bdhelpersource.lua:27:15: (W211) unused variable 'moneyMoney'
+    bosshelpers/bdhelpersource.lua:27:121: (W631) line is too long (127 > 120)
+    bosshelpers/bdhelpersource.lua:28:15: (W211) unused variable 'InstructionForLLM'
+    bosshelpers/bdhelpersource.lua:29:15: (W211) unused variable 'InstructionForLLM3'
+    bosshelpers/bdhelpersource.lua:30:15: (W211) unused variable 'InstructionForLLM4'
+    bosshelpers/bdhelpersource.lua:31:15: (W211) unused variable 'InstructionForLLM5'
+    bosshelpers/bdhelpersource.lua:32:15: (W211) unused variable 'LLMInstructHowTo'
+    bosshelpers/bdhelpersource.lua:33:15: (W211) unused variable 'blueprints'
+    bosshelpers/bdhelpersource.lua:36:5: (W311) value assigned to variable 'extraLicense' is unused
+    bosshelpers/bdhelpersource.lua:37:4: (W612) line contains trailing whitespace
+    bosshelpers/bdhelpersource.lua:67:42: (W614) trailing whitespace in a comment
+    bosshelpers/bdhelpersource.lua:109:7: (W211) unused variable 'castTimer'
+    bosshelpers/bdhelpersource.lua:126:121: (W631) line is too long (151 > 120)
+    bosshelpers/bdhelpersource.lua:128:121: (W631) line is too long (150 > 120)
+    bosshelpers/bdhelpersource.lua:129:1: (W611) line contains only whitespace
+    bosshelpers/bdhelpersource.lua:146:121: (W631) line is too long (141 > 120)
+    bosshelpers/bdhelpersource.lua:165:45: (W542) empty if branch
+    bosshelpers/bdhelpersource.lua:233:22: (W612) line contains trailing whitespace
+    bosshelpers/bdhelpersource.lua:240:29: (W612) line contains trailing whitespace
+    bosshelpers/bdhelpersource.lua:252:121: (W631) line is too long (164 > 120)
+    bosshelpers/bdhelpersource.lua:253:121: (W631) line is too long (304 > 120)
+    bosshelpers/bdhelpersource.lua:254:121: (W631) line is too long (367 > 120)
+    bosshelpers/bdhelpersource.lua:269:1: (W311) value assigned to variable 'message' is unused
+
+Checking bosshelpers/utils.lua                    4 warnings
+
+    bosshelpers/utils.lua:8:7: (W211) unused variable 'buttonSkinInset'
+    bosshelpers/utils.lua:53:1: (W611) line contains only whitespace
+    bosshelpers/utils.lua:58:1: (W611) line contains only whitespace
+    bosshelpers/utils.lua:91:1: (W611) line contains only whitespace
+
+Checking buffcaptracker/buffcaptracker.lua        OK
+Checking choretracker/choretracker.lua            1 warning
+
+    choretracker/choretracker.lua:5:121: (W631) line is too long (156 > 120)
+
+Checking classtracker/classtracker.lua            1 warning
+
+    classtracker/classtracker.lua:59:16: (W211) unused function 'setRoleIconVisible'
+
+Checking deathlog/deathlog.lua                    2 warnings
+
+    deathlog/deathlog.lua:16:8: (W211) unused variable 'someFrame'
+    deathlog/deathlog.lua:80:7: (W211) unused variable 'BagFrame3'
+
+Checking disttracker/distracker.lua               OK
+Checking dressup/dressup.lua                      16 warnings
+
+    dressup/dressup.lua:42:7: (W211) unused variable 'buttonskin'
+    dressup/dressup.lua:71:7: (W311) value assigned to variable 'modelViewer' is overwritten on line 72 before use
+    dressup/dressup.lua:114:7: (W211) unused variable 'rotateRight'
+    dressup/dressup.lua:122:7: (W211) unused variable 'rotateLeft'
+    dressup/dressup.lua:130:7: (W211) unused variable 'ZoomInButt'
+    dressup/dressup.lua:138:7: (W211) unused variable 'ZoomOutButt'
+    dressup/dressup.lua:146:7: (W211) unused variable 'closeViewer'
+    dressup/dressup.lua:161:7: (W211) unused variable 'GoUp'
+    dressup/dressup.lua:165:7: (W211) unused variable 'GoDown'
+    dressup/dressup.lua:180:7: (W211) unused variable 'Zoomer2'
+    dressup/dressup.lua:195:7: (W211) unused variable 'Zoomer3'
+    dressup/dressup.lua:210:7: (W211) unused variable 'StopButton'
+    dressup/dressup.lua:225:7: (W211) unused variable 'Cookbutton'
+    dressup/dressup.lua:239:7: (W211) unused variable 'Cookbutton2'
+    dressup/dressup.lua:253:7: (W211) unused variable 'Cookbutton3'
+    dressup/dressup.lua:285:7: (W211) unused variable 'costume'
+
+Checking editbox/console_api.lua                  2 warnings
+
+    editbox/console_api.lua:27:7: (W311) value assigned to variable 'consoleEdit' is overwritten on line 28 before use
+    editbox/console_api.lua:58:8: (W612) line contains trailing whitespace
+
+Checking editbox/music_api.lua                    2 warnings
+
+    editbox/music_api.lua:25:7: (W311) value assigned to variable 'musicEdit' is overwritten on line 26 before use
+    editbox/music_api.lua:36:9: (W211) unused variable 'wordOne'
+
+Checking editbox/tamacode.lua                     4 warnings
+
+    editbox/tamacode.lua:123:121: (W631) line is too long (142 > 120)
+    editbox/tamacode.lua:143:7: (W211) unused variable 'greenHexColor'
+    editbox/tamacode.lua:144:7: (W211) unused variable 'yellowHexColor'
+    editbox/tamacode.lua:149:121: (W631) line is too long (125 > 120)
+
+Checking gearscoretracker/gstracker.lua           4 warnings
+
+    gearscoretracker/gstracker.lua:37:7: (W211) unused variable 'targetGearScore'
+    gearscoretracker/gstracker.lua:38:7: (W211) unused variable 'numericaltargetGearScore'
+    gearscoretracker/gstracker.lua:39:7: (W211) unused variable 'actualGearScore'
+    gearscoretracker/gstracker.lua:57:9: (W431) shadowing upvalue 'targetGearScore' on line 37
+
+Checking gearswap/gearswap.lua                    2 warnings
+
+    gearswap/gearswap.lua:115:8: (W311) value assigned to variable 'equippedIndex' is unused
+    gearswap/gearswap.lua:371:121: (W631) line is too long (148 > 120)
+
+Checking globals/apitypes.lua                     OK
+Checking globals/barmaker.lua                     OK
+Checking globals/button.lua                       6 warnings
+
+    globals/button.lua:119:16: (W211) unused function 'InitButton'
+    globals/button.lua:127:121: (W631) line is too long (140 > 120)
+    globals/button.lua:384:121: (W631) line is too long (127 > 120)
+    globals/button.lua:649:121: (W631) line is too long (138 > 120)
+    globals/button.lua:657:8: (W211) unused variable 'inset'
+    globals/button.lua:666:8: (W211) unused variable 'count'
+
+Checking globals/buttoncommon.lua                 4 warnings
+
+    globals/buttoncommon.lua:74:121: (W631) line is too long (135 > 120)
+    globals/buttoncommon.lua:100:121: (W631) line is too long (122 > 120)
+    globals/buttoncommon.lua:107:121: (W631) line is too long (122 > 120)
+    globals/buttoncommon.lua:122:121: (W631) line is too long (122 > 120)
+
+Checking globals/classmappings.lua                OK
+Checking globals/utils.lua                        1 warning
+
+    globals/utils.lua:21:7: (W211) unused variable 'buttonSkinInset'
+
+Checking globals/window.lua                       3 warnings
+
+    globals/window.lua:6:39: (W432) shadowing upvalue argument 'parent' on line 2
+    globals/window.lua:53:16: (W432) shadowing upvalue argument 'self' on line 49
+    globals/window.lua:256:34: (W214) used variable '_min' with unused hint
+
+Checking globals/windowcommon.lua                 OK
+Checking guildquesttracker/guildquesttracker.lua  OK
+Checking healthbar/healthbar.lua                  1 warning
+
+    healthbar/healthbar.lua:22:52: (W612) line contains trailing whitespace
+
+Checking healthbar/heightdamage.lua               6 warnings
+
+    healthbar/heightdamage.lua:37:66: (W612) line contains trailing whitespace
+    healthbar/heightdamage.lua:46:15: (W211) unused variable 'xP'
+    healthbar/heightdamage.lua:46:19: (W211) unused variable 'yP'
+    healthbar/heightdamage.lua:47:15: (W211) unused variable 'xT'
+    healthbar/heightdamage.lua:47:19: (W211) unused variable 'yT'
+    healthbar/heightdamage.lua:65:121: (W631) line is too long (122 > 120)
+
+Checking healthbar/manager.lua                    4 warnings
+
+    healthbar/manager.lua:62:121: (W631) line is too long (122 > 120)
+    healthbar/manager.lua:105:1: (W611) line contains only whitespace
+    healthbar/manager.lua:110:1: (W611) line contains only whitespace
+    healthbar/manager.lua:114:1: (W611) line contains only whitespace
+
+Checking healthbar/realvelocity.lua               2 warnings
+
+    healthbar/realvelocity.lua:18:7: (W231) variable 'prevVel' is never accessed
+    healthbar/realvelocity.lua:57:121: (W631) line is too long (122 > 120)
+
+Checking hiddendebufftracker/hiddenicons.lua      2 warnings
+
+    hiddendebufftracker/hiddenicons.lua:36:7: (W211) unused variable 'lastBuffString'
+    hiddendebufftracker/hiddenicons.lua:42:16: (W211) unused recursive function 'dump'
+
+Checking luaerrorprinter/errorprinter.lua         OK
+Checking mapwip/map_api.lua                       12 warnings
+
+    mapwip/map_api.lua:20:7: (W211) unused variable 'contentState'
+    mapwip/map_api.lua:22:7: (W211) unused variable 'toggleButton'
+    mapwip/map_api.lua:23:7: (W211) unused variable 'exampleWindow'
+    mapwip/map_api.lua:27:60: (W612) line contains trailing whitespace
+    mapwip/map_api.lua:28:11: (W311) value assigned to variable 'yCoords' is overwritten on line 29 before use
+    mapwip/map_api.lua:36:79: (W612) line contains trailing whitespace
+    mapwip/map_api.lua:37:60: (W612) line contains trailing whitespace
+    mapwip/map_api.lua:38:11: (W311) value assigned to variable 'xCoords' is overwritten on line 39 before use
+    mapwip/map_api.lua:44:4: (W612) line contains trailing whitespace
+    mapwip/map_api.lua:50:1: (W611) line contains only whitespace
+    mapwip/map_api.lua:66:121: (W631) line is too long (137 > 120)
+    mapwip/map_api.lua:95:1: (W611) line contains only whitespace
+
+Checking personalportals/portal_api.lua           OK
+Checking raidchecker/raidbuffs.lua                2 warnings
+
+    raidchecker/raidbuffs.lua:98:10: (W311) value assigned to variable 'teamId' is unused
+    raidchecker/raidbuffs.lua:140:5: (W542) empty if branch
+
+Checking raidchecker/raidclasses.lua              2 warnings
+
+    raidchecker/raidclasses.lua:41:10: (W311) value assigned to variable 'teamId' is unused
+    raidchecker/raidclasses.lua:59:11: (W311) value assigned to variable 'name' is unused
+
+Checking raidcheckersiege/siegecheck.lua          3 warnings
+
+    raidcheckersiege/siegecheck.lua:55:10: (W311) value assigned to variable 'teamId' is unused
+    raidcheckersiege/siegecheck.lua:78:121: (W631) line is too long (143 > 120)
+    raidcheckersiege/siegecheck.lua:97:5: (W542) empty if branch
+
+Checking reloadcfg/reloadcfg.lua                  OK
+Checking residentboard/residentboard.lua          1 warning
+
+    residentboard/residentboard.lua:43:8: (W311) value assigned to variable 'whereami' is unused
+
+Checking reventtracker/reventtracker.lua          27 warnings
+
+    reventtracker/reventtracker.lua:76:121: (W631) line is too long (125 > 120)
+    reventtracker/reventtracker.lua:89:11: (W431) shadowing upvalue 'sessionTimestamp' on line 73
+    reventtracker/reventtracker.lua:96:121: (W631) line is too long (121 > 120)
+    reventtracker/reventtracker.lua:100:121: (W631) line is too long (186 > 120)
+    reventtracker/reventtracker.lua:145:1: (W611) line contains only whitespace
+    reventtracker/reventtracker.lua:146:121: (W631) line is too long (136 > 120)
+    reventtracker/reventtracker.lua:147:15: (W311) value assigned to variable 'whatIsThisPlayer' is unused
+    reventtracker/reventtracker.lua:149:1: (W621) inconsistent indentation (SPACE followed by TAB)
+    reventtracker/reventtracker.lua:152:121: (W631) line is too long (160 > 120)
+    reventtracker/reventtracker.lua:158:121: (W631) line is too long (159 > 120)
+    reventtracker/reventtracker.lua:160:1: (W621) inconsistent indentation (SPACE followed by TAB)
+    reventtracker/reventtracker.lua:163:121: (W631) line is too long (161 > 120)
+    reventtracker/reventtracker.lua:168:121: (W631) line is too long (173 > 120)
+    reventtracker/reventtracker.lua:168:162: (W612) line contains trailing whitespace
+    reventtracker/reventtracker.lua:173:1: (W621) inconsistent indentation (SPACE followed by TAB)
+    reventtracker/reventtracker.lua:174:1: (W621) inconsistent indentation (SPACE followed by TAB)
+    reventtracker/reventtracker.lua:175:1: (W621) inconsistent indentation (SPACE followed by TAB)
+    reventtracker/reventtracker.lua:176:1: (W621) inconsistent indentation (SPACE followed by TAB)
+    reventtracker/reventtracker.lua:186:5: (W612) line contains trailing whitespace
+    reventtracker/reventtracker.lua:187:1: (W621) inconsistent indentation (SPACE followed by TAB)
+    reventtracker/reventtracker.lua:188:1: (W611) line contains only whitespace
+    reventtracker/reventtracker.lua:189:99: (W614) trailing whitespace in a comment
+    reventtracker/reventtracker.lua:213:121: (W631) line is too long (191 > 120)
+    reventtracker/reventtracker.lua:217:121: (W631) line is too long (187 > 120)
+    reventtracker/reventtracker.lua:221:121: (W631) line is too long (187 > 120)
+    reventtracker/reventtracker.lua:225:121: (W631) line is too long (189 > 120)
+    reventtracker/reventtracker.lua:232:121: (W631) line is too long (122 > 120)
+
+Checking reventtracker/skatetime.lua              20 warnings
+
+    reventtracker/skatetime.lua:76:16: (W211) unused function 'SavePlayerScanToCSV'
+    reventtracker/skatetime.lua:76:121: (W631) line is too long (125 > 120)
+    reventtracker/skatetime.lua:95:121: (W631) line is too long (121 > 120)
+    reventtracker/skatetime.lua:99:121: (W631) line is too long (186 > 120)
+    reventtracker/skatetime.lua:123:15: (W211) unused variable 'classType'
+    reventtracker/skatetime.lua:128:1: (W611) line contains only whitespace
+    reventtracker/skatetime.lua:129:15: (W211) unused variable 'playerInfoString'
+    reventtracker/skatetime.lua:129:121: (W631) line is too long (136 > 120)
+    reventtracker/skatetime.lua:131:1: (W621) inconsistent indentation (SPACE followed by TAB)
+    reventtracker/skatetime.lua:134:121: (W631) line is too long (160 > 120)
+    reventtracker/skatetime.lua:140:121: (W631) line is too long (162 > 120)
+    reventtracker/skatetime.lua:142:1: (W621) inconsistent indentation (SPACE followed by TAB)
+    reventtracker/skatetime.lua:145:121: (W631) line is too long (163 > 120)
+    reventtracker/skatetime.lua:150:121: (W631) line is too long (174 > 120)
+    reventtracker/skatetime.lua:150:163: (W614) trailing whitespace in a comment
+    reventtracker/skatetime.lua:183:121: (W631) line is too long (193 > 120)
+    reventtracker/skatetime.lua:187:121: (W631) line is too long (190 > 120)
+    reventtracker/skatetime.lua:191:121: (W631) line is too long (189 > 120)
+    reventtracker/skatetime.lua:195:121: (W631) line is too long (190 > 120)
+    reventtracker/skatetime.lua:211:121: (W631) line is too long (122 > 120)
+
+Checking shinysac/shinysac.lua                    2 warnings
+
+    shinysac/shinysac.lua:45:8: (W211) unused variable 'keyStr'
+    shinysac/shinysac.lua:67:10: (W311) value assigned to variable 'teamId' is unused
+
+Checking targetdebufftracker/enemy.lua            12 warnings
+
+    targetdebufftracker/enemy.lua:40:7: (W211) unused variable 'lastBuffString'
+    targetdebufftracker/enemy.lua:42:7: (W211) unused variable 'lastdeBuffString'
+    targetdebufftracker/enemy.lua:86:121: (W631) line is too long (159 > 120)
+    targetdebufftracker/enemy.lua:225:7: (W311) value assigned to variable 'languageSetting' is overwritten on line 244 before use
+    targetdebufftracker/enemy.lua:229:121: (W631) line is too long (136 > 120)
+    targetdebufftracker/enemy.lua:230:7: (W231) variable 'BUFFLOADSUCCESS' is never accessed
+    targetdebufftracker/enemy.lua:231:7: (W231) variable 'TABLE_EMPTY' is never accessed
+    targetdebufftracker/enemy.lua:234:7: (W231) variable 'ADDING_BUFF' is never accessed
+    targetdebufftracker/enemy.lua:267:121: (W631) line is too long (142 > 120)
+    targetdebufftracker/enemy.lua:383:9: (W231) variable 'isOtherWorldMessage' is never accessed
+    targetdebufftracker/enemy.lua:385:9: (W231) variable 'nameWithWorldName' is never accessed
+    targetdebufftracker/enemy.lua:393:3: (W311) value assigned to variable 'name' is unused
+
+Checking targetdebufftracker/enemyhidden.lua      7 warnings
+
+    targetdebufftracker/enemyhidden.lua:32:7: (W211) unused variable 'target_buffs'
+    targetdebufftracker/enemyhidden.lua:33:7: (W211) unused variable 'target_buffDebugMessages'
+    targetdebufftracker/enemyhidden.lua:36:7: (W231) variable 'buffAllString' is never accessed
+    targetdebufftracker/enemyhidden.lua:37:7: (W211) unused variable 'lastBuffString'
+    targetdebufftracker/enemyhidden.lua:38:7: (W231) variable 'debuffAllString' is never accessed
+    targetdebufftracker/enemyhidden.lua:39:7: (W211) unused variable 'lastdeBuffString'
+    targetdebufftracker/enemyhidden.lua:85:9: (W421) shadowing definition of variable 'lblDuration' on line 61
+
+Checking targetdebufftracker/self.lua             12 warnings
+
+    targetdebufftracker/self.lua:40:7: (W211) unused variable 'lastBuffString'
+    targetdebufftracker/self.lua:42:7: (W211) unused variable 'lastdeBuffString'
+    targetdebufftracker/self.lua:87:121: (W631) line is too long (159 > 120)
+    targetdebufftracker/self.lua:227:7: (W311) value assigned to variable 'languageSetting' is overwritten on line 245 before use
+    targetdebufftracker/self.lua:230:7: (W231) variable 'INVALIDCOMMAND' is never accessed
+    targetdebufftracker/self.lua:231:7: (W231) variable 'BUFFLOADSUCCESS' is never accessed
+    targetdebufftracker/self.lua:232:7: (W231) variable 'TABLE_EMPTY' is never accessed
+    targetdebufftracker/self.lua:235:7: (W231) variable 'ADDING_BUFF' is never accessed
+    targetdebufftracker/self.lua:382:9: (W231) variable 'isOtherWorldMessage' is never accessed
+    targetdebufftracker/self.lua:384:9: (W231) variable 'nameWithWorldName' is never accessed
+    targetdebufftracker/self.lua:392:3: (W311) value assigned to variable 'name' is unused
+    targetdebufftracker/self.lua:474:5: (W542) empty if branch
+
+Checking targetdebufftracker/selfhidden.lua       7 warnings
+
+    targetdebufftracker/selfhidden.lua:32:7: (W211) unused variable 'target_buffs'
+    targetdebufftracker/selfhidden.lua:33:7: (W211) unused variable 'target_buffDebugMessages'
+    targetdebufftracker/selfhidden.lua:36:7: (W231) variable 'buffAllString' is never accessed
+    targetdebufftracker/selfhidden.lua:37:7: (W211) unused variable 'lastBuffString'
+    targetdebufftracker/selfhidden.lua:38:7: (W231) variable 'debuffAllString' is never accessed
+    targetdebufftracker/selfhidden.lua:39:7: (W211) unused variable 'lastdeBuffString'
+    targetdebufftracker/selfhidden.lua:85:9: (W421) shadowing definition of variable 'lblDuration' on line 61
+
+Checking targetdebufftracker/tracktarget.lua      18 warnings
+
+    targetdebufftracker/tracktarget.lua:40:7: (W211) unused variable 'lastBuffString'
+    targetdebufftracker/tracktarget.lua:42:7: (W211) unused variable 'lastdeBuffString'
+    targetdebufftracker/tracktarget.lua:182:7: (W311) value assigned to variable 'languageSetting' is overwritten on line 201 before use
+    targetdebufftracker/tracktarget.lua:184:7: (W231) variable 'BUFFADDGUIDE' is never accessed
+    targetdebufftracker/tracktarget.lua:185:7: (W231) variable 'INVALIDCOMMAND' is never accessed
+    targetdebufftracker/tracktarget.lua:186:121: (W631) line is too long (136 > 120)
+    targetdebufftracker/tracktarget.lua:187:7: (W231) variable 'BUFFLOADSUCCESS' is never accessed
+    targetdebufftracker/tracktarget.lua:188:7: (W231) variable 'TABLE_EMPTY' is never accessed
+    targetdebufftracker/tracktarget.lua:191:7: (W231) variable 'ADDING_BUFF' is never accessed
+    targetdebufftracker/tracktarget.lua:194:7: (W231) variable 'EXPORTEDTO' is never accessed
+    targetdebufftracker/tracktarget.lua:195:7: (W231) variable 'IMPORTTO' is never accessed
+    targetdebufftracker/tracktarget.lua:196:7: (W231) variable 'DISPLAYING_ALLBUFFS' is never accessed
+    targetdebufftracker/tracktarget.lua:197:7: (W231) variable 'HIDING_ALLBUFFS' is never accessed
+    targetdebufftracker/tracktarget.lua:198:7: (W231) variable 'SHOWING_ALL' is never accessed
+    targetdebufftracker/tracktarget.lua:223:121: (W631) line is too long (142 > 120)
+    targetdebufftracker/tracktarget.lua:287:16: (W211) unused function 'addEffect'
+    targetdebufftracker/tracktarget.lua:307:16: (W211) unused function 'removeEffect'
+    targetdebufftracker/tracktarget.lua:327:16: (W211) unused function 'listEffects'
+
+Checking testbuttons/boxies.lua                   6 warnings
+
+    testbuttons/boxies.lua:1:16: (W211) unused function 'CreateListFrame'
+    testbuttons/boxies.lua:401:18: (W211) unused function 'HideDropdown'
+    testbuttons/boxies.lua:405:18: (W211) unused function 'ShowDropdown'
+    testbuttons/boxies.lua:434:11: (W211) unused variable 'left'
+    testbuttons/boxies.lua:434:22: (W211) unused variable 'right'
+    testbuttons/boxies.lua:532:11: (W311) value assigned to variable 'str' is unused
+
+Checking testbuttons/button_template.lua          1 error
+
+    testbuttons/button_template.lua:50:1: (E011) expected 'end' (to close 'function' on line 21) near 'function' (indentation-based guess)
+
+Checking testbuttons/justabutton.lua              7 warnings
+
+    testbuttons/justabutton.lua:37:7: (W211) unused variable 'contentState'
+    testbuttons/justabutton.lua:39:7: (W211) unused variable 'toggleButton'
+    testbuttons/justabutton.lua:40:7: (W211) unused variable 'exampleWindow'
+    testbuttons/justabutton.lua:65:7: (W211) unused variable 'dookie'
+    testbuttons/justabutton.lua:66:7: (W211) unused variable 'dookie2'
+    testbuttons/justabutton.lua:67:7: (W211) unused variable 'varToEdit'
+    testbuttons/justabutton.lua:68:7: (W211) unused variable 'checkRatio'
+
+Checking testbuttons/justabutton_auction.lua      7 warnings
+
+    testbuttons/justabutton_auction.lua:63:7: (W211) unused variable 'dookie'
+    testbuttons/justabutton_auction.lua:64:7: (W211) unused variable 'dookie2'
+    testbuttons/justabutton_auction.lua:65:7: (W211) unused variable 'varToEdit'
+    testbuttons/justabutton_auction.lua:66:7: (W211) unused variable 'checkRatio'
+    testbuttons/justabutton_auction.lua:84:13: (W612) line contains trailing whitespace
+    testbuttons/justabutton_auction.lua:94:1: (W611) line contains only whitespace
+    testbuttons/justabutton_auction.lua:117:1: (W611) line contains only whitespace
+
+Checking testbuttons/justabutton_tradeprices.lua  8 warnings
+
+    testbuttons/justabutton_tradeprices.lua:39:7: (W211) unused variable 'toggleButton'
+    testbuttons/justabutton_tradeprices.lua:40:7: (W211) unused variable 'exampleWindow'
+    testbuttons/justabutton_tradeprices.lua:85:7: (W211) unused variable 'dookie'
+    testbuttons/justabutton_tradeprices.lua:86:7: (W211) unused variable 'dookie2'
+    testbuttons/justabutton_tradeprices.lua:87:7: (W211) unused variable 'varToEdit'
+    testbuttons/justabutton_tradeprices.lua:88:7: (W231) variable 'checkRatio' is never accessed
+    testbuttons/justabutton_tradeprices.lua:98:34: (W542) empty if branch
+    testbuttons/justabutton_tradeprices.lua:99:34: (W542) empty if branch
+
+Checking testbuttons/justanewbutton.lua           10 warnings
+
+    testbuttons/justanewbutton.lua:38:7: (W211) unused variable 'contentState'
+    testbuttons/justanewbutton.lua:40:7: (W211) unused variable 'toggleButton'
+    testbuttons/justanewbutton.lua:41:7: (W211) unused variable 'exampleWindow'
+    testbuttons/justanewbutton.lua:86:7: (W211) unused variable 'dookie'
+    testbuttons/justanewbutton.lua:87:7: (W211) unused variable 'dookie2'
+    testbuttons/justanewbutton.lua:88:7: (W211) unused variable 'varToEdit'
+    testbuttons/justanewbutton.lua:89:7: (W211) unused variable 'checkRatio'
+    testbuttons/justanewbutton.lua:90:7: (W211) unused variable 'skillType'
+    testbuttons/justanewbutton.lua:91:7: (W211) unused variable 'tipId'
+    testbuttons/justanewbutton.lua:92:7: (W211) unused variable 'someSkill'
+
+Checking testbuttons/justawindow.lua              1 warning
+
+    testbuttons/justawindow.lua:216:26: (W431) shadowing upvalue 'OnEnter' on line 174
+
+Checking tigerstrike/tigerstrike.lua              6 warnings
+
+    tigerstrike/tigerstrike.lua:32:7: (W211) unused variable 'target_buffs'
+    tigerstrike/tigerstrike.lua:36:7: (W211) unused variable 'buffAllString'
+    tigerstrike/tigerstrike.lua:37:7: (W211) unused variable 'lastBuffString'
+    tigerstrike/tigerstrike.lua:92:3: (W542) empty if branch
+    tigerstrike/tigerstrike.lua:103:4: (W542) empty if branch
+    tigerstrike/tigerstrike.lua:130:8: (W211) unused variable 'displayText'
+
+Checking timeuntil/timeuntil.lua                  7 warnings
+
+    timeuntil/timeuntil.lua:174:7: (W211) unused variable 'whaleConflict'
+    timeuntil/timeuntil.lua:175:7: (W211) unused variable 'aegConflict'
+    timeuntil/timeuntil.lua:478:22: (W542) empty if branch
+    timeuntil/timeuntil.lua:493:9: (W211) unused variable 'isAM'
+    timeuntil/timeuntil.lua:493:15: (W211) unused variable 'currentHour'
+    timeuntil/timeuntil.lua:493:28: (W211) unused variable 'currentMinute'
+    timeuntil/timeuntil.lua:505:121: (W631) line is too long (155 > 120)
+
+Checking titleswap/titleswap.lua                  1 warning
+
+    titleswap/titleswap.lua:208:121: (W631) line is too long (148 > 120)
+
+Checking translate/translatetofilep1.lua          2 warnings
+
+    translate/translatetofilep1.lua:48:7: (W211) unused variable 'saySpace'
+    translate/translatetofilep1.lua:52:121: (W631) line is too long (136 > 120)
+
+Checking translate/translatetofilep3.lua          2 warnings
+
+    translate/translatetofilep3.lua:20:7: (W211) unused variable 'option'
+    translate/translatetofilep3.lua:56:7: (W411) variable 'option' was previously defined on line 20
+
+Checking uirefresh/refresh_ui_api.lua             OK
+Checking z_pub_wip/arrow.lua                      OK
+Checking z_pub_wip/classtracker.lua               7 warnings
+
+    z_pub_wip/classtracker.lua:39:7: (W211) unused variable 'start_time'
+    z_pub_wip/classtracker.lua:40:7: (W211) unused variable 'wait_duration'
+    z_pub_wip/classtracker.lua:41:7: (W211) unused variable 'end_time'
+    z_pub_wip/classtracker.lua:59:8: (W211) unused variable 'UBuffCount'
+    z_pub_wip/classtracker.lua:64:8: (W411) variable 'UBuffCount' was previously defined on line 59
+    z_pub_wip/classtracker.lua:65:8: (W211) unused variable 'buffCounter'
+    z_pub_wip/classtracker.lua:66:8: (W211) unused variable 'currentBuffs'
+
+Checking z_pub_wip/combatlog.lua                  1 warning
+
+    z_pub_wip/combatlog.lua:3:16: (W211) unused function 'onShotEvent'
+
+Checking z_pub_wip/combatlog_cooldowntracker.lua  1 warning
+
+    z_pub_wip/combatlog_cooldowntracker.lua:23:16: (W211) unused function 'onShotEvent'
+
+Checking z_pub_wip/darkmodecheck.lua              OK
+Checking z_pub_wip/hiddenbufftracker.lua          4 warnings
+
+    z_pub_wip/hiddenbufftracker.lua:44:8: (W211) unused variable 'UBuffCount'
+    z_pub_wip/hiddenbufftracker.lua:49:8: (W411) variable 'UBuffCount' was previously defined on line 44
+    z_pub_wip/hiddenbufftracker.lua:50:8: (W211) unused variable 'buffCounter'
+    z_pub_wip/hiddenbufftracker.lua:51:8: (W211) unused variable 'currentBuffs'
+
+Checking z_pub_wip/hiddenbufftracker2.lua         4 warnings
+
+    z_pub_wip/hiddenbufftracker2.lua:44:8: (W211) unused variable 'UBuffCount'
+    z_pub_wip/hiddenbufftracker2.lua:49:8: (W411) variable 'UBuffCount' was previously defined on line 44
+    z_pub_wip/hiddenbufftracker2.lua:50:8: (W211) unused variable 'buffCounter'
+    z_pub_wip/hiddenbufftracker2.lua:51:8: (W211) unused variable 'currentBuffs'
+
+Checking z_pub_wip/hiddendebufficons.lua          7 warnings
+
+    z_pub_wip/hiddendebufficons.lua:24:7: (W211) unused variable 'target_buffDebugMessages'
+    z_pub_wip/hiddendebufficons.lua:27:7: (W231) variable 'buffAllString' is never accessed
+    z_pub_wip/hiddendebufficons.lua:28:7: (W211) unused variable 'lastBuffString'
+    z_pub_wip/hiddendebufficons.lua:29:7: (W231) variable 'debuffAllString' is never accessed
+    z_pub_wip/hiddendebufficons.lua:30:7: (W211) unused variable 'lastdeBuffString'
+    z_pub_wip/hiddendebufficons.lua:36:16: (W211) unused recursive function 'dump'
+    z_pub_wip/hiddendebufficons.lua:113:9: (W241) variable 'currentBuffs' is mutated but never accessed
+
+Checking z_pub_wip/loadcodebtn.lua                1 warning
+
+    z_pub_wip/loadcodebtn.lua:29:22: (W211) unused variable 'err'
+
+Checking z_pub_wip/music_api.lua                  2 warnings
+
+    z_pub_wip/music_api.lua:25:7: (W311) value assigned to variable 'musicEdit' is overwritten on line 26 before use
+    z_pub_wip/music_api.lua:36:8: (W211) unused variable 'wordOne'
+
+Checking z_pub_wip/petrebinder.lua                OK
+Checking z_pub_wip/resourcetracker.lua            1 warning
+
+    z_pub_wip/resourcetracker.lua:132:8: (W412) variable 'groupId' was previously defined as an argument on line 130
+
+Checking z_pub_wip/scalinglock/reloadscaling.lua  OK
+Checking z_pub_wip/somebar.lua                    1 warning
+
+    z_pub_wip/somebar.lua:38:16: (W211) unused function 'printObjectMethods'
+
+Checking z_pub_wip/translate_laggy.lua            1 warning
+
+    z_pub_wip/translate_laggy.lua:81:2: (W511) unreachable code
+
+Checking z_pub_wip/z_unitframes.lua               1 warning
+
+    z_pub_wip/z_unitframes.lua:14:21: (W542) empty if branch
+
+Checking zpriv/bank_api.lua                       3 warnings
+
+    zpriv/bank_api.lua:17:7: (W211) unused variable 'contentState'
+    zpriv/bank_api.lua:19:7: (W211) unused variable 'toggleButton'
+    zpriv/bank_api.lua:20:7: (W211) unused variable 'exampleWindow'
+
+Checking zpriv/combatlog.lua                      1 warning
+
+    zpriv/combatlog.lua:3:16: (W211) unused function 'onShotEvent'
+
+Checking zpriv/console_api.lua                    4 warnings
+
+    zpriv/console_api.lua:145:121: (W631) line is too long (142 > 120)
+    zpriv/console_api.lua:165:7: (W211) unused variable 'greenHexColor'
+    zpriv/console_api.lua:166:7: (W211) unused variable 'yellowHexColor'
+    zpriv/console_api.lua:171:121: (W631) line is too long (125 > 120)
+
+Checking zpriv/debug_api.lua                      7 warnings
+
+    zpriv/debug_api.lua:20:7: (W211) unused variable 'toggleButton'
+    zpriv/debug_api.lua:21:7: (W211) unused variable 'exampleWindow'
+    zpriv/debug_api.lua:36:11: (W211) unused variable 'buttonskin'
+    zpriv/debug_api.lua:100:121: (W631) line is too long (129 > 120)
+    zpriv/debug_api.lua:118:30: (W614) trailing whitespace in a comment
+    zpriv/debug_api.lua:135:43: (W614) trailing whitespace in a comment
+    zpriv/debug_api.lua:138:8: (W614) trailing whitespace in a comment
+
+Checking zpriv/dist_api.lua                       3 warnings
+
+    zpriv/dist_api.lua:31:7: (W211) unused variable 'contentState'
+    zpriv/dist_api.lua:33:7: (W211) unused variable 'toggleButton'
+    zpriv/dist_api.lua:34:7: (W211) unused variable 'exampleWindow'
+
+Checking zpriv/doodad_api.lua                     6 warnings
+
+    zpriv/doodad_api.lua:19:7: (W211) unused variable 'toggleButton'
+    zpriv/doodad_api.lua:20:7: (W211) unused variable 'exampleWindow'
+    zpriv/doodad_api.lua:88:1: (W611) line contains only whitespace
+    zpriv/doodad_api.lua:115:30: (W614) trailing whitespace in a comment
+    zpriv/doodad_api.lua:132:43: (W614) trailing whitespace in a comment
+    zpriv/doodad_api.lua:135:8: (W614) trailing whitespace in a comment
+
+Checking zpriv/map_api.lua                        3 warnings
+
+    zpriv/map_api.lua:131:7: (W211) unused variable 'contentState'
+    zpriv/map_api.lua:133:7: (W211) unused variable 'toggleButton'
+    zpriv/map_api.lua:134:7: (W211) unused variable 'exampleWindow'
+
+Checking zpriv/reventtracker.lua                  17 warnings
+
+    zpriv/reventtracker.lua:59:1: (W621) inconsistent indentation (SPACE followed by TAB)
+    zpriv/reventtracker.lua:59:121: (W631) line is too long (134 > 120)
+    zpriv/reventtracker.lua:61:1: (W621) inconsistent indentation (SPACE followed by TAB)
+    zpriv/reventtracker.lua:61:121: (W631) line is too long (131 > 120)
+    zpriv/reventtracker.lua:62:17: (W614) trailing whitespace in a comment
+    zpriv/reventtracker.lua:64:121: (W631) line is too long (126 > 120)
+    zpriv/reventtracker.lua:72:15: (W211) unused variable 'unitIdInhex'
+    zpriv/reventtracker.lua:73:121: (W631) line is too long (241 > 120)
+    zpriv/reventtracker.lua:74:121: (W631) line is too long (128 > 120)
+    zpriv/reventtracker.lua:82:1: (W611) line contains only whitespace
+    zpriv/reventtracker.lua:106:121: (W631) line is too long (122 > 120)
+    zpriv/reventtracker.lua:108:121: (W631) line is too long (122 > 120)
+    zpriv/reventtracker.lua:110:79: (W614) trailing whitespace in a comment
+    zpriv/reventtracker.lua:115:121: (W631) line is too long (131 > 120)
+    zpriv/reventtracker.lua:116:121: (W631) line is too long (138 > 120)
+    zpriv/reventtracker.lua:118:23: (W614) trailing whitespace in a comment
+    zpriv/reventtracker.lua:121:121: (W631) line is too long (125 > 120)
+
+Checking zpriv/shiptracker.lua                    2 warnings
+
+    zpriv/shiptracker.lua:21:11: (W311) value assigned to variable 'infoString' is unused
+    zpriv/shiptracker.lua:53:1: (W611) line contains only whitespace
+
+Checking zpriv/sky_api.lua                        2 warnings
+
+    zpriv/sky_api.lua:19:7: (W211) unused variable 'toggleButton'
+    zpriv/sky_api.lua:20:7: (W211) unused variable 'exampleWindow'
+
+Checking zpriv/somebar.lua                        OK
+Checking zpriv/testblanks_api.lua                 6 warnings
+
+    zpriv/testblanks_api.lua:19:7: (W211) unused variable 'toggleButton'
+    zpriv/testblanks_api.lua:20:7: (W211) unused variable 'exampleWindow'
+    zpriv/testblanks_api.lua:45:7: (W211) unused variable 'dookie'
+    zpriv/testblanks_api.lua:46:7: (W211) unused variable 'dookie2'
+    zpriv/testblanks_api.lua:47:7: (W211) unused variable 'varToEdit'
+    zpriv/testblanks_api.lua:49:1: (W611) line contains only whitespace
+
+Checking zpriv/teventtracker.lua                  OK
+Checking zpriv_wip/autorole/extout.lua            1 warning
+
+    zpriv_wip/autorole/extout.lua:37:42: (W614) trailing whitespace in a comment
+
+Checking zpriv_wip/autorole/loadcodebtn.lua       1 warning
+
+    zpriv_wip/autorole/loadcodebtn.lua:29:25: (W211) unused variable 'err'
+
+Checking zpriv_wip/autorole/roledancer.lua        5 warnings
+
+    zpriv_wip/autorole/roledancer.lua:5:121: (W631) line is too long (156 > 120)
+    zpriv_wip/autorole/roledancer.lua:46:20: (W612) line contains trailing whitespace
+    zpriv_wip/autorole/roledancer.lua:55:44: (W612) line contains trailing whitespace
+    zpriv_wip/autorole/roledancer.lua:78:121: (W631) line is too long (135 > 120)
+    zpriv_wip/autorole/roledancer.lua:89:1: (W611) line contains only whitespace
+
+Checking zpriv_wip/autorole/someguy.lua           1 warning
+
+    zpriv_wip/autorole/someguy.lua:25:3: (W614) trailing whitespace in a comment
+
+Checking zpriv_wip/callhome.lua                   OK
+Checking zpriv_wip/console_vars.lua               1 error
+
+    zpriv_wip/console_vars.lua:1:27: (E011) expected method arguments near 'be'
+
+Checking zpriv_wip/deathlog/deathlog.lua          4 warnings
+
+    zpriv_wip/deathlog/deathlog.lua:5:121: (W631) line is too long (156 > 120)
+    zpriv_wip/deathlog/deathlog.lua:17:35: (W612) line contains trailing whitespace
+    zpriv_wip/deathlog/deathlog.lua:33:121: (W631) line is too long (133 > 120)
+    zpriv_wip/deathlog/deathlog.lua:59:9: (W211) unused variable 'BagFrame3'
+
+Checking zpriv_wip/deathlog/dpsmeter.lua          18 warnings
+
+    zpriv_wip/deathlog/dpsmeter.lua:5:121: (W631) line is too long (156 > 120)
+    zpriv_wip/deathlog/dpsmeter.lua:24:7: (W211) unused variable 'currentDps'
+    zpriv_wip/deathlog/dpsmeter.lua:28:7: (W231) variable 'amIInCombat' is never accessed
+    zpriv_wip/deathlog/dpsmeter.lua:36:1: (W611) line contains only whitespace
+    zpriv_wip/deathlog/dpsmeter.lua:41:1: (W611) line contains only whitespace
+    zpriv_wip/deathlog/dpsmeter.lua:50:56: (W612) line contains trailing whitespace
+    zpriv_wip/deathlog/dpsmeter.lua:79:121: (W631) line is too long (133 > 120)
+    zpriv_wip/deathlog/dpsmeter.lua:84:47: (W612) line contains trailing whitespace
+    zpriv_wip/deathlog/dpsmeter.lua:85:50: (W612) line contains trailing whitespace
+    zpriv_wip/deathlog/dpsmeter.lua:86:51: (W612) line contains trailing whitespace
+    zpriv_wip/deathlog/dpsmeter.lua:87:51: (W612) line contains trailing whitespace
+    zpriv_wip/deathlog/dpsmeter.lua:88:50: (W612) line contains trailing whitespace
+    zpriv_wip/deathlog/dpsmeter.lua:89:52: (W612) line contains trailing whitespace
+    zpriv_wip/deathlog/dpsmeter.lua:90:51: (W612) line contains trailing whitespace
+    zpriv_wip/deathlog/dpsmeter.lua:91:51: (W612) line contains trailing whitespace
+    zpriv_wip/deathlog/dpsmeter.lua:92:49: (W612) line contains trailing whitespace
+    zpriv_wip/deathlog/dpsmeter.lua:95:15: (W211) unused variable 'abilityDamagedMe'
+    zpriv_wip/deathlog/dpsmeter.lua:118:6: (W612) line contains trailing whitespace
+
+Checking zpriv_wip/globals/apitypes.lua           OK
+Checking zpriv_wip/globals/button.lua             106 warnings
+
+    zpriv_wip/globals/button.lua:30:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:42:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:47:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:62:16: (W211) unused function 'InitButton'
+    zpriv_wip/globals/button.lua:70:121: (W631) line is too long (140 > 120)
+    zpriv_wip/globals/button.lua:75:121: (W631) line is too long (130 > 120)
+    zpriv_wip/globals/button.lua:78:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:82:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:87:48: (W612) line contains trailing whitespace
+    zpriv_wip/globals/button.lua:99:79: (W612) line contains trailing whitespace
+    zpriv_wip/globals/button.lua:108:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:112:12: (W612) line contains trailing whitespace
+    zpriv_wip/globals/button.lua:120:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:121:121: (W631) line is too long (124 > 120)
+    zpriv_wip/globals/button.lua:124:121: (W631) line is too long (128 > 120)
+    zpriv_wip/globals/button.lua:129:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:133:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:139:121: (W631) line is too long (125 > 120)
+    zpriv_wip/globals/button.lua:177:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:190:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:201:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:220:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:238:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:247:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:282:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:297:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:310:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:317:121: (W631) line is too long (127 > 120)
+    zpriv_wip/globals/button.lua:322:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:329:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:334:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:339:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:345:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:350:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:355:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:360:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:364:22: (W612) line contains trailing whitespace
+    zpriv_wip/globals/button.lua:365:21: (W612) line contains trailing whitespace
+    zpriv_wip/globals/button.lua:366:24: (W612) line contains trailing whitespace
+    zpriv_wip/globals/button.lua:370:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:380:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:382:34: (W612) line contains trailing whitespace
+    zpriv_wip/globals/button.lua:385:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:410:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:412:121: (W631) line is too long (125 > 120)
+    zpriv_wip/globals/button.lua:421:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:429:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:438:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:443:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:478:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:484:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:486:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:491:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:493:34: (W612) line contains trailing whitespace
+    zpriv_wip/globals/button.lua:502:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:510:121: (W631) line is too long (134 > 120)
+    zpriv_wip/globals/button.lua:516:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:520:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:532:22: (W612) line contains trailing whitespace
+    zpriv_wip/globals/button.lua:533:21: (W612) line contains trailing whitespace
+    zpriv_wip/globals/button.lua:534:24: (W612) line contains trailing whitespace
+    zpriv_wip/globals/button.lua:538:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:543:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:548:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:555:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:563:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:576:121: (W631) line is too long (138 > 120)
+    zpriv_wip/globals/button.lua:581:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:584:11: (W211) unused variable 'inset'
+    zpriv_wip/globals/button.lua:587:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:592:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:593:11: (W211) unused variable 'count'
+    zpriv_wip/globals/button.lua:594:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:598:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:606:34: (W612) line contains trailing whitespace
+    zpriv_wip/globals/button.lua:614:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:621:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:632:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:642:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:652:12: (W612) line contains trailing whitespace
+    zpriv_wip/globals/button.lua:660:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:666:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:668:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:673:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:683:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:691:12: (W612) line contains trailing whitespace
+    zpriv_wip/globals/button.lua:701:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:704:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:709:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:714:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:736:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:748:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:750:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:760:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:763:8: (W612) line contains trailing whitespace
+    zpriv_wip/globals/button.lua:764:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:772:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:777:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:781:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:784:8: (W612) line contains trailing whitespace
+    zpriv_wip/globals/button.lua:785:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:789:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:797:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:801:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:803:1: (W611) line contains only whitespace
+    zpriv_wip/globals/button.lua:808:1: (W611) line contains only whitespace
+
+Checking zpriv_wip/globals/buttoncommon.lua       17 warnings
+
+    zpriv_wip/globals/buttoncommon.lua:22:1: (W611) line contains only whitespace
+    zpriv_wip/globals/buttoncommon.lua:31:1: (W611) line contains only whitespace
+    zpriv_wip/globals/buttoncommon.lua:43:1: (W611) line contains only whitespace
+    zpriv_wip/globals/buttoncommon.lua:50:1: (W611) line contains only whitespace
+    zpriv_wip/globals/buttoncommon.lua:60:1: (W611) line contains only whitespace
+    zpriv_wip/globals/buttoncommon.lua:62:1: (W611) line contains only whitespace
+    zpriv_wip/globals/buttoncommon.lua:65:1: (W611) line contains only whitespace
+    zpriv_wip/globals/buttoncommon.lua:67:121: (W631) line is too long (144 > 120)
+    zpriv_wip/globals/buttoncommon.lua:69:121: (W631) line is too long (128 > 120)
+    zpriv_wip/globals/buttoncommon.lua:72:1: (W611) line contains only whitespace
+    zpriv_wip/globals/buttoncommon.lua:75:1: (W611) line contains only whitespace
+    zpriv_wip/globals/buttoncommon.lua:79:121: (W631) line is too long (128 > 120)
+    zpriv_wip/globals/buttoncommon.lua:83:121: (W631) line is too long (122 > 120)
+    zpriv_wip/globals/buttoncommon.lua:90:121: (W631) line is too long (122 > 120)
+    zpriv_wip/globals/buttoncommon.lua:94:1: (W611) line contains only whitespace
+    zpriv_wip/globals/buttoncommon.lua:96:1: (W611) line contains only whitespace
+    zpriv_wip/globals/buttoncommon.lua:105:121: (W631) line is too long (122 > 120)
+
+Checking zpriv_wip/globals/window.lua             28 warnings
+
+    zpriv_wip/globals/window.lua:5:1: (W611) line contains only whitespace
+    zpriv_wip/globals/window.lua:6:42: (W432) shadowing upvalue argument 'parent' on line 2
+    zpriv_wip/globals/window.lua:18:16: (W612) line contains trailing whitespace
+    zpriv_wip/globals/window.lua:22:8: (W612) line contains trailing whitespace
+    zpriv_wip/globals/window.lua:24:1: (W611) line contains only whitespace
+    zpriv_wip/globals/window.lua:52:1: (W611) line contains only whitespace
+    zpriv_wip/globals/window.lua:53:22: (W432) shadowing upvalue argument 'self' on line 49
+    zpriv_wip/globals/window.lua:55:1: (W611) line contains only whitespace
+    zpriv_wip/globals/window.lua:62:1: (W611) line contains only whitespace
+    zpriv_wip/globals/window.lua:69:1: (W611) line contains only whitespace
+    zpriv_wip/globals/window.lua:94:1: (W611) line contains only whitespace
+    zpriv_wip/globals/window.lua:110:121: (W631) line is too long (148 > 120)
+    zpriv_wip/globals/window.lua:189:1: (W611) line contains only whitespace
+    zpriv_wip/globals/window.lua:204:1: (W611) line contains only whitespace
+    zpriv_wip/globals/window.lua:208:1: (W611) line contains only whitespace
+    zpriv_wip/globals/window.lua:223:1: (W611) line contains only whitespace
+    zpriv_wip/globals/window.lua:233:1: (W611) line contains only whitespace
+    zpriv_wip/globals/window.lua:253:37: (W214) used variable '_min' with unused hint
+    zpriv_wip/globals/window.lua:279:1: (W611) line contains only whitespace
+    zpriv_wip/globals/window.lua:282:1: (W611) line contains only whitespace
+    zpriv_wip/globals/window.lua:285:1: (W611) line contains only whitespace
+    zpriv_wip/globals/window.lua:288:1: (W611) line contains only whitespace
+    zpriv_wip/globals/window.lua:300:1: (W611) line contains only whitespace
+    zpriv_wip/globals/window.lua:304:16: (W612) line contains trailing whitespace
+    zpriv_wip/globals/window.lua:305:1: (W611) line contains only whitespace
+    zpriv_wip/globals/window.lua:309:1: (W611) line contains only whitespace
+    zpriv_wip/globals/window.lua:315:1: (W611) line contains only whitespace
+    zpriv_wip/globals/window.lua:321:1: (W611) line contains only whitespace
+
+Checking zpriv_wip/globals/windowcommon.lua       7 warnings
+
+    zpriv_wip/globals/windowcommon.lua:78:121: (W631) line is too long (121 > 120)
+    zpriv_wip/globals/windowcommon.lua:79:121: (W631) line is too long (131 > 120)
+    zpriv_wip/globals/windowcommon.lua:80:121: (W631) line is too long (132 > 120)
+    zpriv_wip/globals/windowcommon.lua:104:54: (W612) line contains trailing whitespace
+    zpriv_wip/globals/windowcommon.lua:109:54: (W612) line contains trailing whitespace
+    zpriv_wip/globals/windowcommon.lua:126:1: (W611) line contains only whitespace
+    zpriv_wip/globals/windowcommon.lua:169:1: (W611) line contains only whitespace
+
+Checking zpriv_wip/resourcetracker/_self.lua      32 warnings
+
+    zpriv_wip/resourcetracker/_self.lua:5:121: (W631) line is too long (156 > 120)
+    zpriv_wip/resourcetracker/_self.lua:37:7: (W211) unused variable 'lastBuffString'
+    zpriv_wip/resourcetracker/_self.lua:39:7: (W211) unused variable 'lastdeBuffString'
+    zpriv_wip/resourcetracker/_self.lua:68:36: (W612) line contains trailing whitespace
+    zpriv_wip/resourcetracker/_self.lua:83:121: (W631) line is too long (163 > 120)
+    zpriv_wip/resourcetracker/_self.lua:98:68: (W612) line contains trailing whitespace
+    zpriv_wip/resourcetracker/_self.lua:100:69: (W612) line contains trailing whitespace
+    zpriv_wip/resourcetracker/_self.lua:102:81: (W612) line contains trailing whitespace
+    zpriv_wip/resourcetracker/_self.lua:139:64: (W612) line contains trailing whitespace
+    zpriv_wip/resourcetracker/_self.lua:163:121: (W631) line is too long (129 > 120)
+    zpriv_wip/resourcetracker/_self.lua:166:89: (W612) line contains trailing whitespace
+    zpriv_wip/resourcetracker/_self.lua:181:121: (W631) line is too long (138 > 120)
+    zpriv_wip/resourcetracker/_self.lua:210:7: (W311) value assigned to variable 'languageSetting' is overwritten on line 228 before use
+    zpriv_wip/resourcetracker/_self.lua:213:7: (W231) variable 'INVALIDCOMMAND' is never accessed
+    zpriv_wip/resourcetracker/_self.lua:214:7: (W231) variable 'BUFFLOADSUCCESS' is never accessed
+    zpriv_wip/resourcetracker/_self.lua:215:7: (W231) variable 'TABLE_EMPTY' is never accessed
+    zpriv_wip/resourcetracker/_self.lua:218:7: (W231) variable 'ADDING_BUFF' is never accessed
+    zpriv_wip/resourcetracker/_self.lua:220:40: (W612) line contains trailing whitespace
+    zpriv_wip/resourcetracker/_self.lua:247:121: (W631) line is too long (121 > 120)
+    zpriv_wip/resourcetracker/_self.lua:318:28: (W612) line contains trailing whitespace
+    zpriv_wip/resourcetracker/_self.lua:319:121: (W631) line is too long (163 > 120)
+    zpriv_wip/resourcetracker/_self.lua:327:36: (W612) line contains trailing whitespace
+    zpriv_wip/resourcetracker/_self.lua:335:36: (W612) line contains trailing whitespace
+    zpriv_wip/resourcetracker/_self.lua:356:15: (W231) variable 'isOtherWorldMessage' is never accessed
+    zpriv_wip/resourcetracker/_self.lua:358:15: (W231) variable 'nameWithWorldName' is never accessed
+    zpriv_wip/resourcetracker/_self.lua:366:9: (W311) value assigned to variable 'name' is unused
+    zpriv_wip/resourcetracker/_self.lua:370:73: (W612) line contains trailing whitespace
+    zpriv_wip/resourcetracker/_self.lua:371:78: (W612) line contains trailing whitespace
+    zpriv_wip/resourcetracker/_self.lua:372:85: (W612) line contains trailing whitespace
+    zpriv_wip/resourcetracker/_self.lua:448:17: (W542) empty if branch
+    zpriv_wip/resourcetracker/_self.lua:471:20: (W612) line contains trailing whitespace
+    zpriv_wip/resourcetracker/_self.lua:472:22: (W612) line contains trailing whitespace
+
+Checking zpriv_wip/resourcetracker/guildquesttracker.lua 5 warnings
+
+    zpriv_wip/resourcetracker/guildquesttracker.lua:5:121: (W631) line is too long (156 > 120)
+    zpriv_wip/resourcetracker/guildquesttracker.lua:23:36: (W612) line contains trailing whitespace
+    zpriv_wip/resourcetracker/guildquesttracker.lua:24:50: (W612) line contains trailing whitespace
+    zpriv_wip/resourcetracker/guildquesttracker.lua:28:1: (W621) inconsistent indentation (SPACE followed by TAB)
+    zpriv_wip/resourcetracker/guildquesttracker.lua:50:1: (W611) line contains only whitespace
+
+Checking zpriv_wip/resourcetracker/self.lua       12 warnings
+
+    zpriv_wip/resourcetracker/self.lua:5:121: (W631) line is too long (156 > 120)
+    zpriv_wip/resourcetracker/self.lua:24:29: (W612) line contains trailing whitespace
+    zpriv_wip/resourcetracker/self.lua:38:68: (W612) line contains trailing whitespace
+    zpriv_wip/resourcetracker/self.lua:40:69: (W612) line contains trailing whitespace
+    zpriv_wip/resourcetracker/self.lua:44:82: (W612) line contains trailing whitespace
+    zpriv_wip/resourcetracker/self.lua:98:46: (W612) line contains trailing whitespace
+    zpriv_wip/resourcetracker/self.lua:99:1: (W621) inconsistent indentation (SPACE followed by TAB)
+    zpriv_wip/resourcetracker/self.lua:100:121: (W631) line is too long (133 > 120)
+    zpriv_wip/resourcetracker/self.lua:102:76: (W612) line contains trailing whitespace
+    zpriv_wip/resourcetracker/self.lua:103:1: (W621) inconsistent indentation (SPACE followed by TAB)
+    zpriv_wip/resourcetracker/self.lua:104:1: (W621) inconsistent indentation (SPACE followed by TAB)
+    zpriv_wip/resourcetracker/self.lua:119:11: (W412) variable 'groupId' was previously defined as an argument on line 117
+
+Checking zpriv_wip/skillqueue/skillqueue_toggle.lua 4 warnings
+
+    zpriv_wip/skillqueue/skillqueue_toggle.lua:5:121: (W631) line is too long (156 > 120)
+    zpriv_wip/skillqueue/skillqueue_toggle.lua:20:7: (W211) unused variable 'contentState'
+    zpriv_wip/skillqueue/skillqueue_toggle.lua:22:7: (W211) unused variable 'toggleButton'
+    zpriv_wip/skillqueue/skillqueue_toggle.lua:57:15: (W432) shadowing upvalue argument 'portalOption' on line 23
+
+Checking zpriv_wip/translate/translatetofilep1.lua 4 warnings
+
+    zpriv_wip/translate/translatetofilep1.lua:13:7: (W311) value assigned to variable 'channelColors' is unused
+    zpriv_wip/translate/translatetofilep1.lua:73:29: (W612) line contains trailing whitespace
+    zpriv_wip/translate/translatetofilep1.lua:100:13: (W612) line contains trailing whitespace
+    zpriv_wip/translate/translatetofilep1.lua:103:9: (W612) line contains trailing whitespace
+
+Checking zpriv_wip/translate/translatetofilep3.lua OK
+
+Total: 647 warnings / 2 errors in 108 files

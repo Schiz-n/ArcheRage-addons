@@ -1,9 +1,12 @@
 -------------- Original Author: Strawberry --------------
 ----------------- Discord: exec_noir --------------------
 if API_TYPE == nil then
-    ADDON:ImportAPI(8)
-    X2Chat:DispatchChatMessage(CMF_SYSTEM, "Globals folder not found. Please install it at https://github.com/Schiz-n/ArcheRage-addons/tree/master/globals")
-    return
+	ADDON:ImportAPI(8)
+	X2Chat:DispatchChatMessage(
+		CMF_SYSTEM,
+		"Globals folder not found. Please install it at https://github.com/Schiz-n/ArcheRage-addons/tree/master/globals"
+	)
+	return
 end
 ADDON:ImportObject(OBJECT_TYPE.TEXT_STYLE)
 ADDON:ImportObject(OBJECT_TYPE.BUTTON)
@@ -25,11 +28,11 @@ local refreshUIButton = CreateSimpleButton("Refresh", 700, -150)
 
 local contentState = 1
 function refreshUIButton:OnClick()
-    if contentState == 1 then
-        X2Option:SetConsoleVariable("r_VSync", "1")
-    else
-        X2Option:SetConsoleVariable("r_VSync", "0")
-    end
-    contentState = (contentState % 2) + 1
+	if contentState == 1 then
+		X2Option:SetConsoleVariable("r_VSync", "1")
+	else
+		X2Option:SetConsoleVariable("r_VSync", "0")
+	end
+	contentState = (contentState % 2) + 1
 end
 refreshUIButton:SetHandler("OnClick", refreshUIButton.OnClick)
