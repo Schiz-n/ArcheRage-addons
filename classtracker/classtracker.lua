@@ -56,15 +56,6 @@ local function initializeIcons(w)
 	end
 end
 
-local function setRoleIconVisible(role)
-	for key, icon in pairs(drawableIcons) do
-		if key == role then
-			icon:SetVisible(true)
-		else
-			icon:SetVisible(false)
-		end
-	end
-end
 initializeIcons(buffAnchor)
 
 local function hideNonMatchingIcons(currentClassName)
