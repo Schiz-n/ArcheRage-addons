@@ -34,16 +34,21 @@ local MAX_DETAIL_ROWS = 15
 local PAD             = 4
 local RESET_TIMEOUT   = 10    -- seconds of no damage before fight is over
 local UPDATE_MS       = 500   -- ms between display refreshes
-local RAID_REFRESH_MS = 3000  -- ms between raid member list refreshes
 
 -- ============================================================
 -- Fight state
 -- ============================================================
-local players     = {}    -- [name] = { damage = 0, abilities = { [abilityName] = damage } }
+local players     = {}    -- [name] = { damage = 0, abilities = { [abilityName] = damage }, unitType = "character"/"mate"/... }
 local combatStart = nil
 local lastHitTime = nil
 local fightDone   = false
 local fightElapsed = 0
+
+-- Unit type cache: [tostring(unitId)] = "character"/"mate"/etc.
+-- Not cleared between fights; unit IDs are stable for the session.
+local unitCache = {}
+
+local filterMode  = "All"   -- "All", "Players+", "Players"
 
 local function resetFight()
 	players      = {}
@@ -52,53 +57,6 @@ local function resetFight()
 	fightDone    = false
 	fightElapsed = 0
 end
-
--- ============================================================
--- Raid member list
--- ============================================================
-local raidMembers = {}  -- [name] = true
-
-local function refreshRaidMembers()
-	local newSet = {}
-
-	local selfName = X2Unit:UnitName("player")
-	if selfName then
-		newSet[selfName] = true
-	end
-
-	local hasCoRaid    = X2Unit:UnitName("team_1_1") ~= nil
-	local hasSingleRaid = X2Unit:UnitName("team1") ~= nil
-
-	aaprint("[DPS] refreshRaidMembers: hasCoRaid=" .. tostring(hasCoRaid) .. " hasSingleRaid=" .. tostring(hasSingleRaid) .. " self=" .. tostring(selfName))
-
-	if hasCoRaid then
-		for teamIdx = 1, 2 do
-			for memberIdx = 1, 50 do
-				local teamId = string.format("team_%02d_%02d", teamIdx, memberIdx)
-				local name = X2Unit:UnitName(teamId)
-				if name then
-					newSet[name] = true
-					aaprint("[DPS]   found " .. teamId .. " = " .. name)
-				end
-			end
-		end
-	elseif hasSingleRaid then
-		for memberIdx = 1, 50 do
-			local teamId = string.format("team%02d", memberIdx)
-			local name = X2Unit:UnitName(teamId)
-			if name then
-				newSet[name] = true
-				aaprint("[DPS]   found " .. teamId .. " = " .. name)
-			end
-		end
-	else
-		aaprint("[DPS]   no raid detected, only tracking self")
-	end
-
-	raidMembers = newSet
-end
-
-refreshRaidMembers()
 
 -- ============================================================
 -- Main window
@@ -129,7 +87,7 @@ headerBg:AddAnchor("TOPLEFT", mainFrame, 0, 0)
 
 local titleLabel = mainFrame:CreateChildWidget("label", "dpsMeterTitle", 0, true)
 titleLabel:AddAnchor("TOPLEFT", mainFrame, 6, 8)
-titleLabel:SetExtent(WINDOW_W - 70, HEADER_H - 8)
+titleLabel:SetExtent(WINDOW_W - 145, HEADER_H - 8)
 titleLabel:EnablePick(false)
 titleLabel.style:SetColor(1, 1, 1, 1)
 titleLabel.style:SetFontSize(13)
@@ -145,6 +103,23 @@ resetBtn:AddAnchor("TOPRIGHT", mainFrame, -2, 4)
 resetBtn:Show(true)
 resetBtn:SetHandler("OnClick", function()
 	resetFight()
+end)
+
+local filterBtn = mainFrame:CreateChildWidget("button", "dpsFilterBtn", 1, true)
+filterBtn:SetText("All")
+filterBtn:SetStyle("text_default")
+filterBtn:SetExtent(70, HEADER_H - 8)
+filterBtn:AddAnchor("TOPRIGHT", mainFrame, -64, 4)
+filterBtn:Show(true)
+filterBtn:SetHandler("OnClick", function()
+	if filterMode == "All" then
+		filterMode = "Players+"
+	elseif filterMode == "Players+" then
+		filterMode = "Players"
+	else
+		filterMode = "All"
+	end
+	filterBtn:SetText(filterMode)
 end)
 
 -- ============================================================
@@ -401,7 +376,7 @@ local function updateDisplay()
 	local winW = mainFrame:GetWidth()
 	local barW = winW - PAD * 2
 	headerBg:SetExtent(winW, HEADER_H)
-	titleLabel:SetExtent(winW - 70, HEADER_H - 8)
+	titleLabel:SetExtent(winW - 145, HEADER_H - 8)
 	for i = 1, MAX_ROWS do
 		rows[i].rowBg:SetExtent(barW, ROW_H - 3)
 		rows[i].bar:SetExtent(barW, ROW_H - 3)
@@ -413,14 +388,20 @@ local function updateDisplay()
 	local availH     = winH - HEADER_H - PAD * 2
 	local maxVisible = math.max(0, math.floor(availH / ROW_H))
 
-	-- Build sorted player list
+	-- Build sorted player list (filtered by filterMode)
 	local sorted      = {}
 	local totalDamage = 0
 
 	for name, data in pairs(players) do
-		local dps = data.damage / math.max(1, elapsed)
-		table.insert(sorted, { name = name, dps = dps, damage = data.damage })
-		totalDamage = totalDamage + data.damage
+		local t = data.unitType
+		local include = (filterMode == "All")
+			or (filterMode == "Players+" and (t == "character" or t == "mate"))
+			or (filterMode == "Players"  and t == "character")
+		if include then
+			local dps = data.damage / math.max(1, elapsed)
+			table.insert(sorted, { name = name, dps = dps, damage = data.damage })
+			totalDamage = totalDamage + data.damage
+		end
 	end
 
 	table.sort(sorted, function(a, b) return a.dps > b.dps end)
@@ -477,18 +458,18 @@ end
 -- Combat event
 -- ============================================================
 local function onCombatMsg(unitId, eventType, sourceName, targetName, abilityId, abilityName, damageType, effectType, isActive, more)
-	aaprint(string.format("[DPS] combat: unitId=%s type=%s src=%s tgt=%s abilityId=%s abilityName=%s damageType=%s effectType=%s",
-		tostring(unitId), tostring(eventType), tostring(sourceName), tostring(targetName),
-		tostring(abilityId), tostring(abilityName), tostring(damageType), tostring(effectType)))
-
+	
 	if sourceName == nil or sourceName == "" then
-		aaprint("[DPS]   skip: no sourceName")
 		return
 	end
-	if not raidMembers[sourceName] then
-		aaprint("[DPS]   skip: " .. sourceName .. " not in raidMembers")
-		return
+
+	-- Resolve unit type from cache; only call the API once per unique unitId
+	local unitIdStr = tostring(unitId)
+	if not unitCache[unitIdStr] then
+		local info = X2Unit:GetUnitInfoById(unitIdStr)
+		unitCache[unitIdStr] = (info and info["type"]) or "unknown"
 	end
+	local unitType = unitCache[unitIdStr]
 
 	local damage = 0
 	local abilityKey
@@ -501,12 +482,7 @@ local function onCombatMsg(unitId, eventType, sourceName, targetName, abilityId,
 		abilityKey = (abilityName and abilityName ~= "") and abilityName or "Melee Attack"
 	end
 
-	if damage < 1 then
-		aaprint("[DPS]   skip: damage=" .. tostring(damage) .. " (eventType=" .. tostring(eventType) .. ")")
-		return
-	end
-
-	aaprint("[DPS]   ACCEPTED: " .. tostring(sourceName) .. " damage=" .. tostring(damage))
+	if damage < 1 then return end
 
 	local now = os.clock()
 
@@ -518,7 +494,7 @@ local function onCombatMsg(unitId, eventType, sourceName, targetName, abilityId,
 	lastHitTime = now
 
 	if players[sourceName] == nil then
-		players[sourceName] = { damage = 0, abilities = {} }
+		players[sourceName] = { damage = 0, abilities = {}, unitType = unitType }
 	end
 	players[sourceName].damage = players[sourceName].damage + damage
 	players[sourceName].abilities[abilityKey] = (players[sourceName].abilities[abilityKey] or 0) + damage
@@ -529,8 +505,7 @@ UIParent:SetEventHandler(UIEVENT_TYPE.COMBAT_MSG, onCombatMsg)
 -- ============================================================
 -- Update loop
 -- ============================================================
-local updateTimer     = 0
-local raidRefreshTimer = 0
+local updateTimer = 0
 
 function mainFrame:OnUpdate(dt)
 	-- Detect end of fight
@@ -539,13 +514,6 @@ function mainFrame:OnUpdate(dt)
 			fightDone    = true
 			fightElapsed = lastHitTime - combatStart
 		end
-	end
-
-	-- Periodically refresh who is in the raid
-	raidRefreshTimer = raidRefreshTimer + dt
-	if raidRefreshTimer >= RAID_REFRESH_MS then
-		raidRefreshTimer = 0
-		refreshRaidMembers()
 	end
 
 	-- Refresh display
