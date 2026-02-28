@@ -50,6 +50,23 @@ local unitCache = {}
 local unitTypeByName = {} -- [sourceName] = "player"/"mate"/"npc"/"unknown"
 
 local filterMode  = "All"   -- "All", "Players+", "Players"
+local DEBUG_FILTER = true   -- short filter diagnostics
+local debugFilterLastPrint = 0
+
+local function typeRank(t)
+	if t == "player" then return 3 end
+	if t == "mate" then return 2 end
+	if t == "npc" then return 1 end
+	return 0
+end
+
+local function setNameType(name, newType)
+	if not name or name == "" or not newType then return end
+	local oldType = unitTypeByName[name]
+	if oldType == nil or typeRank(newType) > typeRank(oldType) then
+		unitTypeByName[name] = newType
+	end
+end
 
 local function resetFight()
 	players      = {}
@@ -365,6 +382,10 @@ end
 local function updateDisplay()
 	local now = os.clock()
 	local elapsed
+	local doFilterDebug = DEBUG_FILTER and ((now - debugFilterLastPrint) >= 1)
+	if doFilterDebug then
+		debugFilterLastPrint = now
+	end
 
 	if fightDone then
 		elapsed = fightElapsed
@@ -395,10 +416,15 @@ local function updateDisplay()
 	local totalDamage = 0
 
 	for name, data in pairs(players) do
-		local t = unitTypeByName[name] or data.unitType or "unknown"
+		local byNameType = unitTypeByName[name]
+		local dataType = data.unitType
+		local t = byNameType or dataType or "unknown"
 		local include = (filterMode == "All")
 			or (filterMode == "Players+" and (t == "player" or t == "mate"))
 			or (filterMode == "Players"  and t == "player")
+		if doFilterDebug then
+			aaprint("F " .. filterMode .. " " .. name .. " t=" .. tostring(t) .. " n=" .. tostring(byNameType) .. " d=" .. tostring(dataType) .. " i=" .. (include and "1" or "0"))
+		end
 		if include then
 			local dps = data.damage / math.max(1, elapsed)
 			table.insert(sorted, { name = name, dps = dps, damage = data.damage })
@@ -485,14 +511,7 @@ local function onCombatMsg(unitId, eventType, sourceName, targetName, abilityId,
 		end
 	end
 	local unitType = unitCache[unitIdStr]
-	local unitIdName = sourceName
-	if unitIdName and unitIdName ~= "" then
-		unitTypeByName[unitIdName] = unitType
-	end
-	if not unitTypeByName[sourceName] then
-		-- Fallback when unitId->name resolution is unavailable.
-		unitTypeByName[sourceName] = unitType
-	end
+	setNameType(sourceName, unitType)
     --aaprint(sourceName .. " is " .. unitType)
 	--if unitCache[unitIdStr] then
 	--	aaprint("This unit is cached as " .. unitCache[unitIdStr])
