@@ -423,7 +423,7 @@ local function updateDisplay()
 			or (filterMode == "Players+" and (t == "player" or t == "mate"))
 			or (filterMode == "Players"  and t == "player")
 		if doFilterDebug then
-			aaprint("F " .. filterMode .. " " .. name .. " t=" .. tostring(t) .. " n=" .. tostring(byNameType) .. " d=" .. tostring(dataType) .. " i=" .. (include and "1" or "0"))
+			--aaprint("F " .. filterMode .. " " .. name .. " t=" .. tostring(t) .. " n=" .. tostring(byNameType) .. " d=" .. tostring(dataType) .. " i=" .. (include and "1" or "0"))
 		end
 		if include then
 			local dps = data.damage / math.max(1, elapsed)
@@ -498,6 +498,8 @@ local function onCombatMsg(unitId, eventType, sourceName, targetName, abilityId,
 		local info = X2Unit:GetUnitInfoById(unitIdStr)
 		if sourceName == X2Unit:UnitName("player") then
 			unitCache[unitIdStr] = "player" -- self is buggy check manually
+		elseif unitIdStr == "0" then
+			unitCache[unitIdStr] = "discard"
 		elseif not info then
 			--unitCache[unitIdStr] = "player"   -- sometimes nil, skip
 		elseif info["type"] == "mate" then
@@ -512,6 +514,7 @@ local function onCombatMsg(unitId, eventType, sourceName, targetName, abilityId,
 	end
 	local unitType = unitCache[unitIdStr]
 	setNameType(sourceName, unitType)
+	aaprint(sourceName .. "(" .. unitIdStr .. ") is " .. unitType .. " and is cached as " .. unitCache[unitIdStr])
     --aaprint(sourceName .. " is " .. unitType)
 	--if unitCache[unitIdStr] then
 	--	aaprint("This unit is cached as " .. unitCache[unitIdStr])
