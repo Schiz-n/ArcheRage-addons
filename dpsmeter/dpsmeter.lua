@@ -463,14 +463,28 @@ local function onCombatMsg(unitId, eventType, sourceName, targetName, abilityId,
 		return
 	end
 
-	-- Resolve unit type from cache; only call the API once per unique unitId
+	-- Resolve unit category from cache; only call the API once per unique unitId.
+	-- Category: "player" (self or other character), "mate" (pet), "npc", "unknown"
 	local unitIdStr = tostring(unitId)
 	if not unitCache[unitIdStr] then
 		local info = X2Unit:GetUnitInfoById(unitIdStr)
-		unitCache[unitIdStr] = (info and info["type"]) or "unknown"
+		if not info then
+			unitCache[unitIdStr] = "player"   -- self returns nil; user is always a player
+		elseif info["type"] == "mate" then
+			unitCache[unitIdStr] = "mate"
+		elseif info["type"] == "npc" then
+			unitCache[unitIdStr] = "npc"
+		elseif info["type"] == "character" then
+			unitCache[unitIdStr] = "player"
+		else
+			unitCache[unitIdStr] = "unknown"
+		end
 	end
 	local unitType = unitCache[unitIdStr]
-
+    aaprint(sourceName .. " is " .. unitType)
+	if unitCache[unitIdStr] then
+		aaprint("This unit is cached as " .. unitCache[unitIdStr])
+	end
 	local damage = 0
 	local abilityKey
 
