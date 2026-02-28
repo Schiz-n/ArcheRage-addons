@@ -47,6 +47,7 @@ local fightElapsed = 0
 -- Unit type cache: [tostring(unitId)] = "player"/"mate"/etc.
 -- Not cleared between fights; unit IDs are stable for the session.
 local unitCache = {}
+local unitTypeByName = {} -- [sourceName] = "player"/"mate"/"npc"/"unknown"
 
 local filterMode  = "All"   -- "All", "Players+", "Players"
 
@@ -56,6 +57,7 @@ local function resetFight()
 	lastHitTime  = nil
 	fightDone    = false
 	fightElapsed = 0
+	unitTypeByName = {}
 end
 
 -- ============================================================
@@ -393,7 +395,7 @@ local function updateDisplay()
 	local totalDamage = 0
 
 	for name, data in pairs(players) do
-		local t = data.unitType
+		local t = unitTypeByName[name] or data.unitType or "unknown"
 		local include = (filterMode == "All")
 			or (filterMode == "Players+" and (t == "player" or t == "mate"))
 			or (filterMode == "Players"  and t == "player")
@@ -468,8 +470,10 @@ local function onCombatMsg(unitId, eventType, sourceName, targetName, abilityId,
 	local unitIdStr = tostring(unitId)
 	if not unitCache[unitIdStr] then
 		local info = X2Unit:GetUnitInfoById(unitIdStr)
-		if not info then
-			unitCache[unitIdStr] = "player"   -- self returns nil; user is always a player
+		if sourceName == X2Unit:UnitName("player") then
+			unitCache[unitIdStr] = "player" -- self is buggy check manually
+		elseif not info then
+			--unitCache[unitIdStr] = "player"   -- sometimes nil, skip
 		elseif info["type"] == "mate" then
 			unitCache[unitIdStr] = "mate"
 		elseif info["type"] == "npc" then
@@ -481,10 +485,18 @@ local function onCombatMsg(unitId, eventType, sourceName, targetName, abilityId,
 		end
 	end
 	local unitType = unitCache[unitIdStr]
-    aaprint(sourceName .. " is " .. unitType)
-	if unitCache[unitIdStr] then
-		aaprint("This unit is cached as " .. unitCache[unitIdStr])
+	local unitIdName = sourceName
+	if unitIdName and unitIdName ~= "" then
+		unitTypeByName[unitIdName] = unitType
 	end
+	if not unitTypeByName[sourceName] then
+		-- Fallback when unitId->name resolution is unavailable.
+		unitTypeByName[sourceName] = unitType
+	end
+    --aaprint(sourceName .. " is " .. unitType)
+	--if unitCache[unitIdStr] then
+	--	aaprint("This unit is cached as " .. unitCache[unitIdStr])
+	--end
 	local damage = 0
 	local abilityKey
 
@@ -510,6 +522,7 @@ local function onCombatMsg(unitId, eventType, sourceName, targetName, abilityId,
 	if players[sourceName] == nil then
 		players[sourceName] = { damage = 0, abilities = {}, unitType = unitType }
 	end
+	players[sourceName].unitType = unitTypeByName[sourceName] or players[sourceName].unitType
 	players[sourceName].damage = players[sourceName].damage + damage
 	players[sourceName].abilities[abilityKey] = (players[sourceName].abilities[abilityKey] or 0) + damage
 end
