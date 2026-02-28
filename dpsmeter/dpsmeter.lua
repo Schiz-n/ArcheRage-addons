@@ -44,7 +44,7 @@ local lastHitTime = nil
 local fightDone   = false
 local fightElapsed = 0
 
--- Unit type cache: [tostring(unitId)] = "character"/"mate"/etc.
+-- Unit type cache: [tostring(unitId)] = "player"/"mate"/etc.
 -- Not cleared between fights; unit IDs are stable for the session.
 local unitCache = {}
 
@@ -395,8 +395,8 @@ local function updateDisplay()
 	for name, data in pairs(players) do
 		local t = data.unitType
 		local include = (filterMode == "All")
-			or (filterMode == "Players+" and (t == "character" or t == "mate"))
-			or (filterMode == "Players"  and t == "character")
+			or (filterMode == "Players+" and (t == "player" or t == "mate"))
+			or (filterMode == "Players"  and t == "player")
 		if include then
 			local dps = data.damage / math.max(1, elapsed)
 			table.insert(sorted, { name = name, dps = dps, damage = data.damage })
