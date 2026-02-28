@@ -34,39 +34,16 @@ local MAX_DETAIL_ROWS = 15
 local PAD             = 4
 local RESET_TIMEOUT   = 10    -- seconds of no damage before fight is over
 local UPDATE_MS       = 500   -- ms between display refreshes
+local SELF_NAME 	  = X2Unit:UnitName("player")
 
 -- ============================================================
 -- Fight state
 -- ============================================================
-local players     = {}    -- [name] = { damage = 0, abilities = { [abilityName] = damage }, unitType = "character"/"mate"/... }
+local players     = {}    -- [name] = { damage = 0, abilities = { [abilityName] = damage } }
 local combatStart = nil
 local lastHitTime = nil
 local fightDone   = false
 local fightElapsed = 0
-
--- Unit type cache: [tostring(unitId)] = "player"/"mate"/etc.
--- Not cleared between fights; unit IDs are stable for the session.
-local unitCache = {}
-local unitTypeByName = {} -- [sourceName] = "player"/"mate"/"npc"/"unknown"
-
-local filterMode  = "All"   -- "All", "Players+", "Players"
-local DEBUG_FILTER = true   -- short filter diagnostics
-local debugFilterLastPrint = 0
-
-local function typeRank(t)
-	if t == "player" then return 3 end
-	if t == "mate" then return 2 end
-	if t == "npc" then return 1 end
-	return 0
-end
-
-local function setNameType(name, newType)
-	if not name or name == "" or not newType then return end
-	local oldType = unitTypeByName[name]
-	if oldType == nil or typeRank(newType) > typeRank(oldType) then
-		unitTypeByName[name] = newType
-	end
-end
 
 local function resetFight()
 	players      = {}
@@ -74,7 +51,6 @@ local function resetFight()
 	lastHitTime  = nil
 	fightDone    = false
 	fightElapsed = 0
-	unitTypeByName = {}
 end
 
 -- ============================================================
@@ -122,23 +98,6 @@ resetBtn:AddAnchor("TOPRIGHT", mainFrame, -2, 4)
 resetBtn:Show(true)
 resetBtn:SetHandler("OnClick", function()
 	resetFight()
-end)
-
-local filterBtn = mainFrame:CreateChildWidget("button", "dpsFilterBtn", 1, true)
-filterBtn:SetText("All")
-filterBtn:SetStyle("text_default")
-filterBtn:SetExtent(70, HEADER_H - 8)
-filterBtn:AddAnchor("TOPRIGHT", mainFrame, -64, 4)
-filterBtn:Show(true)
-filterBtn:SetHandler("OnClick", function()
-	if filterMode == "All" then
-		filterMode = "Players+"
-	elseif filterMode == "Players+" then
-		filterMode = "Players"
-	else
-		filterMode = "All"
-	end
-	filterBtn:SetText(filterMode)
 end)
 
 -- ============================================================
@@ -382,10 +341,6 @@ end
 local function updateDisplay()
 	local now = os.clock()
 	local elapsed
-	local doFilterDebug = DEBUG_FILTER and ((now - debugFilterLastPrint) >= 1)
-	if doFilterDebug then
-		debugFilterLastPrint = now
-	end
 
 	if fightDone then
 		elapsed = fightElapsed
@@ -411,30 +366,39 @@ local function updateDisplay()
 	local availH     = winH - HEADER_H - PAD * 2
 	local maxVisible = math.max(0, math.floor(availH / ROW_H))
 
-	-- Build sorted player list (filtered by filterMode)
+	-- Build sorted player list
 	local sorted      = {}
 	local totalDamage = 0
 
 	for name, data in pairs(players) do
-		local byNameType = unitTypeByName[name]
-		local dataType = data.unitType
-		local t = byNameType or dataType or "unknown"
-		local include = (filterMode == "All")
-			or (filterMode == "Players+" and (t == "player" or t == "mate"))
-			or (filterMode == "Players"  and t == "player")
-		if doFilterDebug then
-			--aaprint("F " .. filterMode .. " " .. name .. " t=" .. tostring(t) .. " n=" .. tostring(byNameType) .. " d=" .. tostring(dataType) .. " i=" .. (include and "1" or "0"))
-		end
-		if include then
-			local dps = data.damage / math.max(1, elapsed)
-			table.insert(sorted, { name = name, dps = dps, damage = data.damage })
-			totalDamage = totalDamage + data.damage
-		end
+		local dps = data.damage / math.max(1, elapsed)
+		table.insert(sorted, { name = name, dps = dps, damage = data.damage })
+		totalDamage = totalDamage + data.damage
 	end
 
 	table.sort(sorted, function(a, b) return a.dps > b.dps end)
+	for rank, entry in ipairs(sorted) do
+		entry.rank = rank
+	end
 
 	local maxDps = (#sorted > 0) and sorted[1].dps or 0
+	local displayList = {}
+	local selfEntry = nil
+
+	for _, entry in ipairs(sorted) do
+		if entry.name == SELF_NAME then
+			selfEntry = entry
+			break
+		end
+	end
+	if selfEntry ~= nil then
+		table.insert(displayList, selfEntry)
+	end
+	for _, entry in ipairs(sorted) do
+		if entry.name ~= SELF_NAME then
+			table.insert(displayList, entry)
+		end
+	end
 
 	-- Title
 	if elapsed > 0 then
@@ -445,15 +409,22 @@ local function updateDisplay()
 	end
 
 	-- Rows
-	local numShow = math.min(#sorted, MAX_ROWS, maxVisible)
+	local numShow = math.min(#displayList, MAX_ROWS, maxVisible)
 
 	for i = 1, MAX_ROWS do
 		if i <= numShow then
-			local entry  = sorted[i]
+			local entry  = displayList[i]
 			local pct    = (maxDps > 0) and (entry.dps / maxDps * 100) or 0
 			local dmgPct = (totalDamage > 0) and (entry.damage / totalDamage * 100) or 0
+			local rankLabel
 
-			if i == 1 then
+			if entry.rank > MAX_ROWS and entry.name == SELF_NAME then
+				rankLabel = "10+"
+			else
+				rankLabel = tostring(entry.rank)
+			end
+
+			if entry.name == SELF_NAME then
 				rows[i].bar:SetBarColor(1.0, 0.75, 0.0, 0.9)
 			else
 				rows[i].bar:SetBarColor(0.2, 0.5, 0.9, 0.85)
@@ -465,7 +436,7 @@ local function updateDisplay()
 			rows[i].currentPlayer = entry.name
 
 			rows[i].label:SetText(string.format(
-				"%s  %s dps  %.0f%%", entry.name, formatNum(entry.dps), dmgPct
+				"%s. %s  %s dps  %.0f%%", rankLabel, entry.name, formatNum(entry.dps), dmgPct
 			))
 			rows[i].label:Show(true)
 		else
@@ -485,43 +456,18 @@ end
 -- ============================================================
 -- Combat event
 -- ============================================================
-local function onCombatMsg(unitId, eventType, sourceName, targetName, abilityId, abilityName, damageType, effectType, isActive, more)
-	
+local function onCombatMsg(unitId, eventType, sourceName, targetName, abilityId, abilityName, damageType, effectType, isActive, more, more2, more3, more4, more5)
+	if not string.find(eventType, "MELEE_DAMAGE") and not string.find(eventType, "SPELL_DAMAGE") then
+		return
+	end
 	if sourceName == nil or sourceName == "" then
 		return
 	end
-
-	-- Resolve unit category from cache; only call the API once per unique unitId.
-	-- Category: "player" (self or other character), "mate" (pet), "npc", "unknown"
-	local unitIdStr = tostring(unitId)
-	if not unitCache[unitIdStr] then
-		local info = X2Unit:GetUnitInfoById(unitIdStr)
-		if sourceName == X2Unit:UnitName("player") then
-			unitCache[unitIdStr] = "player" -- self is buggy check manually
-		elseif unitIdStr == "0" then
-			unitCache[unitIdStr] = "discard"
-		elseif not info then
-			--unitCache[unitIdStr] = "player"   -- sometimes nil, skip
-		elseif info["type"] == "mate" then
-			unitCache[unitIdStr] = "mate"
-		elseif info["type"] == "npc" then
-			unitCache[unitIdStr] = "npc"
-		elseif info["type"] == "character" then
-			unitCache[unitIdStr] = "player"
-		else
-			unitCache[unitIdStr] = "unknown"
-		end
-	end
-	local unitType = unitCache[unitIdStr]
-	setNameType(sourceName, unitType)
-	aaprint(sourceName .. "(" .. unitIdStr .. ") is " .. unitType .. " and is cached as " .. unitCache[unitIdStr])
-    --aaprint(sourceName .. " is " .. unitType)
-	--if unitCache[unitIdStr] then
-	--	aaprint("This unit is cached as " .. unitCache[unitIdStr])
-	--end
 	local damage = 0
 	local abilityKey
-
+    if abilityName == "HEALTH" then
+		abilityName = "Melee"
+	end
 	if string.find(eventType, "SPELL_DAMAGE") then
 		damage     = math.abs(tonumber(effectType) or 0)
 		abilityKey = (abilityName and abilityName ~= "") and abilityName or ("Spell_" .. tostring(abilityId))
@@ -542,9 +488,8 @@ local function onCombatMsg(unitId, eventType, sourceName, targetName, abilityId,
 	lastHitTime = now
 
 	if players[sourceName] == nil then
-		players[sourceName] = { damage = 0, abilities = {}, unitType = unitType }
+		players[sourceName] = { damage = 0, abilities = {} }
 	end
-	players[sourceName].unitType = unitTypeByName[sourceName] or players[sourceName].unitType
 	players[sourceName].damage = players[sourceName].damage + damage
 	players[sourceName].abilities[abilityKey] = (players[sourceName].abilities[abilityKey] or 0) + damage
 end
