@@ -35,22 +35,58 @@ local PAD             = 4
 local RESET_TIMEOUT   = 10    -- seconds of no damage before fight is over
 local UPDATE_MS       = 500   -- ms between display refreshes
 local SELF_NAME 	  = X2Unit:UnitName("player")
+local MODE_ORDER      = { "Damage", "DamageT", "Heal", "HealT" }
+local MODE_RATE_LABEL = {
+	Damage = "dps",
+	DamageT = "dtps",
+	Heal = "hps",
+	HealT = "htps"
+}
+local TITLE_PAD_RIGHT = 225
 
 -- ============================================================
 -- Fight state
 -- ============================================================
-local players     = {}    -- [name] = { damage = 0, abilities = { [abilityName] = damage } }
+local statsByMode = {
+	Damage = {},
+	DamageT = {},
+	Heal = {},
+	HealT = {}
+}
+local activeModeIndex = 1
+local activeMode = MODE_ORDER[activeModeIndex]
 local combatStart = nil
 local lastHitTime = nil
 local fightDone   = false
 local fightElapsed = 0
 
 local function resetFight()
-	players      = {}
+	statsByMode.Damage  = {}
+	statsByMode.DamageT = {}
+	statsByMode.Heal    = {}
+	statsByMode.HealT   = {}
 	combatStart  = nil
 	lastHitTime  = nil
 	fightDone    = false
 	fightElapsed = 0
+end
+
+local function getActiveStats()
+	return statsByMode[activeMode]
+end
+
+local function addStat(modeKey, playerName, abilityName, amount)
+	if playerName == nil or playerName == "" or amount < 1 then
+		return
+	end
+
+	if statsByMode[modeKey][playerName] == nil then
+		statsByMode[modeKey][playerName] = { damage = 0, abilities = {} }
+	end
+
+	local p = statsByMode[modeKey][playerName]
+	p.damage = p.damage + amount
+	p.abilities[abilityName] = (p.abilities[abilityName] or 0) + amount
 end
 
 -- ============================================================
@@ -82,7 +118,7 @@ headerBg:AddAnchor("TOPLEFT", mainFrame, 0, 0)
 
 local titleLabel = mainFrame:CreateChildWidget("label", "dpsMeterTitle", 0, true)
 titleLabel:AddAnchor("TOPLEFT", mainFrame, 6, 8)
-titleLabel:SetExtent(WINDOW_W - 145, HEADER_H - 8)
+titleLabel:SetExtent(WINDOW_W - TITLE_PAD_RIGHT, HEADER_H - 8)
 titleLabel:EnablePick(false)
 titleLabel.style:SetColor(1, 1, 1, 1)
 titleLabel.style:SetFontSize(13)
@@ -98,6 +134,21 @@ resetBtn:AddAnchor("TOPRIGHT", mainFrame, -2, 4)
 resetBtn:Show(true)
 resetBtn:SetHandler("OnClick", function()
 	resetFight()
+end)
+
+local modeBtn = mainFrame:CreateChildWidget("button", "dpsModeBtn", 1, true)
+modeBtn:SetText(activeMode)
+modeBtn:SetStyle("text_default")
+modeBtn:SetExtent(72, HEADER_H - 8)
+modeBtn:AddAnchor("TOPRIGHT", mainFrame, -64, 4)
+modeBtn:Show(true)
+modeBtn:SetHandler("OnClick", function()
+	activeModeIndex = activeModeIndex + 1
+	if activeModeIndex > #MODE_ORDER then
+		activeModeIndex = 1
+	end
+	activeMode = MODE_ORDER[activeModeIndex]
+	modeBtn:SetText(activeMode)
 end)
 
 -- ============================================================
@@ -283,7 +334,14 @@ local function formatNum(n)
 end
 
 local function updateDetailDisplay()
-	if not detailPlayer or not players[detailPlayer] then
+	local modeStats = getActiveStats()
+	if not detailPlayer or not modeStats[detailPlayer] then
+		detailTitle:SetText("Breakdown")
+		for i = 1, MAX_DETAIL_ROWS do
+			detailRows[i].bar:Show(false)
+			detailRows[i].rowBg:SetVisible(false)
+			detailRows[i].label:Show(false)
+		end
 		return
 	end
 
@@ -298,8 +356,8 @@ local function updateDetailDisplay()
 		detailRows[i].label:SetExtent(dBarW - 10, ROW_H - 4)
 	end
 
-	local data = players[detailPlayer]
-	detailTitle:SetText("Breakdown: " .. detailPlayer)
+	local data = modeStats[detailPlayer]
+	detailTitle:SetText("Breakdown (" .. activeMode .. "): " .. detailPlayer)
 
 	local sorted = {}
 	for abilityName, dmg in pairs(data.abilities) do
@@ -354,7 +412,7 @@ local function updateDisplay()
 	local winW = mainFrame:GetWidth()
 	local barW = winW - PAD * 2
 	headerBg:SetExtent(winW, HEADER_H)
-	titleLabel:SetExtent(winW - 145, HEADER_H - 8)
+	titleLabel:SetExtent(winW - TITLE_PAD_RIGHT, HEADER_H - 8)
 	for i = 1, MAX_ROWS do
 		rows[i].rowBg:SetExtent(barW, ROW_H - 3)
 		rows[i].bar:SetExtent(barW, ROW_H - 3)
@@ -367,10 +425,12 @@ local function updateDisplay()
 	local maxVisible = math.max(0, math.floor(availH / ROW_H))
 
 	-- Build sorted player list
+	local modeStats   = getActiveStats()
 	local sorted      = {}
 	local totalDamage = 0
+	local rateLabel   = MODE_RATE_LABEL[activeMode] or "dps"
 
-	for name, data in pairs(players) do
+	for name, data in pairs(modeStats) do
 		local dps = data.damage / math.max(1, elapsed)
 		table.insert(sorted, { name = name, dps = dps, damage = data.damage })
 		totalDamage = totalDamage + data.damage
@@ -403,9 +463,9 @@ local function updateDisplay()
 	-- Title
 	if elapsed > 0 then
 		local suffix = fightDone and " [done]" or ""
-		titleLabel:SetText(string.format("DPS Meter  %.0fs%s", elapsed, suffix))
+		titleLabel:SetText(string.format("Combat Meter [%s]  %.0fs%s", activeMode, elapsed, suffix))
 	else
-		titleLabel:SetText("DPS Meter")
+		titleLabel:SetText(string.format("Combat Meter [%s]", activeMode))
 	end
 
 	-- Rows
@@ -436,7 +496,7 @@ local function updateDisplay()
 			rows[i].currentPlayer = entry.name
 
 			rows[i].label:SetText(string.format(
-				"%s. %s  %s dps  %.0f%%", rankLabel, entry.name, formatNum(entry.dps), dmgPct
+				"%s. %s  %s %s  %.0f%%", rankLabel, entry.name, formatNum(entry.dps), rateLabel, dmgPct
 			))
 			rows[i].label:Show(true)
 		else
@@ -457,41 +517,49 @@ end
 -- Combat event
 -- ============================================================
 local function onCombatMsg(unitId, eventType, sourceName, targetName, abilityId, abilityName, damageType, effectType, isActive, more, more2, more3, more4, more5)
-	if not string.find(eventType, "MELEE_DAMAGE") and not string.find(eventType, "SPELL_DAMAGE") then
+	local isMeleeDamage = string.find(eventType, "MELEE_DAMAGE") ~= nil
+	local isSpellDamage = string.find(eventType, "SPELL_DAMAGE") ~= nil
+	local isSpellHealed = string.find(eventType, "SPELL_HEALED") ~= nil
+
+	if not isMeleeDamage and not isSpellDamage and not isSpellHealed then
 		return
 	end
-	if sourceName == nil or sourceName == "" then
-		return
-	end
-	local damage = 0
+
+	local amount = 0
 	local abilityKey
-    if abilityName == "HEALTH" then
+	if abilityName == "HEALTH" then
 		abilityName = "Melee"
 	end
-	if string.find(eventType, "SPELL_DAMAGE") then
-		damage     = math.abs(tonumber(effectType) or 0)
+
+	if isSpellHealed then
+		amount     = math.abs(tonumber(effectType) or 0)
+		abilityKey = (abilityName and abilityName ~= "") and abilityName or ("Heal_" .. tostring(abilityId))
+	elseif isSpellDamage then
+		amount     = math.abs(tonumber(effectType) or 0)
 		abilityKey = (abilityName and abilityName ~= "") and abilityName or ("Spell_" .. tostring(abilityId))
-	elseif string.find(eventType, "MELEE_DAMAGE") then
-		damage     = math.abs(tonumber(abilityId) or 0)
+	elseif isMeleeDamage then
+		amount     = math.abs(tonumber(abilityId) or 0)
 		abilityKey = (abilityName and abilityName ~= "") and abilityName or "Melee Attack"
 	end
 
-	if damage < 1 then return end
+	if amount < 1 then
+		return
+	end
 
 	local now = os.clock()
-
 	if fightDone or combatStart == nil then
 		resetFight()
 		combatStart = now
 	end
-
 	lastHitTime = now
 
-	if players[sourceName] == nil then
-		players[sourceName] = { damage = 0, abilities = {} }
+	if isSpellHealed then
+		addStat("Heal", sourceName, abilityKey, amount)
+		addStat("HealT", targetName, abilityKey, amount)
+	else
+		addStat("Damage", sourceName, abilityKey, amount)
+		addStat("DamageT", targetName, abilityKey, amount)
 	end
-	players[sourceName].damage = players[sourceName].damage + damage
-	players[sourceName].abilities[abilityKey] = (players[sourceName].abilities[abilityKey] or 0) + damage
 end
 
 UIParent:SetEventHandler(UIEVENT_TYPE.COMBAT_MSG, onCombatMsg)
