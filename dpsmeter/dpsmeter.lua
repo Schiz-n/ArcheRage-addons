@@ -46,6 +46,10 @@ local SETTINGS_FILE = "dpsmeter_settings.txt"
 local TITLE_PAD_RIGHT = 80
 local DETAIL_TITLE_PAD_RIGHT = 80
 local DETAIL_VIEW_ORDER = { "Spell", "Target" }
+local NAME_COL_RATIO = 0.50
+local VALUE_COL_RATIO = 0.46
+local VALUE_MIN_W = 95
+local VALUE_RIGHT_PAD = 22
 local DEFAULT_MAIN_X = 100
 local DEFAULT_MAIN_Y = 200
 local DEFAULT_DETAIL_X = DEFAULT_MAIN_X + WINDOW_W + 8
@@ -268,26 +272,40 @@ for i = 1, MAX_ROWS do
 	bar:SetValue(0)
 	bar:Show(false)
 
-	local lbl = mainFrame:CreateChildWidget("label", "dpsMeterLbl" .. i, 0, true)
-	lbl:AddAnchor("TOPLEFT", bar, 5, 4)
-	lbl:SetExtent(WINDOW_W - PAD * 2 - 10, ROW_H - 4)
-	lbl:EnablePick(true)
-	lbl:Raise()
-	lbl.style:SetColor(1, 1, 1, 1)
-	lbl.style:SetFontSize(11)
-	lbl.style:SetOutline(true)
-	lbl.style:SetAlign(ALIGN_LEFT)
-	lbl:SetText("")
-	lbl:Show(false)
+	local nameLbl = mainFrame:CreateChildWidget("label", "dpsMeterNameLbl" .. i, 0, true)
+	nameLbl:AddAnchor("TOPLEFT", bar, 5, 4)
+	nameLbl:SetExtent((WINDOW_W - PAD * 2 - 10) * NAME_COL_RATIO, ROW_H - 4)
+	nameLbl:EnablePick(true)
+	nameLbl:Raise()
+	nameLbl.style:SetColor(1, 1, 1, 1)
+	nameLbl.style:SetFontSize(11)
+	nameLbl.style:SetOutline(true)
+	nameLbl.style:SetAlign(ALIGN_LEFT)
+	nameLbl:SetText("")
+	nameLbl:Show(false)
+
+	local valueLbl = mainFrame:CreateChildWidget("label", "dpsMeterValueLbl" .. i, 0, true)
+	valueLbl:AddAnchor("TOPRIGHT", bar, -VALUE_RIGHT_PAD, 4)
+	valueLbl:SetExtent(math.max((WINDOW_W - PAD * 2 - 10) * VALUE_COL_RATIO, VALUE_MIN_W), ROW_H - 4)
+	valueLbl:EnablePick(true)
+	valueLbl:Raise()
+	valueLbl.style:SetColor(1, 1, 1, 1)
+	valueLbl.style:SetFontSize(11)
+	valueLbl.style:SetOutline(true)
+	valueLbl.style:SetAlign(ALIGN_RIGHT)
+	valueLbl:SetText("")
+	valueLbl:Show(false)
 
 	local rowIdx = i
-	lbl:SetHandler("OnClick", function()
+	local onRowClick = function()
 		if rows[rowIdx].currentPlayer and showDetailWindow then
 			showDetailWindow(rows[rowIdx].currentPlayer)
 		end
-	end)
+	end
+	nameLbl:SetHandler("OnClick", onRowClick)
+	valueLbl:SetHandler("OnClick", onRowClick)
 
-	rows[i] = { bar = bar, label = lbl, rowBg = rowBg, currentPlayer = nil }
+	rows[i] = { bar = bar, nameLabel = nameLbl, valueLabel = valueLbl, rowBg = rowBg, currentPlayer = nil }
 end
 
 -- ============================================================
@@ -390,19 +408,31 @@ for i = 1, MAX_DETAIL_ROWS do
 	bar:SetValue(0)
 	bar:Show(false)
 
-	local lbl = detailFrame:CreateChildWidget("label", "dpsMeterDetailLbl" .. i, 0, true)
-	lbl:AddAnchor("TOPLEFT", bar, 5, 4)
-	lbl:SetExtent(DETAIL_W - PAD * 2 - 10, ROW_H - 4)
-	lbl:EnablePick(false)
-	lbl:Raise()
-	lbl.style:SetColor(1, 1, 1, 1)
-	lbl.style:SetFontSize(11)
-	lbl.style:SetOutline(true)
-	lbl.style:SetAlign(ALIGN_LEFT)
-	lbl:SetText("")
-	lbl:Show(false)
+	local nameLbl = detailFrame:CreateChildWidget("label", "dpsMeterDetailNameLbl" .. i, 0, true)
+	nameLbl:AddAnchor("TOPLEFT", bar, 5, 4)
+	nameLbl:SetExtent((DETAIL_W - PAD * 2 - 10) * NAME_COL_RATIO, ROW_H - 4)
+	nameLbl:EnablePick(false)
+	nameLbl:Raise()
+	nameLbl.style:SetColor(1, 1, 1, 1)
+	nameLbl.style:SetFontSize(11)
+	nameLbl.style:SetOutline(true)
+	nameLbl.style:SetAlign(ALIGN_LEFT)
+	nameLbl:SetText("")
+	nameLbl:Show(false)
 
-	detailRows[i] = { bar = bar, label = lbl, rowBg = rowBg }
+	local valueLbl = detailFrame:CreateChildWidget("label", "dpsMeterDetailValueLbl" .. i, 0, true)
+	valueLbl:AddAnchor("TOPRIGHT", bar, -VALUE_RIGHT_PAD, 4)
+	valueLbl:SetExtent(math.max((DETAIL_W - PAD * 2 - 10) * VALUE_COL_RATIO, VALUE_MIN_W), ROW_H - 4)
+	valueLbl:EnablePick(false)
+	valueLbl:Raise()
+	valueLbl.style:SetColor(1, 1, 1, 1)
+	valueLbl.style:SetFontSize(11)
+	valueLbl.style:SetOutline(true)
+	valueLbl.style:SetAlign(ALIGN_RIGHT)
+	valueLbl:SetText("")
+	valueLbl:Show(false)
+
+	detailRows[i] = { bar = bar, nameLabel = nameLbl, valueLabel = valueLbl, rowBg = rowBg }
 end
 
 -- Detail window resize handle
@@ -472,6 +502,25 @@ local function formatNum(n)
 	return string.format("%d", math.floor(n))
 end
 
+local function truncateLabel(text, maxChars)
+	text = tostring(text or "")
+	if utf8 and utf8.len and utf8.offset then
+		local len = utf8.len(text)
+		if len and len > maxChars then
+			local cut = utf8.offset(text, maxChars + 1)
+			if cut then
+				return string.sub(text, 1, cut - 1) .. "..."
+			end
+		end
+		return text
+	end
+
+	if string.len(text) > maxChars then
+		return string.sub(text, 1, maxChars) .. "..."
+	end
+	return text
+end
+
 updateDetailDisplay = function()
 	local modeStats = getActiveStats()
 	if not detailPlayer or not modeStats[detailPlayer] then
@@ -479,7 +528,8 @@ updateDetailDisplay = function()
 		for i = 1, MAX_DETAIL_ROWS do
 			detailRows[i].bar:Show(false)
 			detailRows[i].rowBg:SetVisible(false)
-			detailRows[i].label:Show(false)
+			detailRows[i].nameLabel:Show(false)
+			detailRows[i].valueLabel:Show(false)
 		end
 		return
 	end
@@ -492,7 +542,8 @@ updateDetailDisplay = function()
 	for i = 1, MAX_DETAIL_ROWS do
 		detailRows[i].rowBg:SetExtent(dBarW, ROW_H - 3)
 		detailRows[i].bar:SetExtent(dBarW, ROW_H - 3)
-		detailRows[i].label:SetExtent(dBarW - 10, ROW_H - 4)
+		detailRows[i].nameLabel:SetExtent(math.floor((dBarW - 10) * NAME_COL_RATIO), ROW_H - 4)
+		detailRows[i].valueLabel:SetExtent(math.max(math.floor((dBarW - 10) * VALUE_COL_RATIO), VALUE_MIN_W), ROW_H - 4)
 	end
 
 	local data = modeStats[detailPlayer]
@@ -518,14 +569,15 @@ updateDetailDisplay = function()
 			detailRows[i].bar:SetValue(pct)
 			detailRows[i].bar:Show(true)
 			detailRows[i].rowBg:SetVisible(true)
-			detailRows[i].label:SetText(string.format(
-				"%s  %s  %.0f%%", entry.name, formatNum(entry.damage), pct
-			))
-			detailRows[i].label:Show(true)
+			detailRows[i].nameLabel:SetText(truncateLabel(entry.name, 20))
+			detailRows[i].valueLabel:SetText(string.format("%s  %.0f%%", formatNum(entry.damage), pct))
+			detailRows[i].nameLabel:Show(true)
+			detailRows[i].valueLabel:Show(true)
 		else
 			detailRows[i].bar:Show(false)
 			detailRows[i].rowBg:SetVisible(false)
-			detailRows[i].label:Show(false)
+			detailRows[i].nameLabel:Show(false)
+			detailRows[i].valueLabel:Show(false)
 		end
 	end
 end
@@ -556,7 +608,8 @@ local function updateDisplay()
 	for i = 1, MAX_ROWS do
 		rows[i].rowBg:SetExtent(barW, ROW_H - 3)
 		rows[i].bar:SetExtent(barW, ROW_H - 3)
-		rows[i].label:SetExtent(barW - 10, ROW_H - 4)
+		rows[i].nameLabel:SetExtent(math.floor((barW - 10) * NAME_COL_RATIO), ROW_H - 4)
+		rows[i].valueLabel:SetExtent(math.max(math.floor((barW - 10) * VALUE_COL_RATIO), VALUE_MIN_W), ROW_H - 4)
 	end
 
 	-- How many rows fit in the current window height
@@ -635,14 +688,17 @@ local function updateDisplay()
 			rows[i].rowBg:SetVisible(true)
 			rows[i].currentPlayer = entry.name
 
-			rows[i].label:SetText(string.format(
-				"%s. %s  %s %s  %.0f%%", rankLabel, entry.name, formatNum(entry.dps), rateLabel, dmgPct
+			rows[i].nameLabel:SetText(string.format(
+				"%s. %s", rankLabel, truncateLabel(entry.name, 20)
 			))
-			rows[i].label:Show(true)
+			rows[i].valueLabel:SetText(string.format("%s %s  %.0f%%", formatNum(entry.dps), rateLabel, dmgPct))
+			rows[i].nameLabel:Show(true)
+			rows[i].valueLabel:Show(true)
 		else
 			rows[i].bar:Show(false)
 			rows[i].rowBg:SetVisible(false)
-			rows[i].label:Show(false)
+			rows[i].nameLabel:Show(false)
+			rows[i].valueLabel:Show(false)
 			rows[i].currentPlayer = nil
 		end
 	end
