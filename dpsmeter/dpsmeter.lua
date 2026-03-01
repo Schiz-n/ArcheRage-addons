@@ -42,9 +42,18 @@ local MODE_RATE_LABEL = {
 	Heal = "hps",
 	HealT = "htps"
 }
+local SETTINGS_FILE = "dpsmeter_settings.txt"
 local TITLE_PAD_RIGHT = 80
 local DETAIL_TITLE_PAD_RIGHT = 80
 local DETAIL_VIEW_ORDER = { "Spell", "Target" }
+local DEFAULT_MAIN_X = 100
+local DEFAULT_MAIN_Y = 200
+local DEFAULT_DETAIL_X = DEFAULT_MAIN_X + WINDOW_W + 8
+local DEFAULT_DETAIL_Y = DEFAULT_MAIN_Y
+local MIN_MAIN_W = 220
+local MIN_MAIN_H = HEADER_H + ROW_H + PAD * 2
+local MIN_DETAIL_W = 240
+local MIN_DETAIL_H = HEADER_H + ROW_H + PAD * 2
 
 -- ============================================================
 -- Fight state
@@ -63,6 +72,70 @@ local combatStart = nil
 local lastHitTime = nil
 local fightDone   = false
 local fightElapsed = 0
+local saveCurrentSettings -- forward declaration; assigned after windows are created
+
+local function findIndex(list, value, fallback)
+	for i = 1, #list do
+		if list[i] == value then
+			return i
+		end
+	end
+	return fallback
+end
+
+local function clampMin(value, minValue)
+	if value < minValue then
+		return minValue
+	end
+	return value
+end
+
+local function loadSettings()
+	local settings = {
+		main_x = DEFAULT_MAIN_X,
+		main_y = DEFAULT_MAIN_Y,
+		main_w = WINDOW_W,
+		main_h = HEADER_H + MAX_ROWS * ROW_H + PAD * 2,
+		detail_x = DEFAULT_DETAIL_X,
+		detail_y = DEFAULT_DETAIL_Y,
+		detail_w = 320,
+		detail_h = HEADER_H + MAX_DETAIL_ROWS * ROW_H + PAD * 2,
+		active_mode = MODE_ORDER[1],
+		detail_view = DETAIL_VIEW_ORDER[1]
+	}
+
+	local file = io.open(SETTINGS_FILE, "r")
+	if not file then
+		return settings
+	end
+
+	for line in file:lines() do
+		local key, value = line:match("^([%w_]+)=(.+)$")
+		if key and value then
+			if key == "active_mode" or key == "detail_view" then
+				settings[key] = value
+			else
+				local numValue = tonumber(value)
+				if numValue then
+					settings[key] = numValue
+				end
+			end
+		end
+	end
+	file:close()
+
+	settings.main_w = clampMin(settings.main_w, MIN_MAIN_W)
+	settings.main_h = clampMin(settings.main_h, MIN_MAIN_H)
+	settings.detail_w = clampMin(settings.detail_w, MIN_DETAIL_W)
+	settings.detail_h = clampMin(settings.detail_h, MIN_DETAIL_H)
+	return settings
+end
+
+local loadedSettings = loadSettings()
+activeModeIndex = findIndex(MODE_ORDER, loadedSettings.active_mode, 1)
+activeMode = MODE_ORDER[activeModeIndex]
+detailViewIndex = findIndex(DETAIL_VIEW_ORDER, loadedSettings.detail_view, 1)
+detailViewMode = DETAIL_VIEW_ORDER[detailViewIndex]
 
 local function resetFight()
 	statsByMode.Damage  = {}
@@ -85,6 +158,9 @@ local function cycleActiveMode()
 		activeModeIndex = 1
 	end
 	activeMode = MODE_ORDER[activeModeIndex]
+	if saveCurrentSettings then
+		saveCurrentSettings()
+	end
 end
 
 local function cycleDetailViewMode()
@@ -93,6 +169,9 @@ local function cycleDetailViewMode()
 		detailViewIndex = 1
 	end
 	detailViewMode = DETAIL_VIEW_ORDER[detailViewIndex]
+	if saveCurrentSettings then
+		saveCurrentSettings()
+	end
 end
 
 local function addStat(modeKey, playerName, abilityName, amount, counterpartName)
@@ -117,8 +196,8 @@ end
 local TOTAL_H = HEADER_H + MAX_ROWS * ROW_H + PAD * 2
 
 local mainFrame = CreateEmptyWindow("dpsMeterWindow", "UIParent")
-mainFrame:SetExtent(WINDOW_W, TOTAL_H)
-mainFrame:AddAnchor("TOPLEFT", "UIParent", 100, 200)
+mainFrame:SetExtent(loadedSettings.main_w, loadedSettings.main_h)
+mainFrame:AddAnchor("TOPLEFT", "UIParent", loadedSettings.main_x, loadedSettings.main_y)
 mainFrame:Show(true)
 mainFrame:EnableDrag(true)
 
@@ -128,6 +207,9 @@ mainFrame:SetHandler("OnDragStart", function(self)
 end)
 mainFrame:SetHandler("OnDragStop", function(self)
 	self:StopMovingOrSizing()
+	if saveCurrentSettings then
+		saveCurrentSettings()
+	end
 end)
 
 local bg = mainFrame:CreateColorDrawable(0.05, 0.05, 0.05, 0.88, "background")
@@ -227,6 +309,9 @@ resizeHandle:SetHandler("OnDragStart", function(self)
 end)
 resizeHandle:SetHandler("OnDragStop", function(self)
 	mainFrame:StopMovingOrSizing()
+	if saveCurrentSettings then
+		saveCurrentSettings()
+	end
 end)
 
 -- ============================================================
@@ -237,8 +322,8 @@ local DETAIL_H     = HEADER_H + MAX_DETAIL_ROWS * ROW_H + PAD * 2
 local detailPlayer = nil
 
 local detailFrame = CreateEmptyWindow("dpsMeterDetailWindow", "UIParent")
-detailFrame:SetExtent(DETAIL_W, DETAIL_H)
-detailFrame:AddAnchor("TOPLEFT", mainFrame, WINDOW_W + 8, 0)
+detailFrame:SetExtent(loadedSettings.detail_w, loadedSettings.detail_h)
+detailFrame:AddAnchor("TOPLEFT", "UIParent", loadedSettings.detail_x, loadedSettings.detail_y)
 detailFrame:Show(false)
 detailFrame:EnableDrag(true)
 
@@ -248,6 +333,9 @@ detailFrame:SetHandler("OnDragStart", function(self)
 end)
 detailFrame:SetHandler("OnDragStop", function(self)
 	self:StopMovingOrSizing()
+	if saveCurrentSettings then
+		saveCurrentSettings()
+	end
 end)
 
 local detailBg = detailFrame:CreateColorDrawable(0.05, 0.05, 0.05, 0.88, "background")
@@ -334,7 +422,43 @@ detailResizeHandle:SetHandler("OnDragStart", function(self)
 end)
 detailResizeHandle:SetHandler("OnDragStop", function(self)
 	detailFrame:StopMovingOrSizing()
+	if saveCurrentSettings then
+		saveCurrentSettings()
+	end
 end)
+
+local function getUIScaleFactor()
+	return UIParent:GetUIScale() or 1.0
+end
+
+saveCurrentSettings = function()
+	local mainX, mainY = mainFrame:GetOffset()
+	local detailX, detailY = detailFrame:GetOffset()
+	local uiScale = getUIScaleFactor()
+
+	-- Save normalized offsets so positions remain stable with UI scale changes.
+	mainX = math.floor((mainX or 0) / uiScale)
+	mainY = math.floor((mainY or 0) / uiScale)
+	detailX = math.floor((detailX or 0) / uiScale)
+	detailY = math.floor((detailY or 0) / uiScale)
+
+	local file = io.open(SETTINGS_FILE, "w")
+	if not file then
+		return
+	end
+
+	file:write(string.format("main_x=%d\n", mainX))
+	file:write(string.format("main_y=%d\n", mainY))
+	file:write(string.format("main_w=%d\n", math.floor(mainFrame:GetWidth() or WINDOW_W)))
+	file:write(string.format("main_h=%d\n", math.floor(mainFrame:GetHeight() or TOTAL_H)))
+	file:write(string.format("detail_x=%d\n", detailX))
+	file:write(string.format("detail_y=%d\n", detailY))
+	file:write(string.format("detail_w=%d\n", math.floor(detailFrame:GetWidth() or DETAIL_W)))
+	file:write(string.format("detail_h=%d\n", math.floor(detailFrame:GetHeight() or DETAIL_H)))
+	file:write(string.format("active_mode=%s\n", activeMode))
+	file:write(string.format("detail_view=%s\n", detailViewMode))
+	file:close()
+end
 
 -- ============================================================
 -- Display helpers
