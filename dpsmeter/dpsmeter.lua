@@ -43,6 +43,8 @@ local MODE_RATE_LABEL = {
 	HealT = "htps"
 }
 local TITLE_PAD_RIGHT = 225
+local DETAIL_TITLE_PAD_RIGHT = 150
+local DETAIL_VIEW_ORDER = { "Spell", "Target" }
 
 -- ============================================================
 -- Fight state
@@ -55,6 +57,8 @@ local statsByMode = {
 }
 local activeModeIndex = 1
 local activeMode = MODE_ORDER[activeModeIndex]
+local detailViewIndex = 1
+local detailViewMode = DETAIL_VIEW_ORDER[detailViewIndex]
 local combatStart = nil
 local lastHitTime = nil
 local fightDone   = false
@@ -75,18 +79,20 @@ local function getActiveStats()
 	return statsByMode[activeMode]
 end
 
-local function addStat(modeKey, playerName, abilityName, amount)
+local function addStat(modeKey, playerName, abilityName, amount, counterpartName)
 	if playerName == nil or playerName == "" or amount < 1 then
 		return
 	end
 
 	if statsByMode[modeKey][playerName] == nil then
-		statsByMode[modeKey][playerName] = { damage = 0, abilities = {} }
+		statsByMode[modeKey][playerName] = { damage = 0, abilities = {}, targets = {} }
 	end
 
+	local counterpartKey = (counterpartName and counterpartName ~= "") and counterpartName or "Unknown"
 	local p = statsByMode[modeKey][playerName]
 	p.damage = p.damage + amount
 	p.abilities[abilityName] = (p.abilities[abilityName] or 0) + amount
+	p.targets[counterpartKey] = (p.targets[counterpartKey] or 0) + amount
 end
 
 -- ============================================================
@@ -155,7 +161,8 @@ end)
 -- Main window rows (pre-created, shown/hidden per update)
 -- ============================================================
 local rows = {}
-local showDetailWindow  -- forward declaration; assigned after detail window is built
+local showDetailWindow    -- forward declaration; assigned after detail window is built
+local updateDetailDisplay -- forward declaration for detail view toggle callback
 
 for i = 1, MAX_ROWS do
 	local yOff = HEADER_H + PAD + (i - 1) * ROW_H
@@ -249,7 +256,7 @@ detailHeaderBg:AddAnchor("TOPLEFT", detailFrame, 0, 0)
 
 local detailTitle = detailFrame:CreateChildWidget("label", "dpsMeterDetailTitle", 0, true)
 detailTitle:AddAnchor("TOPLEFT", detailFrame, 6, 8)
-detailTitle:SetExtent(DETAIL_W - 70, HEADER_H - 8)
+detailTitle:SetExtent(DETAIL_W - DETAIL_TITLE_PAD_RIGHT, HEADER_H - 8)
 detailTitle:EnablePick(false)
 detailTitle.style:SetColor(1, 1, 1, 1)
 detailTitle.style:SetFontSize(13)
@@ -266,6 +273,22 @@ closeBtn:Show(true)
 closeBtn:SetHandler("OnClick", function()
 	detailFrame:Show(false)
 	detailPlayer = nil
+end)
+
+local detailViewBtn = detailFrame:CreateChildWidget("button", "dpsDetailViewBtn", 1, true)
+detailViewBtn:SetText(detailViewMode)
+detailViewBtn:SetStyle("text_default")
+detailViewBtn:SetExtent(72, HEADER_H - 8)
+detailViewBtn:AddAnchor("TOPRIGHT", detailFrame, -64, 4)
+detailViewBtn:Show(true)
+detailViewBtn:SetHandler("OnClick", function()
+	detailViewIndex = detailViewIndex + 1
+	if detailViewIndex > #DETAIL_VIEW_ORDER then
+		detailViewIndex = 1
+	end
+	detailViewMode = DETAIL_VIEW_ORDER[detailViewIndex]
+	detailViewBtn:SetText(detailViewMode)
+	updateDetailDisplay()
 end)
 
 local detailRows = {}
@@ -333,10 +356,10 @@ local function formatNum(n)
 	return string.format("%d", math.floor(n))
 end
 
-local function updateDetailDisplay()
+updateDetailDisplay = function()
 	local modeStats = getActiveStats()
 	if not detailPlayer or not modeStats[detailPlayer] then
-		detailTitle:SetText("Breakdown")
+		detailTitle:SetText(string.format("Breakdown (%s/%s)", activeMode, detailViewMode))
 		for i = 1, MAX_DETAIL_ROWS do
 			detailRows[i].bar:Show(false)
 			detailRows[i].rowBg:SetVisible(false)
@@ -349,7 +372,7 @@ local function updateDetailDisplay()
 	local dWinW = detailFrame:GetWidth()
 	local dBarW = dWinW - PAD * 2
 	detailHeaderBg:SetExtent(dWinW, HEADER_H)
-	detailTitle:SetExtent(dWinW - 70, HEADER_H - 8)
+	detailTitle:SetExtent(dWinW - DETAIL_TITLE_PAD_RIGHT, HEADER_H - 8)
 	for i = 1, MAX_DETAIL_ROWS do
 		detailRows[i].rowBg:SetExtent(dBarW, ROW_H - 3)
 		detailRows[i].bar:SetExtent(dBarW, ROW_H - 3)
@@ -357,11 +380,12 @@ local function updateDetailDisplay()
 	end
 
 	local data = modeStats[detailPlayer]
-	detailTitle:SetText("Breakdown (" .. activeMode .. "): " .. detailPlayer)
+	detailTitle:SetText(string.format("Breakdown (%s/%s): %s", activeMode, detailViewMode, detailPlayer))
 
 	local sorted = {}
-	for abilityName, dmg in pairs(data.abilities) do
-		table.insert(sorted, { name = abilityName, damage = dmg })
+	local breakdownData = (detailViewMode == "Target") and data.targets or data.abilities
+	for keyName, amount in pairs(breakdownData) do
+		table.insert(sorted, { name = keyName, damage = amount })
 	end
 	table.sort(sorted, function(a, b) return a.damage > b.damage end)
 
@@ -554,11 +578,11 @@ local function onCombatMsg(unitId, eventType, sourceName, targetName, abilityId,
 	lastHitTime = now
 
 	if isSpellHealed then
-		addStat("Heal", sourceName, abilityKey, amount)
-		addStat("HealT", targetName, abilityKey, amount)
+		addStat("Heal", sourceName, abilityKey, amount, targetName)
+		addStat("HealT", targetName, abilityKey, amount, sourceName)
 	else
-		addStat("Damage", sourceName, abilityKey, amount)
-		addStat("DamageT", targetName, abilityKey, amount)
+		addStat("Damage", sourceName, abilityKey, amount, targetName)
+		addStat("DamageT", targetName, abilityKey, amount, sourceName)
 	end
 end
 
