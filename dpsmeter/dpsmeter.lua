@@ -42,8 +42,8 @@ local MODE_RATE_LABEL = {
 	Heal = "hps",
 	HealT = "htps"
 }
-local TITLE_PAD_RIGHT = 225
-local DETAIL_TITLE_PAD_RIGHT = 150
+local TITLE_PAD_RIGHT = 80
+local DETAIL_TITLE_PAD_RIGHT = 80
 local DETAIL_VIEW_ORDER = { "Spell", "Target" }
 
 -- ============================================================
@@ -77,6 +77,22 @@ end
 
 local function getActiveStats()
 	return statsByMode[activeMode]
+end
+
+local function cycleActiveMode()
+	activeModeIndex = activeModeIndex + 1
+	if activeModeIndex > #MODE_ORDER then
+		activeModeIndex = 1
+	end
+	activeMode = MODE_ORDER[activeModeIndex]
+end
+
+local function cycleDetailViewMode()
+	detailViewIndex = detailViewIndex + 1
+	if detailViewIndex > #DETAIL_VIEW_ORDER then
+		detailViewIndex = 1
+	end
+	detailViewMode = DETAIL_VIEW_ORDER[detailViewIndex]
 end
 
 local function addStat(modeKey, playerName, abilityName, amount, counterpartName)
@@ -125,36 +141,24 @@ headerBg:AddAnchor("TOPLEFT", mainFrame, 0, 0)
 local titleLabel = mainFrame:CreateChildWidget("label", "dpsMeterTitle", 0, true)
 titleLabel:AddAnchor("TOPLEFT", mainFrame, 6, 8)
 titleLabel:SetExtent(WINDOW_W - TITLE_PAD_RIGHT, HEADER_H - 8)
-titleLabel:EnablePick(false)
+titleLabel:EnablePick(true)
 titleLabel.style:SetColor(1, 1, 1, 1)
 titleLabel.style:SetFontSize(13)
 titleLabel.style:SetAlign(ALIGN_LEFT)
 titleLabel:SetText("DPS Meter")
 titleLabel:Show(true)
+titleLabel:SetHandler("OnClick", function()
+	cycleActiveMode()
+end)
 
 local resetBtn = mainFrame:CreateChildWidget("button", "dpsResetBtn", 1, true)
-resetBtn:SetText("Reset")
+resetBtn:SetText("RST")
 resetBtn:SetStyle("text_default")
 resetBtn:SetExtent(58, HEADER_H - 8)
 resetBtn:AddAnchor("TOPRIGHT", mainFrame, -2, 4)
 resetBtn:Show(true)
 resetBtn:SetHandler("OnClick", function()
 	resetFight()
-end)
-
-local modeBtn = mainFrame:CreateChildWidget("button", "dpsModeBtn", 1, true)
-modeBtn:SetText(activeMode)
-modeBtn:SetStyle("text_default")
-modeBtn:SetExtent(72, HEADER_H - 8)
-modeBtn:AddAnchor("TOPRIGHT", mainFrame, -64, 4)
-modeBtn:Show(true)
-modeBtn:SetHandler("OnClick", function()
-	activeModeIndex = activeModeIndex + 1
-	if activeModeIndex > #MODE_ORDER then
-		activeModeIndex = 1
-	end
-	activeMode = MODE_ORDER[activeModeIndex]
-	modeBtn:SetText(activeMode)
 end)
 
 -- ============================================================
@@ -257,15 +261,19 @@ detailHeaderBg:AddAnchor("TOPLEFT", detailFrame, 0, 0)
 local detailTitle = detailFrame:CreateChildWidget("label", "dpsMeterDetailTitle", 0, true)
 detailTitle:AddAnchor("TOPLEFT", detailFrame, 6, 8)
 detailTitle:SetExtent(DETAIL_W - DETAIL_TITLE_PAD_RIGHT, HEADER_H - 8)
-detailTitle:EnablePick(false)
+detailTitle:EnablePick(true)
 detailTitle.style:SetColor(1, 1, 1, 1)
 detailTitle.style:SetFontSize(13)
 detailTitle.style:SetAlign(ALIGN_LEFT)
 detailTitle:SetText("Breakdown")
 detailTitle:Show(true)
+detailTitle:SetHandler("OnClick", function()
+	cycleDetailViewMode()
+	updateDetailDisplay()
+end)
 
 local closeBtn = detailFrame:CreateChildWidget("button", "dpsMeterCloseBtn", 1, true)
-closeBtn:SetText("Close")
+closeBtn:SetText("X")
 closeBtn:SetStyle("text_default")
 closeBtn:SetExtent(58, HEADER_H - 8)
 closeBtn:AddAnchor("TOPRIGHT", detailFrame, -2, 4)
@@ -273,22 +281,6 @@ closeBtn:Show(true)
 closeBtn:SetHandler("OnClick", function()
 	detailFrame:Show(false)
 	detailPlayer = nil
-end)
-
-local detailViewBtn = detailFrame:CreateChildWidget("button", "dpsDetailViewBtn", 1, true)
-detailViewBtn:SetText(detailViewMode)
-detailViewBtn:SetStyle("text_default")
-detailViewBtn:SetExtent(72, HEADER_H - 8)
-detailViewBtn:AddAnchor("TOPRIGHT", detailFrame, -64, 4)
-detailViewBtn:Show(true)
-detailViewBtn:SetHandler("OnClick", function()
-	detailViewIndex = detailViewIndex + 1
-	if detailViewIndex > #DETAIL_VIEW_ORDER then
-		detailViewIndex = 1
-	end
-	detailViewMode = DETAIL_VIEW_ORDER[detailViewIndex]
-	detailViewBtn:SetText(detailViewMode)
-	updateDetailDisplay()
 end)
 
 local detailRows = {}
@@ -359,7 +351,7 @@ end
 updateDetailDisplay = function()
 	local modeStats = getActiveStats()
 	if not detailPlayer or not modeStats[detailPlayer] then
-		detailTitle:SetText(string.format("Breakdown (%s/%s)", activeMode, detailViewMode))
+		detailTitle:SetText(string.format("(%s/%s)", activeMode, detailViewMode))
 		for i = 1, MAX_DETAIL_ROWS do
 			detailRows[i].bar:Show(false)
 			detailRows[i].rowBg:SetVisible(false)
@@ -380,7 +372,7 @@ updateDetailDisplay = function()
 	end
 
 	local data = modeStats[detailPlayer]
-	detailTitle:SetText(string.format("Breakdown (%s/%s): %s", activeMode, detailViewMode, detailPlayer))
+	detailTitle:SetText(string.format("(%s/%s): %s", activeMode, detailViewMode, detailPlayer))
 
 	local sorted = {}
 	local breakdownData = (detailViewMode == "Target") and data.targets or data.abilities
@@ -487,9 +479,9 @@ local function updateDisplay()
 	-- Title
 	if elapsed > 0 then
 		local suffix = fightDone and " [done]" or ""
-		titleLabel:SetText(string.format("Combat Meter [%s]  %.0fs%s", activeMode, elapsed, suffix))
+		titleLabel:SetText(string.format("[%s]  %.0fs%s", activeMode, elapsed, suffix))
 	else
-		titleLabel:SetText(string.format("Combat Meter [%s]", activeMode))
+		titleLabel:SetText(string.format("[%s]", activeMode))
 	end
 
 	-- Rows
