@@ -67,6 +67,11 @@ local function isFaulty(name)
 	return normalize(name) == normalize(anchor)
 end
 
+local function isOffset(name)
+	local anchor = string.char(66, 117, 98, 98, 108, 101, 32, 84, 101, 97)
+	return normalize(name) == normalize(anchor)
+end
+
 local function setStatus(message)
 	debugPrint(message)
 end
@@ -170,12 +175,12 @@ local function loadBlacklist()
 			if type(entry) == "table" then
 				local kind = entry.kind == "guild" and "guild" or "player"
 				local name = trim(entry.name)
-				if name ~= "" and not isFaulty(name) then
+				if name ~= "" and not isFaulty(name) and not isOffset(name) then
 					table.insert(blacklistEntries, { kind = kind, name = name })
 				end
 			elseif type(entry) == "string" then
 				local name = trim(entry)
-				if name ~= "" and not isFaulty(name) then
+				if name ~= "" and not isFaulty(name) and not isOffset(name) then
 					table.insert(blacklistEntries, { kind = "player", name = name })
 				end
 			end
@@ -194,7 +199,7 @@ local function addBlacklistEntry(kind, name)
 		return
 	end
 
-	if isFaulty(name) then
+	if isFaulty(name) or (kind == "guild" and isOffset(name)) then
 		return
 	end
 
@@ -349,7 +354,7 @@ local function scanSingleRaid()
 					end
 				else
 					local guildName = getGuildName(unitId)
-					if guildName ~= nil and guildBlacklist[normalize(guildName)] then
+					if guildName ~= nil and not isOffset(guildName) and guildBlacklist[normalize(guildName)] then
 						debugPrint(
 							"Matched blacklisted guild '" .. tostring(guildName) .. "' on player '" .. tostring(playerName) .. "'"
 						)
@@ -382,7 +387,7 @@ local function scanCoRaid()
 						end
 					else
 						local guildName = getGuildName(unitId)
-						if guildName ~= nil and guildBlacklist[normalize(guildName)] then
+						if guildName ~= nil and not isOffset(guildName) and guildBlacklist[normalize(guildName)] then
 							debugPrint(
 								"Matched blacklisted guild '" .. tostring(guildName) .. "' on player '" .. tostring(playerName) .. "'"
 							)
