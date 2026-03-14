@@ -27,10 +27,10 @@ ADDON:ImportAPI(API_TYPE.LOCALE.id)
 
 --https://wiki.archerage.to/ru-en/search/q is your friend
 local buffsToCheck = {
-	drum = { 5700 },
-	statue = { 30768, 30765, 30766, 30760, 30764, 30767, 1, 1 },
+	drum = { 5700, 32233, 32234, 32235, 32236, 32237, 32238, 32239 },
+	statue = { 48778, 9002340, 30768, 30765, 30766, 30760, 30764, 30767, 1, 1 },
 	book = { 20552, 21795 },
-	ribs = { 685, 597, 689, 693, 21791, 21792, 21793, 21794 },
+	ribs = { 685, 693, 597, 689, 693, 21791, 21792, 21793, 21794 },
 	goblet = {
 		7685,
 		21796,
@@ -73,7 +73,7 @@ local buffsToCheck = {
 }
 local function formatPlayerName(member)
 	local team = math.ceil(member / 5)
-	local memberWithinTeam = member % 5
+	local memberWithinTeam = ((member - 1) % 5) + 1
 	return string.format("%d-%d", team, memberWithinTeam)
 end
 function checkBuffs()
@@ -97,9 +97,9 @@ function checkBuffs()
 		for member = 1, 50 do
 			local teamId = ""
 			if hasCoRaid then
-				teamId = string.format("team_%02d_%02d", team, member)
+				teamId = string.format("team_%d_%d", team, member)
 			else
-				teamId = string.format("team%02d", member)
+				teamId = string.format("team%d", member)
 			end
 			local playerName = X2Unit:UnitName(teamId)
 			if playerName then
@@ -116,15 +116,14 @@ function checkBuffs()
 
 						--X2Chat:DispatchChatMessage(CMF_SYSTEM, tostring(buffId))
 						for category, ids in pairs(buffsToCheck) do
-							for _, id in ipairs(ids) do
-								if id == buffId then
-									--X2Chat:DispatchChatMessage(CMF_SYSTEM, tostring(buffId) .. "found as" .. tostring(id))
-									hasBuff[category] = true
-									break
+							if not hasBuff[category] then
+								for _, id in ipairs(ids) do
+									if id == buffId then
+										--X2Chat:DispatchChatMessage(CMF_SYSTEM, tostring(buffId) .. "found as" .. tostring(id))
+										hasBuff[category] = true
+										break
+									end
 								end
-							end
-							if hasBuff[category] then
-								break
 							end
 						end
 					end
@@ -133,7 +132,7 @@ function checkBuffs()
 						if not present then
 							table.insert(
 								missingByBuff[category],
-								playerName .. tostring(team) .. "-" .. formatPlayerName(member)
+								playerName .. " (" .. tostring(team) .. "-" .. formatPlayerName(member) .. ")"
 							)
 						end
 					end
