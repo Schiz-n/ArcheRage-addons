@@ -26,7 +26,6 @@ ADDON:ImportAPI(API_TYPE.UNIT.id)
 
 local castDuration = 0
 local newCast = false
-local castingTime = 0
 local startTime = 0
 local iStoppedCasting = true
 local currentSpellName = ""
@@ -181,7 +180,6 @@ function W_BAR.CreateCastingBar(id, parent, unit)
 			frame.statusBar:SetMinMaxValues(0, castDuration)
 			local buff = X2Unit:UnitBuffTooltip("player", statueBuffPos)
 			startTime = buff["timeLeft"]
-			castingTime = 0
 			newCast = false
 			endingcast = false
 		end
@@ -222,7 +220,7 @@ function W_BAR.CreateCastingBar(id, parent, unit)
 		self.castingUseable = castingUseable
 	end
 	local castingBarEvents = {
-		SPELLCAST_START = function(spellName, castingTime, caster, castingUseable)
+		SPELLCAST_START = function(spellName, castTime, caster, castingUseable)
 			-- X2Chat:DispatchChatMessage(CMF_SYSTEM, "SPELLCAST_START: " ..
 			--         tostring(spellName) .. ", " ..
 			--         tostring(castingTime) .. ", " ..
@@ -232,7 +230,7 @@ function W_BAR.CreateCastingBar(id, parent, unit)
 			if caster == "player" then
 				currentSpellName = spellName
 				newCast = true
-				castDuration = castingTime
+				castDuration = castTime
 				iStoppedCasting = false
 			end
 			if caster ~= frame.unit then
@@ -243,7 +241,7 @@ function W_BAR.CreateCastingBar(id, parent, unit)
 			end
 			--frame:ChangeBarTexture(castingUseable)
 			frame.spellName = spellName
-			frame.text:SetCastingText(string.format("%s %s", spellName, castingTime))
+			frame.text:SetCastingText(string.format("%s %s", spellName, castTime))
 			frame.ShowAll()
 		end,
 		SPELLCAST_STOP = function(caster)
