@@ -438,7 +438,22 @@ local trackedPrevButton = nil
 local trackedNextButton = nil
 local availablePrevButton = nil
 local availableNextButton = nil
+local showGearButton = nil
+local showClassButton = nil
+local showDistanceButton = nil
+local showGearSettingsButton = nil
+local showClassSettingsButton = nil
+local showDistanceSettingsButton = nil
 local positionModeButtons = {}
+local infoSettingsWindow = nil
+local infoSettingsTitle = nil
+local infoSettingsStatus = nil
+local infoSettingsMessage = nil
+local distanceSettingsPreview = nil
+local gearSettingsPreview = nil
+local classSettingsPreviewIcon = nil
+local classSettingsPreviewLabel = nil
+local infoSettingsMode = "distance"
 local positionStatusLabel
 local positionPreviewOrigin
 local positionPreviewBox
@@ -447,7 +462,7 @@ local positionPreviewIcons = {}
 
 local initOk, initErr = pcall(function()
 	DebugPrint("init: before CreateSimpleButton")
-	managerButton = CreateLauncherButtonSafe("Buff Tracker", 700, -250)
+	managerButton = CreateLauncherButtonSafe("Ext Plates", 700, -250)
 	DebugPrint("init: after CreateSimpleButton")
 
 	DebugPrint("init: before CreateWindow")
@@ -456,7 +471,7 @@ local initOk, initErr = pcall(function()
 
 	managerWindow:AddAnchor("CENTER", "UIParent", 0, 0)
 	DebugPrint("init: after window anchor")
-	managerWindow:SetExtent(720, 580)
+	managerWindow:SetExtent(720, 640)
 	DebugPrint("init: after window extent")
 	managerWindow:Show(false)
 	DebugPrint("init: after window hide")
@@ -474,10 +489,10 @@ local initOk, initErr = pcall(function()
 	borderBottom:SetExtent(720, 2)
 	local borderLeft = managerWindow:CreateColorDrawable(0.65, 0.55, 0.35, 0.9, "artwork")
 	borderLeft:AddAnchor("TOPLEFT", managerWindow, 0, 0)
-	borderLeft:SetExtent(2, 580)
+	borderLeft:SetExtent(2, 640)
 	local borderRight = managerWindow:CreateColorDrawable(0.65, 0.55, 0.35, 0.9, "artwork")
 	borderRight:AddAnchor("TOPRIGHT", managerWindow, 0, 0)
-	borderRight:SetExtent(2, 580)
+	borderRight:SetExtent(2, 640)
 	DebugPrint("init: after borders")
 
 	local titleBar = managerWindow:CreateColorDrawable(0.16, 0.10, 0.05, 0.95, "artwork")
@@ -489,7 +504,7 @@ local initOk, initErr = pcall(function()
 	titleLabel:AddAnchor("TOPLEFT", managerWindow, 20, 12)
 	titleLabel:SetExtent(300, 24)
 	ApplyLocalLabelStyle(titleLabel, 20, ALIGN_LEFT, 1, 0.97, 0.92)
-	titleLabel:SetText("Buff Tracker")
+	titleLabel:SetText("Extended Plates")
 	DebugPrint("init: after titleLabel")
 
 	local closeButton = managerWindow:CreateChildWidget("button", "closeButton", 0, true)
@@ -574,7 +589,7 @@ local initOk, initErr = pcall(function()
 	positionButton = managerWindow:CreateChildWidget("button", "positionButton", 0, true)
 	ApplyLocalButtonStyle(positionButton)
 	positionButton:SetExtent(198, 32)
-	positionButton:AddAnchor("TOPLEFT", managerWindow, 20, 392)
+	positionButton:AddAnchor("TOPLEFT", managerWindow, 20, 352)
 	positionButton:SetText("Position")
 end)
 
@@ -625,16 +640,342 @@ createCategoryRow(6, "self", "hidden")
 local filterButton = managerWindow:CreateChildWidget("button", "filterButton", 0, true)
 ApplyLocalButtonStyle(filterButton)
 filterButton:SetExtent(198, 32)
-filterButton:AddAnchor("TOPLEFT", managerWindow, 20, 352)
+filterButton:AddAnchor("TOPLEFT", managerWindow, 20, 394)
 filterButton:SetHandler("OnClick", function()
 	uiState.filterTrackedOnly = not uiState.filterTrackedOnly
 	shared.SaveUiState()
+end)
+
+showGearButton = managerWindow:CreateChildWidget("button", "showGearButton", 0, true)
+ApplyLocalButtonStyle(showGearButton)
+showGearButton:SetExtent(132, 32)
+showGearButton:AddAnchor("TOPLEFT", managerWindow, 20, 436)
+showGearButton:SetHandler("OnClick", function()
+	uiState.showGear = not uiState.showGear
+	shared.SaveUiState()
+end)
+
+showGearSettingsButton = managerWindow:CreateChildWidget("button", "showGearSettingsButton", 0, true)
+ApplyLocalButtonStyle(showGearSettingsButton)
+showGearSettingsButton:SetExtent(58, 32)
+showGearSettingsButton:AddAnchor("TOPLEFT", managerWindow, 160, 436)
+showGearSettingsButton:SetText("...")
+showGearSettingsButton:SetHandler("OnClick", function()
+	infoSettingsMode = "gear"
+	if infoSettingsWindow ~= nil then
+		infoSettingsWindow:Show(true)
+	end
+end)
+
+showClassButton = managerWindow:CreateChildWidget("button", "showClassButton", 0, true)
+ApplyLocalButtonStyle(showClassButton)
+showClassButton:SetExtent(132, 32)
+showClassButton:AddAnchor("TOPLEFT", managerWindow, 20, 478)
+showClassButton:SetHandler("OnClick", function()
+	uiState.showClass = not uiState.showClass
+	shared.SaveUiState()
+end)
+
+showClassSettingsButton = managerWindow:CreateChildWidget("button", "showClassSettingsButton", 0, true)
+ApplyLocalButtonStyle(showClassSettingsButton)
+showClassSettingsButton:SetExtent(58, 32)
+showClassSettingsButton:AddAnchor("TOPLEFT", managerWindow, 160, 478)
+showClassSettingsButton:SetText("...")
+showClassSettingsButton:SetHandler("OnClick", function()
+	infoSettingsMode = "class"
+	if infoSettingsWindow ~= nil then
+		infoSettingsWindow:Show(true)
+	end
+end)
+
+showDistanceButton = managerWindow:CreateChildWidget("button", "showDistanceButton", 0, true)
+ApplyLocalButtonStyle(showDistanceButton)
+showDistanceButton:SetExtent(132, 32)
+showDistanceButton:AddAnchor("TOPLEFT", managerWindow, 20, 520)
+showDistanceButton:SetHandler("OnClick", function()
+	uiState.showDistance = not uiState.showDistance
+	shared.SaveUiState()
+end)
+
+showDistanceSettingsButton = managerWindow:CreateChildWidget("button", "showDistanceSettingsButton", 0, true)
+ApplyLocalButtonStyle(showDistanceSettingsButton)
+showDistanceSettingsButton:SetExtent(58, 32)
+showDistanceSettingsButton:AddAnchor("TOPLEFT", managerWindow, 160, 520)
+showDistanceSettingsButton:SetText("...")
+showDistanceSettingsButton:SetHandler("OnClick", function()
+	infoSettingsMode = "distance"
+	if infoSettingsWindow ~= nil then
+		infoSettingsWindow:Show(true)
+	end
 end)
 
 positionWindow = CreateEmptyWindow("targetDebuffTrackerPositionWindow", "UIParent")
 positionWindow:AddAnchor("CENTER", "UIParent", 300, 0)
 positionWindow:SetExtent(260, 430)
 positionWindow:Show(false)
+
+infoSettingsWindow = CreateEmptyWindow("extendedPlatesInfoSettingsWindow", "UIParent")
+infoSettingsWindow:AddAnchor("CENTER", "UIParent", 300, 0)
+infoSettingsWindow:SetExtent(320, 470)
+infoSettingsWindow:Show(false)
+
+do
+	local bg = infoSettingsWindow:CreateColorDrawable(0.08, 0.06, 0.04, 0.96, "background")
+	bg:AddAnchor("TOPLEFT", infoSettingsWindow, 0, 0)
+	bg:AddAnchor("BOTTOMRIGHT", infoSettingsWindow, 0, 0)
+
+	local top = infoSettingsWindow:CreateColorDrawable(0.65, 0.55, 0.35, 0.9, "artwork")
+	top:AddAnchor("TOPLEFT", infoSettingsWindow, 0, 0)
+	top:SetExtent(320, 2)
+	local bottom = infoSettingsWindow:CreateColorDrawable(0.65, 0.55, 0.35, 0.9, "artwork")
+	bottom:AddAnchor("BOTTOMLEFT", infoSettingsWindow, 0, 0)
+	bottom:SetExtent(320, 2)
+	local left = infoSettingsWindow:CreateColorDrawable(0.65, 0.55, 0.35, 0.9, "artwork")
+	left:AddAnchor("TOPLEFT", infoSettingsWindow, 0, 0)
+	left:SetExtent(2, 470)
+	local right = infoSettingsWindow:CreateColorDrawable(0.65, 0.55, 0.35, 0.9, "artwork")
+	right:AddAnchor("TOPRIGHT", infoSettingsWindow, 0, 0)
+	right:SetExtent(2, 470)
+
+	infoSettingsTitle = infoSettingsWindow:CreateChildWidget("label", "title", 0, true)
+	infoSettingsTitle:AddAnchor("TOPLEFT", infoSettingsWindow, 16, 12)
+	infoSettingsTitle:SetExtent(230, 24)
+	ApplyLocalLabelStyle(infoSettingsTitle, 18, ALIGN_LEFT, 1, 0.97, 0.92)
+	infoSettingsTitle:SetText("Distance Settings")
+
+	local closeButton = infoSettingsWindow:CreateChildWidget("button", "closeButton", 0, true)
+	ApplyLocalButtonStyle(closeButton)
+	closeButton:SetExtent(30, 24)
+	closeButton:AddAnchor("TOPRIGHT", infoSettingsWindow, -12, 8)
+	closeButton:SetText("X")
+	closeButton:SetHandler("OnClick", function()
+		infoSettingsWindow:Show(false)
+	end)
+
+	infoSettingsWindow:EnableDrag(true)
+	infoSettingsWindow:SetHandler("OnDragStart", function(self)
+		self:StartMoving()
+		return true
+	end)
+	infoSettingsWindow:SetHandler("OnDragStop", function(self)
+		self:StopMovingOrSizing()
+	end)
+
+	infoSettingsStatus = infoSettingsWindow:CreateChildWidget("label", "status", 0, true)
+	infoSettingsStatus:AddAnchor("TOPLEFT", infoSettingsWindow, 16, 46)
+	infoSettingsStatus:SetExtent(288, 110)
+	ApplyLocalLabelStyle(infoSettingsStatus, 14, ALIGN_LEFT, 0.96, 0.90, 0.78)
+
+	infoSettingsMessage = infoSettingsWindow:CreateChildWidget("label", "message", 0, true)
+	infoSettingsMessage:AddAnchor("TOPLEFT", infoSettingsWindow, 16, 156)
+	infoSettingsMessage:SetExtent(288, 36)
+	ApplyLocalLabelStyle(infoSettingsMessage, 13, ALIGN_LEFT, 1, 1, 1)
+	infoSettingsMessage:SetText("")
+
+	local previewBg = infoSettingsWindow:CreateColorDrawable(0.12, 0.10, 0.08, 0.65, "background")
+	previewBg:AddAnchor("TOPLEFT", infoSettingsWindow, 16, 202)
+	previewBg:SetExtent(288, 92)
+	local previewPlate = infoSettingsWindow:CreateColorDrawable(0.28, 0.42, 0.18, 0.95, "artwork")
+	previewPlate:SetExtent(80, 30)
+	previewPlate:AddAnchor("TOPLEFT", infoSettingsWindow, 120, 232)
+	local previewName = infoSettingsWindow:CreateChildWidget("label", "previewName", 0, true)
+	previewName:AddAnchor("TOPLEFT", previewPlate, 6, 6)
+	previewName:SetExtent(68, 18)
+	ApplyLocalLabelStyle(previewName, 13, ALIGN_CENTER, 1, 1, 1)
+	previewName:SetText("Strawberry")
+
+	distanceSettingsPreview = infoSettingsWindow:CreateChildWidget("label", "distancePreview", 0, true)
+	ApplyLocalLabelStyle(distanceSettingsPreview, 25, ALIGN_LEFT, 1, 0, 0)
+	distanceSettingsPreview:SetText("23.4m")
+	distanceSettingsPreview:AddAnchor("LEFT", previewPlate, -90, 0)
+
+	gearSettingsPreview = infoSettingsWindow:CreateChildWidget("label", "gearPreview", 0, true)
+	ApplyLocalLabelStyle(gearSettingsPreview, 15, ALIGN_LEFT, 1, 1, 1)
+	gearSettingsPreview:SetText("15432")
+	gearSettingsPreview:AddAnchor("LEFT", previewPlate, 90, 0)
+
+	classSettingsPreviewIcon = infoSettingsWindow:CreateIconDrawable("artwork")
+	classSettingsPreviewIcon:SetExtent(22, 22)
+	classSettingsPreviewIcon:AddTexture("ui/icon/icon_skill_pleasure02.dds")
+	classSettingsPreviewIcon:SetVisible(true)
+	classSettingsPreviewIcon:AddAnchor("LEFT", previewPlate, 90, 24)
+
+	classSettingsPreviewLabel = infoSettingsWindow:CreateChildWidget("label", "classPreview", 0, true)
+	ApplyLocalLabelStyle(classSettingsPreviewLabel, 13, ALIGN_LEFT, 1, 1, 1)
+	classSettingsPreviewLabel:SetText("Blade Dancer")
+	classSettingsPreviewLabel:AddAnchor("LEFT", previewPlate, 114, 24)
+
+	local controlButtons = {}
+
+	local function makeInfoAdjustButton(name, text, x, y, mode, handler)
+		local button = infoSettingsWindow:CreateChildWidget("button", name, 0, true)
+		ApplyLocalButtonStyle(button)
+		button:SetExtent(88, 30)
+		button:AddAnchor("TOPLEFT", infoSettingsWindow, x, y)
+		button:SetText(text)
+		button:SetHandler("OnClick", function()
+			if infoSettingsMode == mode then
+				handler()
+			end
+		end)
+		controlButtons[#controlButtons + 1] = { button = button, mode = mode }
+	end
+
+	makeInfoAdjustButton("distanceFontUpButton", "Font ^", 16, 310, "distance", function()
+		shared.AdjustDistanceSettings("fontSize", 1)
+	end)
+	makeInfoAdjustButton("distanceFontDownButton", "Font v", 112, 310, "distance", function()
+		shared.AdjustDistanceSettings("fontSize", -1)
+	end)
+	makeInfoAdjustButton("distanceRedUpButton", "Red ^", 208, 310, "distance", function()
+		shared.AdjustDistanceSettings("turnRedAt", 1)
+	end)
+	makeInfoAdjustButton("distanceRedDownButton", "Red v", 16, 346, "distance", function()
+		shared.AdjustDistanceSettings("turnRedAt", -1)
+	end)
+	makeInfoAdjustButton("distanceUpButton", "^", 112, 346, "distance", function()
+		shared.AdjustDistanceSettings("y", -5)
+	end)
+	makeInfoAdjustButton("distanceLeftButton", "<", 16, 382, "distance", function()
+		shared.AdjustDistanceSettings("x", -5)
+	end)
+	makeInfoAdjustButton("distanceDownButton", "v", 112, 382, "distance", function()
+		shared.AdjustDistanceSettings("y", 5)
+	end)
+	makeInfoAdjustButton("distanceRightButton", ">", 208, 382, "distance", function()
+		shared.AdjustDistanceSettings("x", 5)
+	end)
+
+	makeInfoAdjustButton("gearUpButton", "^", 112, 346, "gear", function()
+		shared.AdjustGearSettings("y", -5)
+	end)
+	makeInfoAdjustButton("gearLeftButton", "<", 16, 382, "gear", function()
+		shared.AdjustGearSettings("x", -5)
+	end)
+	makeInfoAdjustButton("gearDownButton", "v", 112, 382, "gear", function()
+		shared.AdjustGearSettings("y", 5)
+	end)
+	makeInfoAdjustButton("gearRightButton", ">", 208, 382, "gear", function()
+		shared.AdjustGearSettings("x", 5)
+	end)
+
+	makeInfoAdjustButton("classIconToggleButton", "Icon On/Off", 16, 310, "class", function()
+		shared.ToggleClassSetting("showIcon")
+	end)
+	makeInfoAdjustButton("classWordsToggleButton", "Words On/Off", 208, 310, "class", function()
+		shared.ToggleClassSetting("showWords")
+	end)
+	makeInfoAdjustButton("classIconUpButton", "Icon ^", 16, 346, "class", function()
+		shared.AdjustClassSettings("icon", "y", -5)
+	end)
+	makeInfoAdjustButton("classIconLeftButton", "Icon <", 16, 382, "class", function()
+		shared.AdjustClassSettings("icon", "x", -5)
+	end)
+	makeInfoAdjustButton("classIconDownButton", "Icon v", 16, 418, "class", function()
+		shared.AdjustClassSettings("icon", "y", 5)
+	end)
+	makeInfoAdjustButton("classIconRightButton", "Icon >", 112, 382, "class", function()
+		shared.AdjustClassSettings("icon", "x", 5)
+	end)
+	makeInfoAdjustButton("classWordsUpButton", "Words ^", 208, 346, "class", function()
+		shared.AdjustClassSettings("label", "y", -5)
+	end)
+	makeInfoAdjustButton("classWordsLeftButton", "Words <", 208, 382, "class", function()
+		shared.AdjustClassSettings("label", "x", -5)
+	end)
+	makeInfoAdjustButton("classWordsDownButton", "Words v", 208, 418, "class", function()
+		shared.AdjustClassSettings("label", "y", 5)
+	end)
+	makeInfoAdjustButton("classWordsRightButton", "Words >", 112, 418, "class", function()
+		shared.AdjustClassSettings("label", "x", 5)
+	end)
+
+	function infoSettingsWindow:OnUpdate(dt)
+		if not self:IsVisible() then
+			return
+		end
+
+		self.elapsed = (self.elapsed or 0) + dt
+		if self.elapsed < 0.15 then
+			return
+		end
+		self.elapsed = 0
+
+		if infoSettingsMode == "distance" then
+			local settings = shared.GetDistanceSettings()
+			infoSettingsTitle:SetText("Distance Settings")
+			infoSettingsStatus:SetText(
+				string.format(
+					"Font Size: %d\nTurn Red At: %d\nPosition X: %d\nPosition Y: %d",
+					settings.fontSize,
+					settings.turnRedAt,
+					settings.x,
+					settings.y
+				)
+			)
+			infoSettingsMessage:SetText("Use the buttons below to tune the target distance label.")
+			distanceSettingsPreview.style:SetFontSize(settings.fontSize)
+			if 23.4 > settings.turnRedAt then
+				distanceSettingsPreview.style:SetColor(1, 0, 0, 1)
+			else
+				distanceSettingsPreview.style:SetColor(1, 1, 1, 1)
+			end
+			distanceSettingsPreview:RemoveAllAnchors()
+			distanceSettingsPreview:AddAnchor("LEFT", previewPlate, settings.x, settings.y)
+			distanceSettingsPreview:Show(true)
+			gearSettingsPreview:Show(false)
+			classSettingsPreviewIcon:SetVisible(false)
+			classSettingsPreviewLabel:Show(false)
+		elseif infoSettingsMode == "gear" then
+			local settings = shared.GetGearSettings()
+			infoSettingsTitle:SetText("Gear Settings")
+			infoSettingsStatus:SetText(
+				string.format(
+					"Position X: %d\nPosition Y: %d",
+					settings.x,
+					settings.y
+				)
+			)
+			infoSettingsMessage:SetText("Use the arrows below to move the gearscore label.")
+			distanceSettingsPreview:Show(false)
+			gearSettingsPreview:RemoveAllAnchors()
+			gearSettingsPreview:AddAnchor("LEFT", previewPlate, settings.x, settings.y)
+			gearSettingsPreview:Show(true)
+			classSettingsPreviewIcon:SetVisible(false)
+			classSettingsPreviewLabel:Show(false)
+		else
+			local settings = shared.GetClassSettings()
+			infoSettingsTitle:SetText("Class Settings")
+			infoSettingsStatus:SetText(
+				string.format(
+					"Icon: %s\nX: %d  Y: %d\nWords: %s\nX: %d  Y: %d",
+					settings.showIcon and "ON" or "OFF",
+					settings.iconX,
+					settings.iconY,
+					settings.showWords and "ON" or "OFF",
+					settings.labelX,
+					settings.labelY
+				)
+			)
+			infoSettingsMessage:SetText("Move icon and words separately, or toggle them off.")
+			distanceSettingsPreview:Show(false)
+			gearSettingsPreview:Show(false)
+			classSettingsPreviewIcon:RemoveAllAnchors()
+			classSettingsPreviewIcon:AddAnchor("LEFT", previewPlate, settings.iconX, settings.iconY)
+			classSettingsPreviewIcon:SetVisible(settings.showIcon == true)
+			classSettingsPreviewLabel:RemoveAllAnchors()
+			classSettingsPreviewLabel:AddAnchor("LEFT", previewPlate, settings.labelX, settings.labelY)
+			classSettingsPreviewLabel:Show(settings.showWords == true)
+		end
+
+		for i = 1, #controlButtons do
+			local entry = controlButtons[i]
+			entry.button:Show(entry.mode == infoSettingsMode)
+		end
+	end
+
+	infoSettingsWindow:SetHandler("OnUpdate", infoSettingsWindow.OnUpdate)
+end
 
 do
 	local bg = positionWindow:CreateColorDrawable(0.08, 0.06, 0.04, 0.96, "background")
@@ -926,7 +1267,10 @@ local function refreshWindow()
 	headerLabel:SetText(categoryTitle(scope, effectType))
 	trackedTitle:SetText("Tracked " .. categoryTitle(scope, effectType))
 	availableTitle:SetText(liveSectionTitle(scope, effectType))
-	filterButton:SetText("Filter: Tracked Only [" .. (uiState.filterTrackedOnly and "ON" or "OFF") .. "]")
+	filterButton:SetText("Show All [" .. (uiState.filterTrackedOnly and "OFF" or "ON") .. "]")
+	showGearButton:SetText("Show Gear [" .. (uiState.showGear and "ON" or "OFF") .. "]")
+	showClassButton:SetText("Show Class [" .. (uiState.showClass and "ON" or "OFF") .. "]")
+	showDistanceButton:SetText("Show Distance [" .. (uiState.showDistance and "ON" or "OFF") .. "]")
 
 	for _, scopeName in ipairs({ "target", "self" }) do
 		for _, effectName in ipairs({ "buff", "debuff", "hidden" }) do

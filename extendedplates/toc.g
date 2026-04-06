@@ -3,6 +3,7 @@
 ../globals/button.lua
 ../globals/windowcommon.lua
 ../globals/window.lua
+../globals/classmappings.lua
 shared.lua
 enemy.lua
 self.lua

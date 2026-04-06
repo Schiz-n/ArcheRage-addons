@@ -4,6 +4,14 @@ end
 
 local shared = TargetDebuffTrackerShared
 
+shared.dataKeys = shared.dataKeys
+	or {
+		ui = "extendedplates_ui",
+		iconSettings = "extendedplates_icon_settings",
+		legacyUi = "targetdebufftracker_ui",
+		legacyIconSettings = "targetdebufftracker_icon_settings",
+	}
+
 shared.effectFiles = shared.effectFiles
 	or {
 		target = {
@@ -112,11 +120,35 @@ local function ensureUiState()
 		return shared.uiState
 	end
 
-	local saved = ADDON and ADDON:LoadData("targetdebufftracker_ui") or nil
+	local saved = nil
+	if ADDON ~= nil then
+		saved = ADDON:LoadData(shared.dataKeys.ui) or ADDON:LoadData(shared.dataKeys.legacyUi)
+	end
 	shared.uiState = {
 		filterTrackedOnly = true,
 		activeScope = "target",
 		activeEffect = "buff",
+		showGear = true,
+		showClass = true,
+		showDistance = true,
+		distanceSettings = {
+			x = -6,
+			y = 20,
+			fontSize = 25,
+			turnRedAt = 30,
+		},
+		gearSettings = {
+			x = 90,
+			y = 0,
+		},
+		classSettings = {
+			iconX = 90,
+			iconY = 24,
+			labelX = 114,
+			labelY = 24,
+			showIcon = true,
+			showWords = true,
+		},
 		target = {
 			buff = true,
 			debuff = true,
@@ -137,6 +169,41 @@ local function ensureUiState()
 		if saved.activeEffect == "buff" or saved.activeEffect == "debuff" or saved.activeEffect == "hidden" then
 			shared.uiState.activeEffect = saved.activeEffect
 		end
+		if saved.showGear ~= nil then
+			shared.uiState.showGear = saved.showGear == true
+		end
+		if saved.showClass ~= nil then
+			shared.uiState.showClass = saved.showClass == true
+		end
+		if saved.showDistance ~= nil then
+			shared.uiState.showDistance = saved.showDistance == true
+		end
+		if type(saved.distanceSettings) == "table" then
+			shared.uiState.distanceSettings.x = tonumber(saved.distanceSettings.x) or shared.uiState.distanceSettings.x
+			shared.uiState.distanceSettings.y = tonumber(saved.distanceSettings.y) or shared.uiState.distanceSettings.y
+			shared.uiState.distanceSettings.fontSize =
+				tonumber(saved.distanceSettings.fontSize) or shared.uiState.distanceSettings.fontSize
+			shared.uiState.distanceSettings.turnRedAt =
+				tonumber(saved.distanceSettings.turnRedAt) or shared.uiState.distanceSettings.turnRedAt
+		end
+		if type(saved.gearSettings) == "table" then
+			shared.uiState.gearSettings.x = tonumber(saved.gearSettings.x) or shared.uiState.gearSettings.x
+			shared.uiState.gearSettings.y = tonumber(saved.gearSettings.y) or shared.uiState.gearSettings.y
+		end
+		if type(saved.classSettings) == "table" then
+			shared.uiState.classSettings.iconX = tonumber(saved.classSettings.iconX) or shared.uiState.classSettings.iconX
+			shared.uiState.classSettings.iconY = tonumber(saved.classSettings.iconY) or shared.uiState.classSettings.iconY
+			shared.uiState.classSettings.labelX =
+				tonumber(saved.classSettings.labelX) or shared.uiState.classSettings.labelX
+			shared.uiState.classSettings.labelY =
+				tonumber(saved.classSettings.labelY) or shared.uiState.classSettings.labelY
+			if saved.classSettings.showIcon ~= nil then
+				shared.uiState.classSettings.showIcon = saved.classSettings.showIcon == true
+			end
+			if saved.classSettings.showWords ~= nil then
+				shared.uiState.classSettings.showWords = saved.classSettings.showWords == true
+			end
+		end
 
 		for _, scope in ipairs({ "target", "self" }) do
 			if type(saved[scope]) == "table" then
@@ -155,13 +222,79 @@ end
 function shared.SaveUiState()
 	local uiState = ensureUiState()
 	if ADDON ~= nil then
-		ADDON:ClearData("targetdebufftracker_ui")
-		ADDON:SaveData("targetdebufftracker_ui", uiState)
+		ADDON:ClearData(shared.dataKeys.ui)
+		ADDON:SaveData(shared.dataKeys.ui, uiState)
 	end
 end
 
 function shared.GetUiState()
 	return ensureUiState()
+end
+
+function shared.GetDistanceSettings()
+	return ensureUiState().distanceSettings
+end
+
+function shared.AdjustDistanceSettings(axis, delta)
+	local settings = shared.GetDistanceSettings()
+	if axis == "x" then
+		settings.x = settings.x + delta
+	elseif axis == "y" then
+		settings.y = settings.y + delta
+	elseif axis == "fontSize" then
+		settings.fontSize = math.max(8, settings.fontSize + delta)
+	elseif axis == "turnRedAt" then
+		settings.turnRedAt = math.max(0, settings.turnRedAt + delta)
+	end
+	shared.SaveUiState()
+	return settings
+end
+
+function shared.GetGearSettings()
+	return ensureUiState().gearSettings
+end
+
+function shared.AdjustGearSettings(axis, delta)
+	local settings = shared.GetGearSettings()
+	if axis == "x" then
+		settings.x = settings.x + delta
+	elseif axis == "y" then
+		settings.y = settings.y + delta
+	end
+	shared.SaveUiState()
+	return settings
+end
+
+function shared.GetClassSettings()
+	return ensureUiState().classSettings
+end
+
+function shared.AdjustClassSettings(target, axis, delta)
+	local settings = shared.GetClassSettings()
+	if target == "icon" then
+		if axis == "x" then
+			settings.iconX = settings.iconX + delta
+		elseif axis == "y" then
+			settings.iconY = settings.iconY + delta
+		end
+	elseif target == "label" then
+		if axis == "x" then
+			settings.labelX = settings.labelX + delta
+		elseif axis == "y" then
+			settings.labelY = settings.labelY + delta
+		end
+	end
+	shared.SaveUiState()
+	return settings
+end
+
+function shared.ToggleClassSetting(flagName)
+	local settings = shared.GetClassSettings()
+	if flagName == "showIcon" or flagName == "showWords" then
+		settings[flagName] = not settings[flagName]
+		shared.SaveUiState()
+	end
+	return settings
 end
 
 local function normalizeIconSettingEntry(value, defaults)
@@ -226,7 +359,10 @@ end
 
 local function ensureIconSettings()
 	if shared.iconSettings == nil then
-		local saved = ADDON and ADDON:LoadData("targetdebufftracker_icon_settings") or nil
+		local saved = nil
+		if ADDON ~= nil then
+			saved = ADDON:LoadData(shared.dataKeys.iconSettings) or ADDON:LoadData(shared.dataKeys.legacyIconSettings)
+		end
 		local legacyTarget = loadLegacyScopeSettings("target")
 		local legacySelf = loadLegacyScopeSettings("self")
 
@@ -250,8 +386,8 @@ end
 function shared.SaveIconSettings()
 	local settings = ensureIconSettings()
 	if ADDON ~= nil then
-		ADDON:ClearData("targetdebufftracker_icon_settings")
-		ADDON:SaveData("targetdebufftracker_icon_settings", settings)
+		ADDON:ClearData(shared.dataKeys.iconSettings)
+		ADDON:SaveData(shared.dataKeys.iconSettings, settings)
 	end
 end
 
