@@ -88,6 +88,7 @@ function buffAnchor:OnUpdate()
 	buffAnchor:AddAnchor("TOPLEFT", "UIParent", x + 40, y - 20)
 
 	if shared.GetUiState().target.hidden then
+		local settings = shared.GetIconSettings("target", "hidden")
 		local buffCounter = 0
 		local buffCount = X2Unit:UnitHiddenBuffCount("target")
 		for i = 1, buffCount do
@@ -106,8 +107,8 @@ function buffAnchor:OnUpdate()
 					buffAnchor,
 					iconId,
 					buffExtra["path"],
-					30 * buffCounter,
-					0,
+					settings.x + ((settings.iconSize + 5) * buffCounter),
+					settings.y,
 					shared.FormatDuration(duration)
 				)
 				buffCounter = buffCounter + 1

@@ -18,7 +18,7 @@ shared.effectFiles = shared.effectFiles
 		},
 	}
 
-shared.iconSettingFiles = shared.iconSettingFiles
+shared.legacyIconSettingFiles = shared.legacyIconSettingFiles
 	or {
 		target = "buffIconInfo.txt",
 		self = "selfabuffIconInfo.txt",
@@ -164,27 +164,32 @@ function shared.GetUiState()
 	return ensureUiState()
 end
 
-function shared.GetIconSettings(scope)
-	if shared.iconSettings == nil then
-		shared.iconSettings = {}
+local function normalizeIconSettingEntry(value, defaults)
+	if type(value) ~= "table" then
+		return {
+			iconSize = defaults.iconSize,
+			x = defaults.x,
+			y = defaults.y,
+		}
 	end
 
-	if shared.iconSettings[scope] ~= nil then
-		return shared.iconSettings[scope]
-	end
+	return {
+		iconSize = tonumber(value.iconSize) or tonumber(value.size) or defaults.iconSize,
+		x = tonumber(value.x) or defaults.x,
+		y = tonumber(value.y) or defaults.y,
+	}
+end
 
+local function loadLegacyScopeSettings(scope)
 	local defaults = {
-		iconSize = 25,
-		buffsX = 0,
-		buffsY = 0,
-		debuffsX = 0,
-		debuffsY = 0,
+		buff = { iconSize = 25, x = 0, y = 0 },
+		debuff = { iconSize = 25, x = 0, y = 35 },
+		hidden = { iconSize = 25, x = 0, y = 0 },
 	}
 
-	local filename = shared.iconSettingFiles[scope]
+	local filename = shared.legacyIconSettingFiles[scope]
 	local file = filename and io.open(filename, "r") or nil
 	if file == nil then
-		shared.iconSettings[scope] = defaults
 		return defaults
 	end
 
@@ -200,20 +205,84 @@ function shared.GetIconSettings(scope)
 		iconSize, buffsX, buffsY, debuffsX, debuffsY =
 			line:match("(%-?%d+),(%-?%d+),(%-?%d+),(%-?%d+),(%-?%d+)")
 	end
+
 	if iconSize == nil then
-		shared.iconSettings[scope] = defaults
 		return defaults
 	end
 
-	shared.iconSettings[scope] = {
-		iconSize = tonumber(iconSize) or defaults.iconSize,
-		buffsX = tonumber(buffsX) or defaults.buffsX,
-		buffsY = tonumber(buffsY) or defaults.buffsY,
-		debuffsX = tonumber(debuffsX) or defaults.debuffsX,
-		debuffsY = tonumber(debuffsY) or defaults.debuffsY,
+	defaults.buff = {
+		iconSize = tonumber(iconSize) or 25,
+		x = tonumber(buffsX) or 0,
+		y = tonumber(buffsY) or 0,
+	}
+	defaults.debuff = {
+		iconSize = tonumber(iconSize) or 25,
+		x = tonumber(debuffsX) or 0,
+		y = tonumber(debuffsY) or 35,
 	}
 
-	return shared.iconSettings[scope]
+	return defaults
+end
+
+local function ensureIconSettings()
+	if shared.iconSettings == nil then
+		local saved = ADDON and ADDON:LoadData("targetdebufftracker_icon_settings") or nil
+		local legacyTarget = loadLegacyScopeSettings("target")
+		local legacySelf = loadLegacyScopeSettings("self")
+
+		shared.iconSettings = {
+			target = {
+				buff = normalizeIconSettingEntry(saved and saved.target and saved.target.buff, legacyTarget.buff),
+				debuff = normalizeIconSettingEntry(saved and saved.target and saved.target.debuff, legacyTarget.debuff),
+				hidden = normalizeIconSettingEntry(saved and saved.target and saved.target.hidden, legacyTarget.hidden),
+			},
+			self = {
+				buff = normalizeIconSettingEntry(saved and saved.self and saved.self.buff, legacySelf.buff),
+				debuff = normalizeIconSettingEntry(saved and saved.self and saved.self.debuff, legacySelf.debuff),
+				hidden = normalizeIconSettingEntry(saved and saved.self and saved.self.hidden, legacySelf.hidden),
+			},
+		}
+	end
+
+	return shared.iconSettings
+end
+
+function shared.SaveIconSettings()
+	local settings = ensureIconSettings()
+	if ADDON ~= nil then
+		ADDON:ClearData("targetdebufftracker_icon_settings")
+		ADDON:SaveData("targetdebufftracker_icon_settings", settings)
+	end
+end
+
+function shared.GetIconSettings(scope, effectType)
+	local settings = ensureIconSettings()
+	if effectType == nil then
+		return settings[scope]
+	end
+
+	if settings[scope] == nil then
+		return { iconSize = 25, x = 0, y = 0 }
+	end
+
+	if settings[scope][effectType] == nil then
+		settings[scope][effectType] = { iconSize = 25, x = 0, y = 0 }
+	end
+
+	return settings[scope][effectType]
+end
+
+function shared.AdjustIconSettings(scope, effectType, axis, delta)
+	local setting = shared.GetIconSettings(scope, effectType)
+	if axis == "x" then
+		setting.x = setting.x + delta
+	elseif axis == "y" then
+		setting.y = setting.y + delta
+	elseif axis == "size" then
+		setting.iconSize = math.max(10, setting.iconSize + delta)
+	end
+	shared.SaveIconSettings()
+	return setting
 end
 
 local function loadTrackedTable(scope, effectType)

@@ -121,6 +121,37 @@ local function SetRowIcon(iconWidget, iconPath)
 	iconWidget:SetVisible(true)
 end
 
+local function GetPreviewIconPath(effectType)
+	if effectType == "debuff" then
+		return "Game/ui/icon/icon_item_0060.dds"
+	elseif effectType == "hidden" then
+		return "Game/ui/icon/icon_skill_buff381.dds"
+	end
+	return "Game/ui/icon/icon_skill_buff26.dds"
+end
+
+local function GetPreviewLayout(effectType)
+	if effectType == "hidden" then
+		return {
+			originX = 98,
+			originY = 54,
+			nameplateX = -78,
+			nameplateY = 10,
+			nameplateWidth = 80,
+			nameplateHeight = 30,
+		}
+	end
+
+	return {
+		originX = 34,
+		originY = 30,
+		nameplateX = 14,
+		nameplateY = 10,
+		nameplateWidth = 80,
+		nameplateHeight = 30,
+	}
+end
+
 local buffAnchor = CreateEmptyWindow("targetDebuffTrackerWatchTargetAnchor", "UIParent")
 buffAnchor:Show(true)
 DebugPrint("tracktarget.lua loaded")
@@ -197,7 +228,6 @@ function buffAnchor:OnUpdate()
 
 	local x = math.floor(0.5 + screenX)
 	local y = math.floor(0.5 + screenY)
-	local settings = shared.GetIconSettings("target")
 	local currentIcons = {}
 
 	buffAnchor:Show(true)
@@ -205,6 +235,7 @@ function buffAnchor:OnUpdate()
 	buffAnchor:AddAnchor("TOPLEFT", "UIParent", x - 50, y - 40)
 
 	if shared.GetUiState().target.buff then
+		local settings = shared.GetIconSettings("target", "buff")
 		local buffCounter = 0
 		local buffCount = X2Unit:UnitBuffCount("watchtarget")
 		for i = 1, buffCount do
@@ -218,8 +249,8 @@ function buffAnchor:OnUpdate()
 					buffAnchor,
 					iconId,
 					buffExtra["path"],
-					settings.buffsX + ((settings.iconSize + 5) * buffCounter),
-					settings.buffsY,
+					settings.x + ((settings.iconSize + 5) * buffCounter),
+					settings.y,
 					shared.FormatDuration(buff["timeLeft"] and math.floor(buff["timeLeft"] / 1000) or ""),
 					buff["stack"],
 					settings.iconSize
@@ -230,6 +261,7 @@ function buffAnchor:OnUpdate()
 	end
 
 	if shared.GetUiState().target.debuff then
+		local settings = shared.GetIconSettings("target", "debuff")
 		local debuffCounter = 0
 		local debuffCount = X2Unit:UnitDeBuffCount("watchtarget")
 		for i = 1, debuffCount do
@@ -243,8 +275,8 @@ function buffAnchor:OnUpdate()
 					buffAnchor,
 					iconId,
 					debuffExtra["path"],
-					settings.debuffsX + ((settings.iconSize + 5) * debuffCounter),
-					settings.debuffsY + 35,
+					settings.x + ((settings.iconSize + 5) * debuffCounter),
+					settings.y,
 					shared.FormatDuration(debuff["timeLeft"] and math.floor(debuff["timeLeft"] / 1000) or ""),
 					debuff["stack"],
 					settings.iconSize
@@ -386,6 +418,10 @@ end
 
 local managerButton = nil
 local managerWindow = nil
+local positionButton = nil
+local positionWindow
+local positionModeScope = "target"
+local positionModeEffect = "buff"
 local uiState = shared.GetUiState()
 local trackedPage = 1
 local availablePage = 1
@@ -402,6 +438,12 @@ local trackedPrevButton = nil
 local trackedNextButton = nil
 local availablePrevButton = nil
 local availableNextButton = nil
+local positionModeButtons = {}
+local positionStatusLabel
+local positionPreviewOrigin
+local positionPreviewBox
+local positionPreviewName
+local positionPreviewIcons = {}
 
 local initOk, initErr = pcall(function()
 	DebugPrint("init: before CreateSimpleButton")
@@ -528,6 +570,12 @@ local initOk, initErr = pcall(function()
 	ApplyLocalButtonStyle(availableNextButton)
 	availableNextButton:SetExtent(30, 24)
 	availableNextButton:AddAnchor("TOPRIGHT", managerWindow, -18, 302)
+
+	positionButton = managerWindow:CreateChildWidget("button", "positionButton", 0, true)
+	ApplyLocalButtonStyle(positionButton)
+	positionButton:SetExtent(198, 32)
+	positionButton:AddAnchor("TOPLEFT", managerWindow, 20, 392)
+	positionButton:SetText("Position")
 end)
 
 if not initOk then
@@ -582,6 +630,218 @@ filterButton:SetHandler("OnClick", function()
 	uiState.filterTrackedOnly = not uiState.filterTrackedOnly
 	shared.SaveUiState()
 end)
+
+positionWindow = CreateEmptyWindow("targetDebuffTrackerPositionWindow", "UIParent")
+positionWindow:AddAnchor("CENTER", "UIParent", 300, 0)
+positionWindow:SetExtent(260, 430)
+positionWindow:Show(false)
+
+do
+	local bg = positionWindow:CreateColorDrawable(0.08, 0.06, 0.04, 0.96, "background")
+	bg:AddAnchor("TOPLEFT", positionWindow, 0, 0)
+	bg:AddAnchor("BOTTOMRIGHT", positionWindow, 0, 0)
+
+	local top = positionWindow:CreateColorDrawable(0.65, 0.55, 0.35, 0.9, "artwork")
+	top:AddAnchor("TOPLEFT", positionWindow, 0, 0)
+	top:SetExtent(260, 2)
+	local bottom = positionWindow:CreateColorDrawable(0.65, 0.55, 0.35, 0.9, "artwork")
+	bottom:AddAnchor("BOTTOMLEFT", positionWindow, 0, 0)
+	bottom:SetExtent(260, 2)
+	local left = positionWindow:CreateColorDrawable(0.65, 0.55, 0.35, 0.9, "artwork")
+	left:AddAnchor("TOPLEFT", positionWindow, 0, 0)
+	left:SetExtent(2, 430)
+	local right = positionWindow:CreateColorDrawable(0.65, 0.55, 0.35, 0.9, "artwork")
+	right:AddAnchor("TOPRIGHT", positionWindow, 0, 0)
+	right:SetExtent(2, 430)
+
+	local title = positionWindow:CreateChildWidget("label", "title", 0, true)
+	title:AddAnchor("TOPLEFT", positionWindow, 16, 12)
+	title:SetExtent(150, 24)
+	ApplyLocalLabelStyle(title, 18, ALIGN_LEFT, 1, 0.97, 0.92)
+	title:SetText("Position")
+
+	local closeButton = positionWindow:CreateChildWidget("button", "closeButton", 0, true)
+	ApplyLocalButtonStyle(closeButton)
+	closeButton:SetExtent(30, 24)
+	closeButton:AddAnchor("TOPRIGHT", positionWindow, -12, 8)
+	closeButton:SetText("X")
+	closeButton:SetHandler("OnClick", function()
+		positionWindow:Show(false)
+	end)
+
+	positionWindow:EnableDrag(true)
+	positionWindow:SetHandler("OnDragStart", function(self)
+		self:StartMoving()
+		return true
+	end)
+	positionWindow:SetHandler("OnDragStop", function(self)
+		self:StopMovingOrSizing()
+	end)
+
+	local function makePositionModeButton(index, scope, effectType, text)
+		local button = positionWindow:CreateChildWidget("button", "modeButton", index, true)
+		ApplyLocalButtonStyle(button)
+		button:SetExtent(108, 28)
+		local col = (index - 1) % 2
+		local row = math.floor((index - 1) / 2)
+		button:AddAnchor("TOPLEFT", positionWindow, 16 + (col * 116), 48 + (row * 34))
+		button:SetText(text)
+		button:SetHandler("OnClick", function()
+			positionModeScope = scope
+			positionModeEffect = effectType
+		end)
+		positionModeButtons[#positionModeButtons + 1] = {
+			button = button,
+			scope = scope,
+			effectType = effectType,
+			baseText = text,
+		}
+	end
+
+	makePositionModeButton(1, "target", "buff", "Target Buffs")
+	makePositionModeButton(2, "target", "debuff", "Target Debuffs")
+	makePositionModeButton(3, "target", "hidden", "Target Hidden")
+	makePositionModeButton(4, "self", "buff", "Self Buffs")
+	makePositionModeButton(5, "self", "debuff", "Self Debuffs")
+	makePositionModeButton(6, "self", "hidden", "Self Hidden")
+
+	positionStatusLabel = positionWindow:CreateChildWidget("label", "status", 0, true)
+	positionStatusLabel:AddAnchor("TOPLEFT", positionWindow, 16, 156)
+	positionStatusLabel:SetExtent(228, 40)
+	ApplyLocalLabelStyle(positionStatusLabel, 14, ALIGN_LEFT, 0.96, 0.90, 0.78)
+
+	local previewOffsetX = 16
+	local previewOffsetY = 206
+
+	local previewBg = positionWindow:CreateColorDrawable(0.12, 0.10, 0.08, 0.65, "background")
+	previewBg:AddAnchor("TOPLEFT", positionWindow, previewOffsetX, previewOffsetY)
+	previewBg:SetExtent(228, 86)
+
+	positionPreviewOrigin = CreateEmptyWindow("targetDebuffTrackerPositionPreviewOrigin", "UIParent")
+	positionPreviewOrigin:SetExtent(1, 1)
+	positionPreviewOrigin:AddAnchor("TOPLEFT", positionWindow, previewOffsetX + 34, previewOffsetY + 30)
+	positionPreviewOrigin:Show(true)
+
+	positionPreviewBox = positionWindow:CreateColorDrawable(0.28, 0.42, 0.18, 0.95, "artwork")
+	positionPreviewBox:SetExtent(80, 30)
+	positionPreviewBox:AddAnchor("TOPLEFT", positionPreviewOrigin, 14, 10)
+
+	local previewBoxBorderTop = positionWindow:CreateColorDrawable(0.84, 0.88, 0.74, 0.9, "overlay")
+	previewBoxBorderTop:SetExtent(80, 1)
+	previewBoxBorderTop:AddAnchor("TOPLEFT", positionPreviewBox, 0, 0)
+	local previewBoxBorderBottom = positionWindow:CreateColorDrawable(0.20, 0.26, 0.14, 0.9, "overlay")
+	previewBoxBorderBottom:SetExtent(80, 1)
+	previewBoxBorderBottom:AddAnchor("BOTTOMLEFT", positionPreviewBox, 0, 0)
+	local previewBoxBorderLeft = positionWindow:CreateColorDrawable(0.84, 0.88, 0.74, 0.9, "overlay")
+	previewBoxBorderLeft:SetExtent(1, 30)
+	previewBoxBorderLeft:AddAnchor("TOPLEFT", positionPreviewBox, 0, 0)
+	local previewBoxBorderRight = positionWindow:CreateColorDrawable(0.20, 0.26, 0.14, 0.9, "overlay")
+	previewBoxBorderRight:SetExtent(1, 30)
+	previewBoxBorderRight:AddAnchor("TOPRIGHT", positionPreviewBox, 0, 0)
+
+	positionPreviewName = positionWindow:CreateChildWidget("label", "previewName", 0, true)
+	positionPreviewName:AddAnchor("TOPLEFT", positionPreviewBox, 6, 6)
+	positionPreviewName:SetExtent(68, 18)
+	ApplyLocalLabelStyle(positionPreviewName, 13, ALIGN_CENTER, 1, 1, 1)
+	positionPreviewName:SetText("Strawberry")
+
+	for i = 1, 4 do
+		local icon = positionWindow:CreateIconDrawable("artwork")
+		icon:SetExtent(25, 25)
+		icon:SetVisible(true)
+		positionPreviewIcons[i] = icon
+	end
+
+	local function makeAdjustButton(name, text, x, y, axis, delta)
+		local button = positionWindow:CreateChildWidget("button", name, 0, true)
+		ApplyLocalButtonStyle(button)
+		button:SetExtent(70, 28)
+		button:AddAnchor("TOPLEFT", positionWindow, x, y)
+		button:SetText(text)
+		button:SetHandler("OnClick", function()
+			shared.AdjustIconSettings(positionModeScope, positionModeEffect, axis, delta)
+		end)
+	end
+
+	makeAdjustButton("upButton", "^", 94, 304, "y", -5)
+	makeAdjustButton("leftButton", "<", 16, 338, "x", -5)
+	makeAdjustButton("rightButton", ">", 172, 338, "x", 5)
+	makeAdjustButton("downButton", "v", 94, 372, "y", 5)
+	makeAdjustButton("biggerButton", "Bigger", 16, 400, "size", 5)
+	makeAdjustButton("smallerButton", "Smaller", 126, 400, "size", -5)
+
+	function positionWindow:OnUpdate(dt)
+		if not self:IsVisible() then
+			return
+		end
+
+		self.elapsed = (self.elapsed or 0) + dt
+		if self.elapsed < 0.15 then
+			return
+		end
+		self.elapsed = 0
+
+		local current = shared.GetIconSettings(positionModeScope, positionModeEffect)
+		local layout = GetPreviewLayout(positionModeEffect)
+		positionStatusLabel:SetText(
+			string.format(
+				"%s\nX: %d  Y: %d  Size: %d",
+				categoryTitle(positionModeScope, positionModeEffect),
+				current.x,
+				current.y,
+				current.iconSize
+			)
+		)
+
+		local previewTexture = GetPreviewIconPath(positionModeEffect)
+		positionPreviewOrigin:RemoveAllAnchors()
+		positionPreviewOrigin:AddAnchor(
+			"TOPLEFT",
+			positionWindow,
+			previewOffsetX + layout.originX,
+			previewOffsetY + layout.originY
+		)
+
+		positionPreviewBox:RemoveAllAnchors()
+		positionPreviewBox:SetExtent(layout.nameplateWidth, layout.nameplateHeight)
+		positionPreviewBox:AddAnchor(
+			"TOPLEFT",
+			positionPreviewOrigin,
+			layout.nameplateX,
+			layout.nameplateY
+		)
+
+		positionPreviewName:SetExtent(layout.nameplateWidth - 12, 18)
+		for i = 1, #positionPreviewIcons do
+			local icon = positionPreviewIcons[i]
+			icon:ClearAllTextures()
+			icon:AddTexture(previewTexture)
+			icon:SetExtent(current.iconSize, current.iconSize)
+			icon:RemoveAllAnchors()
+			icon:AddAnchor(
+				"LEFT",
+				positionPreviewOrigin,
+				current.x + ((current.iconSize + 5) * (i - 1)),
+				current.y
+			)
+		end
+
+		for i = 1, #positionModeButtons do
+			local entry = positionModeButtons[i]
+			local active = entry.scope == positionModeScope and entry.effectType == positionModeEffect
+			entry.button:SetText((active and "> " or "") .. entry.baseText)
+			if entry.button.style ~= nil and entry.button.style.SetColor ~= nil then
+				if active then
+					entry.button.style:SetColor(0.10, 0.60, 0.10, 1)
+				else
+					entry.button.style:SetColor(0.08, 0.06, 0.03, 1)
+				end
+			end
+		end
+	end
+
+	positionWindow:SetHandler("OnUpdate", positionWindow.OnUpdate)
+end
 
 for i = 1, 8 do
 	local rowY = 122 + ((i - 1) * 22)
@@ -646,7 +906,14 @@ local function refreshWindow()
 	uiState = shared.GetUiState()
 	local scope = uiState.activeScope
 	local effectType = uiState.activeEffect
-	DebugPrint(string.format("refreshWindow state scope=%s effect=%s trackedOnly=%s", tostring(scope), tostring(effectType), tostring(uiState.filterTrackedOnly)))
+	DebugPrint(
+		string.format(
+			"refreshWindow state scope=%s effect=%s trackedOnly=%s",
+			tostring(scope),
+			tostring(effectType),
+			tostring(uiState.filterTrackedOnly)
+		)
+	)
 	local trackedEntries = shared.GetSortedTrackedEntries(scope, effectType)
 	local liveEntries = getLiveEffects(scope, effectType)
 	DebugPrint(string.format("refreshWindow data tracked=%s live=%s", tostring(#trackedEntries), tostring(#liveEntries)))
@@ -791,6 +1058,10 @@ managerButton:SetHandler("OnClick", function()
 	if managerWindow:IsVisible() then
 		refreshWindow()
 	end
+end)
+
+positionButton:SetHandler("OnClick", function()
+	positionWindow:Show(not positionWindow:IsVisible())
 end)
 
 DebugPrint("tracktarget.lua init complete")

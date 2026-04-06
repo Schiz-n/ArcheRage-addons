@@ -101,7 +101,6 @@ function buffAnchor:OnUpdate()
 
 	local x = math.floor(0.5 + screenX)
 	local y = math.floor(0.5 + screenY)
-	local settings = shared.GetIconSettings("target")
 	local currentIcons = {}
 
 	buffAnchor:Show(true)
@@ -109,6 +108,7 @@ function buffAnchor:OnUpdate()
 	buffAnchor:AddAnchor("TOPLEFT", "UIParent", x - 50, y - 40)
 
 	if shared.GetUiState().target.buff then
+		local settings = shared.GetIconSettings("target", "buff")
 		local buffCounter = 0
 		local buffCount = X2Unit:UnitBuffCount("target")
 		for i = 1, buffCount do
@@ -122,8 +122,8 @@ function buffAnchor:OnUpdate()
 					buffAnchor,
 					iconId,
 					buffExtra["path"],
-					settings.buffsX + ((settings.iconSize + 5) * buffCounter),
-					settings.buffsY,
+					settings.x + ((settings.iconSize + 5) * buffCounter),
+					settings.y,
 					shared.FormatDuration(buff["timeLeft"] and math.floor(buff["timeLeft"] / 1000) or ""),
 					buff["stack"],
 					settings.iconSize
@@ -134,6 +134,7 @@ function buffAnchor:OnUpdate()
 	end
 
 	if shared.GetUiState().target.debuff then
+		local settings = shared.GetIconSettings("target", "debuff")
 		local debuffCounter = 0
 		local debuffCount = X2Unit:UnitDeBuffCount("target")
 		for i = 1, debuffCount do
@@ -147,8 +148,8 @@ function buffAnchor:OnUpdate()
 					buffAnchor,
 					iconId,
 					debuffExtra["path"],
-					settings.debuffsX + ((settings.iconSize + 5) * debuffCounter),
-					settings.debuffsY + 35,
+					settings.x + ((settings.iconSize + 5) * debuffCounter),
+					settings.y,
 					shared.FormatDuration(debuff["timeLeft"] and math.floor(debuff["timeLeft"] / 1000) or ""),
 					debuff["stack"],
 					settings.iconSize
