@@ -177,6 +177,11 @@ local function setGearScoreColor(label, gearScore)
 	label.style:SetColor(red, green, 0, 1)
 end
 
+local function formatGearScore(gearScore)
+	local roundedThousands = math.floor((gearScore + 500) / 1000)
+	return string.format("%dk", roundedThousands)
+end
+
 local function updateGearLabel(uiState)
 	if uiState.showGear ~= true then
 		gearLabel:Show(false)
@@ -193,7 +198,7 @@ local function updateGearLabel(uiState)
 	end
 
 	setGearScoreColor(gearLabel, targetGearScore)
-	gearLabel:SetText(tostring(targetGearScore))
+	gearLabel:SetText(formatGearScore(targetGearScore))
 	gearLabel:RemoveAllAnchors()
 	gearLabel:AddAnchor("LEFT", buffAnchor, gearSettings.x, gearSettings.y)
 	gearLabel:Show(true)

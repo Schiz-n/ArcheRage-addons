@@ -580,9 +580,15 @@ function shared.FormatDuration(seconds)
 		return tostring(math.floor(numeric))
 	end
 
-	local minutes = math.floor(numeric / 60)
-	local remainingSeconds = math.floor(numeric % 60)
-	return string.format("%d:%02d", minutes, remainingSeconds)
+	if numeric < 3600 then
+		return string.format("%dm", math.floor(numeric / 60))
+	end
+
+	if numeric < 86400 then
+		return string.format("%dh", math.floor(numeric / 3600))
+	end
+
+	return string.format("%dd", math.floor(numeric / 86400))
 end
 
 function shared.GetSortedTrackedEntries(scope, effectType)
