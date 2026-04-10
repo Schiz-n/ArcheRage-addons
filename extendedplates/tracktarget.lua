@@ -113,6 +113,7 @@ local function CreateLocalEditBox(parent, id, width)
 	edit:SetHeight(26)
 	edit:SetWidth(width)
 	edit:SetInset(5, 5, 5, 5)
+	edit:EnableFocus(true)
 	edit:UseSelectAllWhenFocused(true)
 	edit.style:SetAlign(ALIGN_LEFT)
 	edit.style:SetColorByKey("title")
@@ -752,6 +753,9 @@ showCastbarSettingsButton:AddAnchor("TOPLEFT", managerWindow, 160, 562)
 showCastbarSettingsButton:SetText("...")
 showCastbarSettingsButton:SetHandler("OnClick", function()
 	infoSettingsMode = "castbar"
+	local settings = shared.GetCastbarSettings()
+	castbarWidthEdit:SetText(tostring(settings.width))
+	castbarHeightEdit:SetText(tostring(settings.height))
 	if infoSettingsWindow ~= nil then
 		infoSettingsWindow:Show(true)
 	end
@@ -1154,12 +1158,6 @@ do
 			castbarSettingsPreviewSpell:Show(true)
 			castbarSettingsPreviewTime:Show(true)
 			setCastbarControlVisible(true)
-			if castbarWidthEdit:GetText() ~= tostring(settings.width) then
-				castbarWidthEdit:SetText(tostring(settings.width))
-			end
-			if castbarHeightEdit:GetText() ~= tostring(settings.height) then
-				castbarHeightEdit:SetText(tostring(settings.height))
-			end
 		end
 
 		for i = 1, #controlButtons do
