@@ -131,6 +131,7 @@ local function ensureUiState()
 		showGear = true,
 		showClass = true,
 		showDistance = true,
+		showCastbar = true,
 		distanceSettings = {
 			x = -6,
 			y = 20,
@@ -148,6 +149,12 @@ local function ensureUiState()
 			labelY = 24,
 			showIcon = true,
 			showWords = true,
+		},
+		castbarSettings = {
+			x = -60,
+			y = 0,
+			width = 120,
+			height = 18,
 		},
 		target = {
 			buff = true,
@@ -178,6 +185,9 @@ local function ensureUiState()
 		if saved.showDistance ~= nil then
 			shared.uiState.showDistance = saved.showDistance == true
 		end
+		if saved.showCastbar ~= nil then
+			shared.uiState.showCastbar = saved.showCastbar == true
+		end
 		if type(saved.distanceSettings) == "table" then
 			shared.uiState.distanceSettings.x = tonumber(saved.distanceSettings.x) or shared.uiState.distanceSettings.x
 			shared.uiState.distanceSettings.y = tonumber(saved.distanceSettings.y) or shared.uiState.distanceSettings.y
@@ -203,6 +213,14 @@ local function ensureUiState()
 			if saved.classSettings.showWords ~= nil then
 				shared.uiState.classSettings.showWords = saved.classSettings.showWords == true
 			end
+		end
+		if type(saved.castbarSettings) == "table" then
+			shared.uiState.castbarSettings.x = tonumber(saved.castbarSettings.x) or shared.uiState.castbarSettings.x
+			shared.uiState.castbarSettings.y = tonumber(saved.castbarSettings.y) or shared.uiState.castbarSettings.y
+			shared.uiState.castbarSettings.width =
+				tonumber(saved.castbarSettings.width) or shared.uiState.castbarSettings.width
+			shared.uiState.castbarSettings.height =
+				tonumber(saved.castbarSettings.height) or shared.uiState.castbarSettings.height
 		end
 
 		for _, scope in ipairs({ "target", "self" }) do
@@ -294,6 +312,37 @@ function shared.ToggleClassSetting(flagName)
 		settings[flagName] = not settings[flagName]
 		shared.SaveUiState()
 	end
+	return settings
+end
+
+function shared.GetCastbarSettings()
+	return ensureUiState().castbarSettings
+end
+
+function shared.AdjustCastbarSettings(axis, delta)
+	local settings = shared.GetCastbarSettings()
+	if axis == "x" then
+		settings.x = settings.x + delta
+	elseif axis == "y" then
+		settings.y = settings.y + delta
+	elseif axis == "width" then
+		settings.width = math.max(40, settings.width + delta)
+	elseif axis == "height" then
+		settings.height = math.max(8, settings.height + delta)
+	end
+	shared.SaveUiState()
+	return settings
+end
+
+function shared.SetCastbarSettings(width, height)
+	local settings = shared.GetCastbarSettings()
+	if tonumber(width) ~= nil then
+		settings.width = math.max(40, math.floor(tonumber(width) + 0.5))
+	end
+	if tonumber(height) ~= nil then
+		settings.height = math.max(8, math.floor(tonumber(height) + 0.5))
+	end
+	shared.SaveUiState()
 	return settings
 end
 

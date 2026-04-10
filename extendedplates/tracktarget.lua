@@ -18,6 +18,8 @@ ADDON:ImportObject(OBJECT_TYPE.WINDOW)
 ADDON:ImportObject(OBJECT_TYPE.LABEL)
 ADDON:ImportObject(OBJECT_TYPE.ICON_DRAWABLE)
 ADDON:ImportObject(OBJECT_TYPE.IMAGE_DRAWABLE)
+ADDON:ImportObject(OBJECT_TYPE.EDITBOX)
+ADDON:ImportObject(OBJECT_TYPE.X2_EDITBOX)
 
 ADDON:ImportAPI(API_TYPE.OPTION.id)
 ADDON:ImportAPI(API_TYPE.CHAT.id)
@@ -104,6 +106,23 @@ local function ApplyLocalLabelStyle(widget, fontSize, align, red, green, blue)
 	if widget.style.SetColor ~= nil then
 		widget.style:SetColor(red or 1, green or 1, blue or 1, 1)
 	end
+end
+
+local function CreateLocalEditBox(parent, id, width)
+	local edit = parent:CreateChildWidgetByType(UOT_X2_EDITBOX, id, 0, true)
+	edit:SetHeight(26)
+	edit:SetWidth(width)
+	edit:SetInset(5, 5, 5, 5)
+	edit:UseSelectAllWhenFocused(true)
+	edit.style:SetAlign(ALIGN_LEFT)
+	edit.style:SetColorByKey("title")
+
+	local bg = edit:CreateDrawable("ui/common/default.dds", "editbox_df", "background")
+	bg:AddAnchor("TOPLEFT", edit, 0, 0)
+	bg:AddAnchor("BOTTOMRIGHT", edit, 0, 0)
+	edit.bg = bg
+
+	return edit
 end
 
 local function SetRowIcon(iconWidget, iconPath)
@@ -441,9 +460,11 @@ local availableNextButton = nil
 local showGearButton = nil
 local showClassButton = nil
 local showDistanceButton = nil
+local showCastbarButton = nil
 local showGearSettingsButton = nil
 local showClassSettingsButton = nil
 local showDistanceSettingsButton = nil
+local showCastbarSettingsButton = nil
 local positionModeButtons = {}
 local infoSettingsWindow = nil
 local infoSettingsTitle = nil
@@ -453,6 +474,12 @@ local distanceSettingsPreview = nil
 local gearSettingsPreview = nil
 local classSettingsPreviewIcon = nil
 local classSettingsPreviewLabel = nil
+local castbarSettingsPreview = nil
+local castbarSettingsPreviewFill = nil
+local castbarSettingsPreviewSpell = nil
+local castbarSettingsPreviewTime = nil
+local castbarWidthEdit = nil
+local castbarHeightEdit = nil
 local infoSettingsMode = "distance"
 local positionStatusLabel
 local positionPreviewOrigin
@@ -709,6 +736,27 @@ showDistanceSettingsButton:SetHandler("OnClick", function()
 	end
 end)
 
+showCastbarButton = managerWindow:CreateChildWidget("button", "showCastbarButton", 0, true)
+ApplyLocalButtonStyle(showCastbarButton)
+showCastbarButton:SetExtent(132, 32)
+showCastbarButton:AddAnchor("TOPLEFT", managerWindow, 20, 562)
+showCastbarButton:SetHandler("OnClick", function()
+	uiState.showCastbar = not uiState.showCastbar
+	shared.SaveUiState()
+end)
+
+showCastbarSettingsButton = managerWindow:CreateChildWidget("button", "showCastbarSettingsButton", 0, true)
+ApplyLocalButtonStyle(showCastbarSettingsButton)
+showCastbarSettingsButton:SetExtent(58, 32)
+showCastbarSettingsButton:AddAnchor("TOPLEFT", managerWindow, 160, 562)
+showCastbarSettingsButton:SetText("...")
+showCastbarSettingsButton:SetHandler("OnClick", function()
+	infoSettingsMode = "castbar"
+	if infoSettingsWindow ~= nil then
+		infoSettingsWindow:Show(true)
+	end
+end)
+
 positionWindow = CreateEmptyWindow("targetDebuffTrackerPositionWindow", "UIParent")
 positionWindow:AddAnchor("CENTER", "UIParent", 300, 0)
 positionWindow:SetExtent(260, 430)
@@ -805,7 +853,32 @@ do
 	classSettingsPreviewLabel:SetText("Blade Dancer")
 	classSettingsPreviewLabel:AddAnchor("LEFT", previewPlate, 114, 24)
 
+	castbarSettingsPreview = infoSettingsWindow:CreateColorDrawable(0.10, 0.08, 0.05, 0.98, "artwork")
+	castbarSettingsPreview:SetExtent(120, 18)
+	castbarSettingsPreview:AddAnchor("TOPLEFT", infoSettingsWindow, 100, 266)
+
+	castbarSettingsPreviewFill = infoSettingsWindow:CreateColorDrawable(0.86, 0.68, 0.18, 0.95, "overlay")
+	castbarSettingsPreviewFill:SetExtent(72, 12)
+	castbarSettingsPreviewFill:AddAnchor("TOPLEFT", castbarSettingsPreview, 4, 3)
+
+	castbarSettingsPreviewSpell = infoSettingsWindow:CreateChildWidget("label", "castbarSpellPreview", 0, true)
+	ApplyLocalLabelStyle(castbarSettingsPreviewSpell, 13, ALIGN_LEFT, 1, 1, 1)
+	castbarSettingsPreviewSpell:SetText("Meteo..")
+	castbarSettingsPreviewSpell:AddAnchor("TOPLEFT", castbarSettingsPreview, 0, 20)
+
+	castbarSettingsPreviewTime = infoSettingsWindow:CreateChildWidget("label", "castbarTimePreview", 0, true)
+	ApplyLocalLabelStyle(castbarSettingsPreviewTime, 13, ALIGN_RIGHT, 1, 1, 1)
+	castbarSettingsPreviewTime:SetText("1.2 / 2.0")
+	castbarSettingsPreviewTime:AddAnchor("RIGHT", castbarSettingsPreview, -6, 0)
+
 	local controlButtons = {}
+	local castbarControls = {}
+
+	local function setCastbarControlVisible(visible)
+		for i = 1, #castbarControls do
+			castbarControls[i]:Show(visible)
+		end
+	end
 
 	local function makeInfoAdjustButton(name, text, x, y, mode, handler)
 		local button = infoSettingsWindow:CreateChildWidget("button", name, 0, true)
@@ -890,6 +963,69 @@ do
 		shared.AdjustClassSettings("label", "x", 5)
 	end)
 
+	makeInfoAdjustButton("castbarUpButton", "^", 112, 382, "castbar", function()
+		shared.AdjustCastbarSettings("y", -5)
+	end)
+	makeInfoAdjustButton("castbarLeftButton", "<", 16, 418, "castbar", function()
+		shared.AdjustCastbarSettings("x", -5)
+	end)
+	makeInfoAdjustButton("castbarDownButton", "v", 112, 418, "castbar", function()
+		shared.AdjustCastbarSettings("y", 5)
+	end)
+	makeInfoAdjustButton("castbarRightButton", ">", 208, 418, "castbar", function()
+		shared.AdjustCastbarSettings("x", 5)
+	end)
+
+	local widthLabel = infoSettingsWindow:CreateChildWidget("label", "castbarWidthLabel", 0, true)
+	widthLabel:AddAnchor("TOPLEFT", infoSettingsWindow, 16, 318)
+	widthLabel:SetExtent(54, 24)
+	ApplyLocalLabelStyle(widthLabel, 13, ALIGN_LEFT, 1, 1, 1)
+	widthLabel:SetText("Width")
+	castbarControls[#castbarControls + 1] = widthLabel
+
+	castbarWidthEdit = CreateLocalEditBox(infoSettingsWindow, "castbarWidthEdit", 70)
+	castbarWidthEdit:AddAnchor("TOPLEFT", infoSettingsWindow, 76, 310)
+	castbarControls[#castbarControls + 1] = castbarWidthEdit
+
+	local heightLabel = infoSettingsWindow:CreateChildWidget("label", "castbarHeightLabel", 0, true)
+	heightLabel:AddAnchor("TOPLEFT", infoSettingsWindow, 160, 318)
+	heightLabel:SetExtent(54, 24)
+	ApplyLocalLabelStyle(heightLabel, 13, ALIGN_LEFT, 1, 1, 1)
+	heightLabel:SetText("Height")
+	castbarControls[#castbarControls + 1] = heightLabel
+
+	castbarHeightEdit = CreateLocalEditBox(infoSettingsWindow, "castbarHeightEdit", 70)
+	castbarHeightEdit:AddAnchor("TOPLEFT", infoSettingsWindow, 224, 310)
+	castbarControls[#castbarControls + 1] = castbarHeightEdit
+
+	local applyCastbarButton = infoSettingsWindow:CreateChildWidget("button", "applyCastbarButton", 0, true)
+	ApplyLocalButtonStyle(applyCastbarButton)
+	applyCastbarButton:SetExtent(88, 30)
+	applyCastbarButton:AddAnchor("TOPLEFT", infoSettingsWindow, 16, 346)
+	applyCastbarButton:SetText("Apply Size")
+	castbarControls[#castbarControls + 1] = applyCastbarButton
+
+	local function applyCastbarSize()
+		local width = tonumber(castbarWidthEdit:GetText() or "")
+		local height = tonumber(castbarHeightEdit:GetText() or "")
+		if width == nil or height == nil then
+			X2Chat:DispatchChatMessage(CMF_SYSTEM, "Extended Plates castbar size must use numbers.")
+			return
+		end
+
+		local settings = shared.SetCastbarSettings(width, height)
+		castbarWidthEdit:SetText(tostring(settings.width))
+		castbarHeightEdit:SetText(tostring(settings.height))
+	end
+
+	applyCastbarButton:SetHandler("OnClick", function()
+		if infoSettingsMode == "castbar" then
+			applyCastbarSize()
+		end
+	end)
+	castbarWidthEdit:SetHandler("OnEnterPressed", applyCastbarSize)
+	castbarHeightEdit:SetHandler("OnEnterPressed", applyCastbarSize)
+
 	function infoSettingsWindow:OnUpdate(dt)
 		if not self:IsVisible() then
 			return
@@ -926,6 +1062,11 @@ do
 			gearSettingsPreview:Show(false)
 			classSettingsPreviewIcon:SetVisible(false)
 			classSettingsPreviewLabel:Show(false)
+			castbarSettingsPreview:Show(false)
+			castbarSettingsPreviewFill:Show(false)
+			castbarSettingsPreviewSpell:Show(false)
+			castbarSettingsPreviewTime:Show(false)
+			setCastbarControlVisible(false)
 		elseif infoSettingsMode == "gear" then
 			local settings = shared.GetGearSettings()
 			infoSettingsTitle:SetText("Gear Settings")
@@ -943,7 +1084,12 @@ do
 			gearSettingsPreview:Show(true)
 			classSettingsPreviewIcon:SetVisible(false)
 			classSettingsPreviewLabel:Show(false)
-		else
+			castbarSettingsPreview:Show(false)
+			castbarSettingsPreviewFill:Show(false)
+			castbarSettingsPreviewSpell:Show(false)
+			castbarSettingsPreviewTime:Show(false)
+			setCastbarControlVisible(false)
+		elseif infoSettingsMode == "class" then
 			local settings = shared.GetClassSettings()
 			infoSettingsTitle:SetText("Class Settings")
 			infoSettingsStatus:SetText(
@@ -966,6 +1112,54 @@ do
 			classSettingsPreviewLabel:RemoveAllAnchors()
 			classSettingsPreviewLabel:AddAnchor("LEFT", previewPlate, settings.labelX, settings.labelY)
 			classSettingsPreviewLabel:Show(settings.showWords == true)
+			castbarSettingsPreview:Show(false)
+			castbarSettingsPreviewFill:Show(false)
+			castbarSettingsPreviewSpell:Show(false)
+			castbarSettingsPreviewTime:Show(false)
+			setCastbarControlVisible(false)
+		else
+			local settings = shared.GetCastbarSettings()
+			infoSettingsTitle:SetText("Castbar Settings")
+			infoSettingsStatus:SetText(
+				string.format(
+					"Width: %d\nHeight: %d\nPosition X: %d\nPosition Y: %d",
+					settings.width,
+					settings.height,
+					settings.x,
+					settings.y
+				)
+			)
+			infoSettingsMessage:SetText("Use the input fields for size and arrows to move the castbar on the nameplate.")
+			distanceSettingsPreview:Show(false)
+			gearSettingsPreview:Show(false)
+			classSettingsPreviewIcon:SetVisible(false)
+			classSettingsPreviewLabel:Show(false)
+			castbarSettingsPreview:RemoveAllAnchors()
+			castbarSettingsPreview:SetExtent(settings.width, settings.height)
+			castbarSettingsPreview:AddAnchor("TOPLEFT", previewPlate, settings.x, 34 + settings.y)
+			castbarSettingsPreviewFill:RemoveAllAnchors()
+			castbarSettingsPreviewFill:SetExtent(
+				math.max(8, math.floor((settings.width - 8) * 0.6)),
+				math.max(6, settings.height - 6)
+			)
+			castbarSettingsPreviewFill:AddAnchor("TOPLEFT", castbarSettingsPreview, 4, 3)
+			castbarSettingsPreviewSpell:RemoveAllAnchors()
+			castbarSettingsPreviewSpell:AddAnchor("TOPLEFT", castbarSettingsPreview, 0, 20)
+			castbarSettingsPreviewSpell:SetExtent(settings.width, 18)
+			castbarSettingsPreviewTime:RemoveAllAnchors()
+			castbarSettingsPreviewTime:AddAnchor("RIGHT", castbarSettingsPreview, -6, 0)
+			castbarSettingsPreviewTime:SetExtent(72, 18)
+			castbarSettingsPreview:Show(true)
+			castbarSettingsPreviewFill:Show(true)
+			castbarSettingsPreviewSpell:Show(true)
+			castbarSettingsPreviewTime:Show(true)
+			setCastbarControlVisible(true)
+			if castbarWidthEdit:GetText() ~= tostring(settings.width) then
+				castbarWidthEdit:SetText(tostring(settings.width))
+			end
+			if castbarHeightEdit:GetText() ~= tostring(settings.height) then
+				castbarHeightEdit:SetText(tostring(settings.height))
+			end
 		end
 
 		for i = 1, #controlButtons do
@@ -1271,6 +1465,7 @@ local function refreshWindow()
 	showGearButton:SetText("Show Gear [" .. (uiState.showGear and "ON" or "OFF") .. "]")
 	showClassButton:SetText("Show Class [" .. (uiState.showClass and "ON" or "OFF") .. "]")
 	showDistanceButton:SetText("Show Distance [" .. (uiState.showDistance and "ON" or "OFF") .. "]")
+	showCastbarButton:SetText("Show Castbar [" .. (uiState.showCastbar and "ON" or "OFF") .. "]")
 
 	for _, scopeName in ipairs({ "target", "self" }) do
 		for _, effectName in ipairs({ "buff", "debuff", "hidden" }) do
