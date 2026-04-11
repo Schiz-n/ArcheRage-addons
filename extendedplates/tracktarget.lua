@@ -19,6 +19,7 @@ ADDON:ImportObject(OBJECT_TYPE.LABEL)
 ADDON:ImportObject(OBJECT_TYPE.ICON_DRAWABLE)
 ADDON:ImportObject(OBJECT_TYPE.IMAGE_DRAWABLE)
 ADDON:ImportObject(OBJECT_TYPE.EDITBOX)
+ADDON:ImportObject(OBJECT_TYPE.EDITBOX_MULTILINE)
 ADDON:ImportObject(OBJECT_TYPE.X2_EDITBOX)
 
 ADDON:ImportAPI(API_TYPE.OPTION.id)
@@ -123,6 +124,22 @@ local function CreateLocalEditBox(parent, id, width)
 	bg:AddAnchor("BOTTOMRIGHT", edit, 0, 0)
 	edit.bg = bg
 
+	return edit
+end
+
+local function CreateLocalMultiLineEdit(parent, id, width, height)
+	local edit = parent:CreateChildWidgetByType(UOT_EDITBOX_MULTILINE, id, 0, true)
+	edit:SetInset(10, 10, 15, 0)
+	edit:SetWidth(width)
+	edit:SetHeight(height)
+	edit:EnableFocus(true)
+	edit:SetMaxTextLength(65535)
+	edit.style:SetAlign(ALIGN_TOP_LEFT)
+	edit.guideTextStyle:SetAlign(ALIGN_TOP_LEFT)
+	local bg = edit:CreateDrawable("ui/common/default.dds", "editbox_df", "background")
+	bg:AddAnchor("TOPLEFT", edit, 0, 0)
+	bg:AddAnchor("BOTTOMRIGHT", edit, 0, 0)
+	edit.bg = bg
 	return edit
 end
 
@@ -458,6 +475,9 @@ local trackedPrevButton = nil
 local trackedNextButton = nil
 local availablePrevButton = nil
 local availableNextButton = nil
+local addByIdButton = nil
+local exportButton = nil
+local importButton = nil
 local showGearButton = nil
 local showClassButton = nil
 local showDistanceButton = nil
@@ -482,6 +502,16 @@ local castbarSettingsPreviewTime = nil
 local castbarWidthEdit = nil
 local castbarHeightEdit = nil
 local infoSettingsMode = "distance"
+local addByIdWindow = nil
+local addByIdNameEdit = nil
+local addByIdIdEdit = nil
+local importExportWindow = nil
+local importExportTitle = nil
+local importExportMessage = nil
+local importExportEdit = nil
+local importExportActionButton = nil
+local importExportMode = "export"
+local refreshWindow = nil
 local positionStatusLabel
 local positionPreviewOrigin
 local positionPreviewBox
@@ -607,16 +637,34 @@ local initOk, initErr = pcall(function()
 	availablePrevButton:SetExtent(30, 24)
 	availablePrevButton:AddAnchor("TOPRIGHT", managerWindow, -150, 302)
 
-	availableNextButton = managerWindow:CreateChildWidget("button", "availableNextButton", 0, true)
-	DebugPrint("init: after availableNextButton")
-	availableNextButton:SetText(">")
-	ApplyLocalButtonStyle(availableNextButton)
-	availableNextButton:SetExtent(30, 24)
-	availableNextButton:AddAnchor("TOPRIGHT", managerWindow, -18, 302)
+availableNextButton = managerWindow:CreateChildWidget("button", "availableNextButton", 0, true)
+DebugPrint("init: after availableNextButton")
+availableNextButton:SetText(">")
+ApplyLocalButtonStyle(availableNextButton)
+availableNextButton:SetExtent(30, 24)
+availableNextButton:AddAnchor("TOPRIGHT", managerWindow, -18, 302)
 
-	positionButton = managerWindow:CreateChildWidget("button", "positionButton", 0, true)
-	ApplyLocalButtonStyle(positionButton)
-	positionButton:SetExtent(198, 32)
+addByIdButton = managerWindow:CreateChildWidget("button", "addByIdButton", 0, true)
+ApplyLocalButtonStyle(addByIdButton)
+addByIdButton:SetExtent(96, 24)
+addByIdButton:AddAnchor("TOPRIGHT", managerWindow, -18, 518)
+addByIdButton:SetText("Add by ID")
+
+exportButton = managerWindow:CreateChildWidget("button", "exportButton", 0, true)
+ApplyLocalButtonStyle(exportButton)
+exportButton:SetExtent(96, 24)
+exportButton:AddAnchor("TOPRIGHT", managerWindow, -18, 548)
+exportButton:SetText("Export")
+
+importButton = managerWindow:CreateChildWidget("button", "importButton", 0, true)
+ApplyLocalButtonStyle(importButton)
+importButton:SetExtent(96, 24)
+importButton:AddAnchor("TOPRIGHT", managerWindow, -18, 578)
+importButton:SetText("Import")
+
+positionButton = managerWindow:CreateChildWidget("button", "positionButton", 0, true)
+ApplyLocalButtonStyle(positionButton)
+positionButton:SetExtent(198, 32)
 	positionButton:AddAnchor("TOPLEFT", managerWindow, 20, 352)
 	positionButton:SetText("Position")
 end)
@@ -766,10 +814,444 @@ positionWindow:AddAnchor("CENTER", "UIParent", 300, 0)
 positionWindow:SetExtent(260, 430)
 positionWindow:Show(false)
 
+addByIdWindow = CreateEmptyWindow("extendedPlatesAddByIdWindow", "UIParent")
+addByIdWindow:AddAnchor("CENTER", "UIParent", 180, 40)
+addByIdWindow:SetExtent(260, 170)
+addByIdWindow:Show(false)
+
+importExportWindow = CreateEmptyWindow("extendedPlatesImportExportWindow", "UIParent")
+importExportWindow:AddAnchor("CENTER", "UIParent", 200, 20)
+importExportWindow:SetExtent(470, 340)
+importExportWindow:Show(false)
+
 infoSettingsWindow = CreateEmptyWindow("extendedPlatesInfoSettingsWindow", "UIParent")
 infoSettingsWindow:AddAnchor("CENTER", "UIParent", 300, 0)
 infoSettingsWindow:SetExtent(320, 470)
 infoSettingsWindow:Show(false)
+
+do
+	local bg = addByIdWindow:CreateColorDrawable(0.08, 0.06, 0.04, 0.96, "background")
+	bg:AddAnchor("TOPLEFT", addByIdWindow, 0, 0)
+	bg:AddAnchor("BOTTOMRIGHT", addByIdWindow, 0, 0)
+
+	local top = addByIdWindow:CreateColorDrawable(0.65, 0.55, 0.35, 0.9, "artwork")
+	top:AddAnchor("TOPLEFT", addByIdWindow, 0, 0)
+	top:SetExtent(260, 2)
+	local bottom = addByIdWindow:CreateColorDrawable(0.65, 0.55, 0.35, 0.9, "artwork")
+	bottom:AddAnchor("BOTTOMLEFT", addByIdWindow, 0, 0)
+	bottom:SetExtent(260, 2)
+	local left = addByIdWindow:CreateColorDrawable(0.65, 0.55, 0.35, 0.9, "artwork")
+	left:AddAnchor("TOPLEFT", addByIdWindow, 0, 0)
+	left:SetExtent(2, 170)
+	local right = addByIdWindow:CreateColorDrawable(0.65, 0.55, 0.35, 0.9, "artwork")
+	right:AddAnchor("TOPRIGHT", addByIdWindow, 0, 0)
+	right:SetExtent(2, 170)
+
+	local title = addByIdWindow:CreateChildWidget("label", "title", 0, true)
+	title:AddAnchor("TOPLEFT", addByIdWindow, 16, 12)
+	title:SetExtent(160, 24)
+	ApplyLocalLabelStyle(title, 18, ALIGN_LEFT, 1, 0.97, 0.92)
+	title:SetText("Add by ID")
+
+	local closeButton = addByIdWindow:CreateChildWidget("button", "closeButton", 0, true)
+	ApplyLocalButtonStyle(closeButton)
+	closeButton:SetExtent(30, 24)
+	closeButton:AddAnchor("TOPRIGHT", addByIdWindow, -12, 8)
+	closeButton:SetText("X")
+	closeButton:SetHandler("OnClick", function()
+		addByIdWindow:Show(false)
+	end)
+
+	addByIdWindow:EnableDrag(true)
+	addByIdWindow:SetHandler("OnDragStart", function(self)
+		self:StartMoving()
+		return true
+	end)
+	addByIdWindow:SetHandler("OnDragStop", function(self)
+		self:StopMovingOrSizing()
+	end)
+
+	local nameLabel = addByIdWindow:CreateChildWidget("label", "nameLabel", 0, true)
+	nameLabel:AddAnchor("TOPLEFT", addByIdWindow, 16, 48)
+	nameLabel:SetExtent(80, 20)
+	ApplyLocalLabelStyle(nameLabel, 13, ALIGN_LEFT, 1, 1, 1)
+	nameLabel:SetText("Name")
+
+	addByIdNameEdit = CreateLocalEditBox(addByIdWindow, "addByIdNameEdit", 148)
+	addByIdNameEdit:AddAnchor("TOPLEFT", addByIdWindow, 96, 42)
+
+	local idLabel = addByIdWindow:CreateChildWidget("label", "idLabel", 0, true)
+	idLabel:AddAnchor("TOPLEFT", addByIdWindow, 16, 86)
+	idLabel:SetExtent(80, 20)
+	ApplyLocalLabelStyle(idLabel, 13, ALIGN_LEFT, 1, 1, 1)
+	idLabel:SetText("ID")
+
+	addByIdIdEdit = CreateLocalEditBox(addByIdWindow, "addByIdIdEdit", 148)
+	addByIdIdEdit:AddAnchor("TOPLEFT", addByIdWindow, 96, 80)
+
+	local function submitAddById()
+		local scope = uiState.activeScope
+		local effectType = uiState.activeEffect
+		local name = tostring(addByIdNameEdit:GetText() or ""):match("^%s*(.-)%s*$")
+		local effectId = tostring(addByIdIdEdit:GetText() or ""):match("^%s*(.-)%s*$")
+
+		if name == nil or name == "" then
+			X2Chat:DispatchChatMessage(CMF_SYSTEM, "Extended Plates: enter a name.")
+			return
+		end
+		if effectId == nil or effectId == "" or not effectId:match("^%d+$") then
+			X2Chat:DispatchChatMessage(CMF_SYSTEM, "Extended Plates: enter a numeric ID.")
+			return
+		end
+
+		shared.AddTracked(scope, effectType, effectId, name, "")
+		addByIdNameEdit:SetText("")
+		addByIdIdEdit:SetText("")
+		addByIdWindow:Show(false)
+		refreshWindow()
+	end
+
+	local submitButton = addByIdWindow:CreateChildWidget("button", "submitButton", 0, true)
+	ApplyLocalButtonStyle(submitButton)
+	submitButton:SetExtent(100, 28)
+	submitButton:AddAnchor("BOTTOM", addByIdWindow, 0, -18)
+	submitButton:SetText("Submit")
+	submitButton:SetHandler("OnClick", submitAddById)
+	addByIdNameEdit:SetHandler("OnEnterPressed", function()
+		addByIdIdEdit:SetFocus()
+	end)
+	addByIdIdEdit:SetHandler("OnEnterPressed", submitAddById)
+end
+
+do
+	local baseImportExportHeight = 340
+	local baseImportExportEditHeight = 210
+	local bg = importExportWindow:CreateColorDrawable(0.08, 0.06, 0.04, 0.96, "background")
+	bg:AddAnchor("TOPLEFT", importExportWindow, 0, 0)
+	bg:AddAnchor("BOTTOMRIGHT", importExportWindow, 0, 0)
+
+	local top = importExportWindow:CreateColorDrawable(0.65, 0.55, 0.35, 0.9, "artwork")
+	top:AddAnchor("TOPLEFT", importExportWindow, 0, 0)
+	top:SetExtent(470, 2)
+	local bottom = importExportWindow:CreateColorDrawable(0.65, 0.55, 0.35, 0.9, "artwork")
+	bottom:AddAnchor("BOTTOMLEFT", importExportWindow, 0, 0)
+	bottom:SetExtent(470, 2)
+	local left = importExportWindow:CreateColorDrawable(0.65, 0.55, 0.35, 0.9, "artwork")
+	left:AddAnchor("TOPLEFT", importExportWindow, 0, 0)
+	left:SetExtent(2, 340)
+	local right = importExportWindow:CreateColorDrawable(0.65, 0.55, 0.35, 0.9, "artwork")
+	right:AddAnchor("TOPRIGHT", importExportWindow, 0, 0)
+	right:SetExtent(2, 340)
+
+	importExportTitle = importExportWindow:CreateChildWidget("label", "title", 0, true)
+	importExportTitle:AddAnchor("TOPLEFT", importExportWindow, 16, 12)
+	importExportTitle:SetExtent(220, 24)
+	ApplyLocalLabelStyle(importExportTitle, 18, ALIGN_LEFT, 1, 0.97, 0.92)
+
+	local closeButton = importExportWindow:CreateChildWidget("button", "closeButton", 0, true)
+	ApplyLocalButtonStyle(closeButton)
+	closeButton:SetExtent(30, 24)
+	closeButton:AddAnchor("TOPRIGHT", importExportWindow, -12, 8)
+	closeButton:SetText("X")
+	closeButton:SetHandler("OnClick", function()
+		importExportWindow:Show(false)
+	end)
+
+	importExportWindow:EnableDrag(true)
+	importExportWindow:SetHandler("OnDragStart", function(self)
+		self:StartMoving()
+		return true
+	end)
+	importExportWindow:SetHandler("OnDragStop", function(self)
+		self:StopMovingOrSizing()
+	end)
+	importExportWindow:UseResizing(true)
+	importExportWindow:SetMinResizingExtent(470, 340)
+	importExportWindow:SetMaxResizingExtent(470, 1200)
+
+	local resizeButton = importExportWindow:CreateChildWidget("button", "resizeButton", 0, true)
+	ApplyLocalButtonStyle(resizeButton)
+	resizeButton:SetExtent(32, 24)
+	resizeButton:AddAnchor("BOTTOMRIGHT", importExportWindow, -8, -8)
+	resizeButton:SetText("///")
+	resizeButton:EnableDrag(true)
+	resizeButton:SetHandler("OnDragStart", function()
+		importExportWindow:StartSizing("BOTTOMRIGHT")
+		return true
+	end)
+	resizeButton:SetHandler("OnDragStop", function()
+		importExportWindow:StopMovingOrSizing()
+	end)
+
+	importExportMessage = importExportWindow:CreateChildWidget("label", "message", 0, true)
+	importExportMessage:AddAnchor("TOPLEFT", importExportWindow, 16, 44)
+	importExportMessage:SetExtent(438, 36)
+	ApplyLocalLabelStyle(importExportMessage, 13, ALIGN_LEFT, 1, 1, 1)
+
+	importExportEdit = CreateLocalMultiLineEdit(importExportWindow, "importExportEdit", 438, 210)
+	importExportEdit:AddAnchor("TOPLEFT", importExportWindow, 16, 84)
+
+	local function ApplyImportExportLayout(height)
+		top:SetExtent(470, 2)
+		bottom:SetExtent(470, 2)
+		left:SetExtent(2, height)
+		right:SetExtent(2, height)
+		importExportEdit:SetHeight(baseImportExportEditHeight + (height - baseImportExportHeight))
+	end
+
+	function importExportWindow:SetDynamicHeight(height)
+		self:SetExtent(470, height)
+		ApplyImportExportLayout(height)
+	end
+
+	function importExportWindow:OnUpdate(dt)
+		local height = self:GetHeight()
+		if height ~= self.lastAppliedHeight then
+			self.lastAppliedHeight = height
+			ApplyImportExportLayout(height)
+		end
+	end
+	importExportWindow:SetHandler("OnUpdate", importExportWindow.OnUpdate)
+
+	local function encodeTransferValue(value)
+		return tostring(value or ""):gsub("([^%w%._%-%/])", function(char)
+			return string.format("%%%02X", string.byte(char))
+		end)
+	end
+
+	local function decodeTransferValue(value)
+		return tostring(value or ""):gsub("%%(%x%x)", function(hex)
+			return string.char(tonumber(hex, 16))
+		end)
+	end
+
+	local function wrapTransferString(text, lineLength)
+		local pieces = {}
+		local index = 1
+		while index <= string.len(text) do
+			pieces[#pieces + 1] = string.sub(text, index, index + lineLength - 1)
+			index = index + lineLength
+		end
+		return table.concat(pieces, "\n")
+	end
+
+	local function buildExportString(scope, effectType)
+		local entries = shared.GetSortedTrackedEntries(scope, effectType)
+		local encodedEntries = {}
+		for i = 1, #entries do
+			local entry = entries[i]
+			encodedEntries[#encodedEntries + 1] = string.format(
+				"%s|%s|%s",
+				tostring(entry.id),
+				encodeTransferValue(entry.name or ""),
+				encodeTransferValue(entry.iconPath or "")
+			)
+		end
+		return wrapTransferString("EP1:" .. table.concat(encodedEntries, ";"), 110)
+	end
+
+	local function decodeCompactImportString(text)
+		local flattened = tostring(text or ""):gsub("%s+", "")
+		if string.sub(flattened, 1, 4) ~= "EP1:" then
+			return nil
+		end
+
+		local payload = string.sub(flattened, 5)
+		local normalized = {}
+		local foundAny = false
+
+		for entry in payload:gmatch("([^;]+)") do
+			local effectId, encodedName, encodedIcon = entry:match("^(%d+)|([^|]*)|([^|]*)$")
+			if effectId ~= nil then
+				normalized[effectId] = {
+					name = decodeTransferValue(encodedName),
+					iconPath = decodeTransferValue(encodedIcon),
+				}
+				foundAny = true
+			end
+		end
+
+		if not foundAny then
+			return nil
+		end
+
+		return normalized
+	end
+
+	local function decodeBlockImportString(text)
+		local normalized = {}
+		local current = nil
+		local foundAny = false
+
+		for line in tostring(text or ""):gmatch("[^\r\n]+") do
+			local trimmed = tostring(line):match("^%s*(.-)%s*$")
+			if trimmed ~= "" then
+				if trimmed == "--" then
+					if current ~= nil and current.id ~= nil and current.id:match("^%d+$") then
+						normalized[current.id] = {
+							name = current.name or "",
+							iconPath = current.iconPath or "",
+						}
+						foundAny = true
+					end
+					current = nil
+				else
+					local key, value = trimmed:match("^(%a+)%=(.*)$")
+					if key ~= nil then
+						if current == nil then
+							current = { name = "", iconPath = "" }
+						end
+						if key == "id" then
+							current.id = tostring(value or ""):match("^%s*(.-)%s*$")
+						elseif key == "name" then
+							current.name = tostring(value or "")
+						elseif key == "icon" then
+							current.iconPath = tostring(value or "")
+						end
+					end
+				end
+			end
+		end
+
+		if current ~= nil and current.id ~= nil and current.id:match("^%d+$") then
+			normalized[current.id] = {
+				name = current.name or "",
+				iconPath = current.iconPath or "",
+			}
+			foundAny = true
+		end
+
+		if not foundAny then
+			return nil
+		end
+
+		return normalized
+	end
+
+	local function decodeImportString(text)
+		local compactDecoded = decodeCompactImportString(text)
+		if compactDecoded ~= nil then
+			return compactDecoded
+		end
+
+		local blockDecoded = decodeBlockImportString(text)
+		if blockDecoded ~= nil then
+			return blockDecoded
+		end
+
+		local trimmed = tostring(text or ""):match("^%s*(.-)%s*$")
+		if trimmed == nil or trimmed == "" then
+			return nil
+		end
+
+		local loader = loadstring or load
+		if loader == nil then
+			return nil
+		end
+
+		local chunk = loader("return " .. trimmed)
+		if chunk == nil then
+			chunk = loader(trimmed)
+		end
+		if chunk == nil then
+			return nil
+		end
+
+		local ok, decoded = pcall(chunk)
+		if not ok or type(decoded) ~= "table" then
+			return nil
+		end
+
+		local normalized = {}
+		for key, value in pairs(decoded) do
+			local effectId
+			local name
+			local iconPath
+
+			if type(value) == "table" then
+				effectId = value.id ~= nil and tostring(value.id) or tostring(key)
+				name = tostring(value.name or value[1] or "")
+				iconPath = tostring(value.iconPath or value.icon or value.path or "")
+			else
+				effectId = tostring(key)
+				name = tostring(value or "")
+			end
+
+			if effectId ~= nil and effectId:match("^%d+$") then
+				normalized[effectId] = {
+					name = name,
+					iconPath = iconPath,
+				}
+			end
+		end
+
+		if next(normalized) == nil then
+			return nil
+		end
+
+		return normalized
+	end
+
+	local function applyImportString()
+		local scope = uiState.activeScope
+		local effectType = uiState.activeEffect
+		local decoded = decodeImportString(importExportEdit:GetText())
+		if decoded == nil then
+			X2Chat:DispatchChatMessage(CMF_SYSTEM, "Extended Plates: invalid import string.")
+			return
+		end
+
+		local tracked = shared.GetTracked(scope, effectType)
+		for key in pairs(tracked) do
+			tracked[key] = nil
+		end
+		for effectId, entry in pairs(decoded) do
+			tracked[effectId] = {
+				name = tostring(entry.name or ""),
+				iconPath = tostring(entry.iconPath or ""),
+			}
+		end
+		shared.SaveTracked(scope, effectType)
+		importExportWindow:Show(false)
+		refreshWindow()
+	end
+
+	importExportActionButton = importExportWindow:CreateChildWidget("button", "actionButton", 0, true)
+	ApplyLocalButtonStyle(importExportActionButton)
+	importExportActionButton:SetExtent(120, 30)
+	importExportActionButton:AddAnchor("BOTTOM", importExportWindow, 0, -16)
+	importExportActionButton:SetHandler("OnClick", function()
+		if importExportMode == "import" then
+			applyImportString()
+		else
+			importExportWindow:Show(false)
+		end
+	end)
+
+	function importExportWindow:ShowExport()
+		local scope = uiState.activeScope
+		local effectType = uiState.activeEffect
+		local entryCount = #shared.GetSortedTrackedEntries(scope, effectType)
+		local extraHeight = math.max(0, entryCount - 5) * 20
+		importExportMode = "export"
+		self:SetDynamicHeight(baseImportExportHeight + extraHeight)
+		importExportTitle:SetText("Export")
+		importExportMessage:SetText("Please Ctrl+A, Ctrl+C this.")
+		importExportEdit:SetText(buildExportString(scope, effectType))
+		importExportActionButton:SetText("Close")
+		self:Show(true)
+	end
+
+	function importExportWindow:ShowImport()
+		importExportMode = "import"
+		self:SetDynamicHeight(baseImportExportHeight)
+		importExportTitle:SetText("Import")
+		importExportMessage:SetText("Please Ctrl+A, Ctrl+V this, resize if box is too small.")
+		importExportEdit:SetText("")
+		importExportActionButton:SetText("Import")
+		self:Show(true)
+	end
+end
 
 do
 	local bg = infoSettingsWindow:CreateColorDrawable(0.08, 0.06, 0.04, 0.96, "background")
@@ -1434,7 +1916,7 @@ local function clearRow(row)
 	row.button:Show(false)
 end
 
-local function refreshWindow()
+function refreshWindow()
 	DebugPrint("refreshWindow start")
 	uiState = shared.GetUiState()
 	local scope = uiState.activeScope
@@ -1568,6 +2050,21 @@ end)
 availableNextButton:SetHandler("OnClick", function()
 	availablePage = availablePage + 1
 	DebugPrint(string.format("availableNextButton clicked availablePage=%s", tostring(availablePage)))
+end)
+
+addByIdButton:SetHandler("OnClick", function()
+	addByIdNameEdit:SetText("")
+	addByIdIdEdit:SetText("")
+	addByIdWindow:Show(true)
+	addByIdNameEdit:SetFocus()
+end)
+
+exportButton:SetHandler("OnClick", function()
+	importExportWindow:ShowExport()
+end)
+
+importButton:SetHandler("OnClick", function()
+	importExportWindow:ShowImport()
 end)
 
 function managerWindow:OnUpdate(dt)
