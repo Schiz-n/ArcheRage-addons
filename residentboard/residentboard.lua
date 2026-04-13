@@ -67,5 +67,3 @@ function residentBoardButton:OnClick()
 	end
 end
 residentBoardButton:SetHandler("OnClick", residentBoardButton.OnClick)
-
-CreateButton()
