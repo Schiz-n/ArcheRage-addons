@@ -129,6 +129,7 @@ local function ensureUiState()
 		activeScope = "target",
 		activeEffect = "buff",
 		showGear = true,
+		showEquipment = true,
 		showClass = true,
 		showDistance = true,
 		showCastbar = true,
@@ -141,6 +142,16 @@ local function ensureUiState()
 		gearSettings = {
 			x = 90,
 			y = 0,
+		},
+		equipmentSettings = {
+			x = 0,
+			y = 0,
+			iconSize = 25,
+			layout = "horizontal",
+			showMainhand = true,
+			showOffhand = true,
+			showGlider = true,
+			showRanged = true,
 		},
 		classSettings = {
 			iconX = 90,
@@ -179,6 +190,9 @@ local function ensureUiState()
 		if saved.showGear ~= nil then
 			shared.uiState.showGear = saved.showGear == true
 		end
+		if saved.showEquipment ~= nil then
+			shared.uiState.showEquipment = saved.showEquipment == true
+		end
 		if saved.showClass ~= nil then
 			shared.uiState.showClass = saved.showClass == true
 		end
@@ -199,6 +213,29 @@ local function ensureUiState()
 		if type(saved.gearSettings) == "table" then
 			shared.uiState.gearSettings.x = tonumber(saved.gearSettings.x) or shared.uiState.gearSettings.x
 			shared.uiState.gearSettings.y = tonumber(saved.gearSettings.y) or shared.uiState.gearSettings.y
+		end
+		if type(saved.equipmentSettings) == "table" then
+			shared.uiState.equipmentSettings.x =
+				tonumber(saved.equipmentSettings.x) or shared.uiState.equipmentSettings.x
+			shared.uiState.equipmentSettings.y =
+				tonumber(saved.equipmentSettings.y) or shared.uiState.equipmentSettings.y
+			shared.uiState.equipmentSettings.iconSize =
+				tonumber(saved.equipmentSettings.iconSize) or shared.uiState.equipmentSettings.iconSize
+			if saved.equipmentSettings.layout == "vertical" or saved.equipmentSettings.layout == "horizontal" then
+				shared.uiState.equipmentSettings.layout = saved.equipmentSettings.layout
+			end
+			if saved.equipmentSettings.showMainhand ~= nil then
+				shared.uiState.equipmentSettings.showMainhand = saved.equipmentSettings.showMainhand == true
+			end
+			if saved.equipmentSettings.showOffhand ~= nil then
+				shared.uiState.equipmentSettings.showOffhand = saved.equipmentSettings.showOffhand == true
+			end
+			if saved.equipmentSettings.showGlider ~= nil then
+				shared.uiState.equipmentSettings.showGlider = saved.equipmentSettings.showGlider == true
+			end
+			if saved.equipmentSettings.showRanged ~= nil then
+				shared.uiState.equipmentSettings.showRanged = saved.equipmentSettings.showRanged == true
+			end
 		end
 		if type(saved.classSettings) == "table" then
 			shared.uiState.classSettings.iconX = tonumber(saved.classSettings.iconX) or shared.uiState.classSettings.iconX
@@ -280,6 +317,48 @@ function shared.AdjustGearSettings(axis, delta)
 		settings.y = settings.y + delta
 	end
 	shared.SaveUiState()
+	return settings
+end
+
+function shared.GetEquipmentSettings()
+	return ensureUiState().equipmentSettings
+end
+
+function shared.AdjustEquipmentSettings(axis, delta)
+	local settings = shared.GetEquipmentSettings()
+	if axis == "x" then
+		settings.x = settings.x + delta
+	elseif axis == "y" then
+		settings.y = settings.y + delta
+	elseif axis == "size" then
+		settings.iconSize = math.max(12, settings.iconSize + delta)
+	end
+	shared.SaveUiState()
+	return settings
+end
+
+function shared.ToggleEquipmentLayout()
+	local settings = shared.GetEquipmentSettings()
+	if settings.layout == "vertical" then
+		settings.layout = "horizontal"
+	else
+		settings.layout = "vertical"
+	end
+	shared.SaveUiState()
+	return settings
+end
+
+function shared.ToggleEquipmentSetting(flagName)
+	local settings = shared.GetEquipmentSettings()
+	if
+		flagName == "showMainhand"
+		or flagName == "showOffhand"
+		or flagName == "showGlider"
+		or flagName == "showRanged"
+	then
+		settings[flagName] = not settings[flagName]
+		shared.SaveUiState()
+	end
 	return settings
 end
 

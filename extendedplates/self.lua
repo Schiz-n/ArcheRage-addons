@@ -24,6 +24,7 @@ ADDON:ImportAPI(API_TYPE.CHAT.id)
 ADDON:ImportAPI(API_TYPE.ACHIEVEMENT.id)
 ADDON:ImportAPI(API_TYPE.UNIT.id)
 ADDON:ImportAPI(API_TYPE.LOCALE.id)
+ADDON:ImportAPI(API_TYPE.EQUIPMENT.id)
 
 local shared = TargetDebuffTrackerShared
 local buffAnchor = CreateEmptyWindow("targetDebuffTrackerSelfAnchor", "UIParent")
@@ -32,6 +33,130 @@ buffAnchor:Show(true)
 local drawableIcons = {}
 local drawableDurations = {}
 local drawableStacks = {}
+local equipmentTrackers = {}
+
+local equipmentSlots = {
+	{ key = "mainhand", slotId = ES_MAINHAND, order = 2, flag = "showMainhand" },
+	{ key = "offhand", slotId = ES_OFFHAND, order = 3, flag = "showOffhand" },
+	{ key = "glider", slotId = ES_BACKPACK, order = 1, flag = "showGlider" },
+	{ key = "ranged", slotId = ES_RANGED, order = 4, flag = "showRanged" },
+}
+
+local function getEquipmentPitch(settings)
+	return (settings.iconSize or 25) + 2
+end
+
+local function getEquipmentOffsets(settings, index)
+	local pitch = getEquipmentPitch(settings)
+	if settings.layout == "vertical" then
+		return settings.x, settings.y + (pitch * (index - 1))
+	end
+
+	return settings.x - (pitch * index), settings.y
+end
+
+local function createEquipmentTracker(parent, index)
+	local tracker = {}
+
+	tracker.icon = parent:CreateIconDrawable("artwork")
+	tracker.icon:SetExtent(25, 25)
+	tracker.icon:SetVisible(false)
+
+	tracker.gradeIcon = parent:CreateIconDrawable("artwork")
+	tracker.gradeIcon:SetExtent(25, 25)
+	tracker.gradeIcon:SetVisible(false)
+	tracker.gradeIcon:AddAnchor("CENTER", tracker.icon, 0, 0)
+
+	tracker.index = index
+	tracker.currentIcon = nil
+	tracker.currentGradeIcon = nil
+
+	return tracker
+end
+
+local function updateEquipmentTrackerAnchors()
+	local settings = shared.GetEquipmentSettings()
+	for i = 1, #equipmentSlots do
+		local entry = equipmentSlots[i]
+		local tracker = equipmentTrackers[entry.key]
+		if tracker ~= nil then
+			local offsetX, offsetY = getEquipmentOffsets(settings, entry.order)
+			tracker.icon:SetExtent(settings.iconSize, settings.iconSize)
+			tracker.gradeIcon:SetExtent(settings.iconSize, settings.iconSize)
+			tracker.icon:RemoveAllAnchors()
+			tracker.icon:AddAnchor("CENTER", buffAnchor, offsetX, offsetY)
+		end
+	end
+end
+
+local function clearEquipmentTracker(tracker)
+	tracker.icon:ClearAllTextures()
+	tracker.icon:SetVisible(false)
+	tracker.gradeIcon:ClearAllTextures()
+	tracker.gradeIcon:SetVisible(false)
+	tracker.currentIcon = nil
+	tracker.currentGradeIcon = nil
+end
+
+local function updateEquipmentTracker(tracker, slotId, isEnabled)
+	if isEnabled ~= true then
+		clearEquipmentTracker(tracker)
+		return
+	end
+
+	local currentItem = X2Equipment:GetEquippedItemTooltipInfo(slotId, false)
+	if currentItem == nil or currentItem.icon == nil or currentItem.icon == "" then
+		clearEquipmentTracker(tracker)
+		return
+	end
+
+	if currentItem.icon ~= tracker.currentIcon then
+		tracker.icon:ClearAllTextures()
+		tracker.icon:AddTexture(currentItem.icon)
+		tracker.currentIcon = currentItem.icon
+	end
+	tracker.icon:SetVisible(true)
+
+	local gradeIcon = currentItem.gradeIcon
+	if gradeIcon ~= nil and gradeIcon ~= "" then
+		if gradeIcon ~= tracker.currentGradeIcon then
+			tracker.gradeIcon:ClearAllTextures()
+			tracker.gradeIcon:AddTexture(gradeIcon)
+			tracker.currentGradeIcon = gradeIcon
+		end
+		tracker.gradeIcon:SetVisible(true)
+	else
+		tracker.gradeIcon:ClearAllTextures()
+		tracker.gradeIcon:SetVisible(false)
+		tracker.currentGradeIcon = nil
+	end
+end
+
+local function refreshEquipmentTrackers()
+	local uiState = shared.GetUiState()
+	if uiState.showEquipment ~= true then
+		for i = 1, #equipmentSlots do
+			clearEquipmentTracker(equipmentTrackers[equipmentSlots[i].key])
+		end
+		return
+	end
+
+	updateEquipmentTrackerAnchors()
+	local settings = shared.GetEquipmentSettings()
+	for i = 1, #equipmentSlots do
+		local entry = equipmentSlots[i]
+		updateEquipmentTracker(equipmentTrackers[entry.key], entry.slotId, settings[entry.flag] == true)
+	end
+end
+
+for i = 1, #equipmentSlots do
+	local entry = equipmentSlots[i]
+	equipmentTrackers[entry.key] = createEquipmentTracker(buffAnchor, entry.order)
+end
+
+UIParent:SetEventHandler(UIEVENT_TYPE.UNIT_EQUIPMENT_CHANGED, function()
+	refreshEquipmentTrackers()
+end)
 
 local function hideUnused(currentIcons)
 	for id, icon in pairs(drawableIcons) do
@@ -159,6 +284,7 @@ function buffAnchor:OnUpdate()
 		end
 	end
 
+	refreshEquipmentTrackers()
 	hideUnused(currentIcons)
 end
 

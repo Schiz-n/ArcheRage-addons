@@ -27,6 +27,7 @@ ADDON:ImportAPI(API_TYPE.CHAT.id)
 ADDON:ImportAPI(API_TYPE.ACHIEVEMENT.id)
 ADDON:ImportAPI(API_TYPE.UNIT.id)
 ADDON:ImportAPI(API_TYPE.LOCALE.id)
+ADDON:ImportAPI(API_TYPE.EQUIPMENT.id)
 
 local shared = TargetDebuffTrackerShared
 local AA_DEBUG = false
@@ -479,10 +480,12 @@ local addByIdButton = nil
 local exportButton = nil
 local importButton = nil
 local showGearButton = nil
+local showEquipmentButton = nil
 local showClassButton = nil
 local showDistanceButton = nil
 local showCastbarButton = nil
 local showGearSettingsButton = nil
+local showEquipmentSettingsButton = nil
 local showClassSettingsButton = nil
 local showDistanceSettingsButton = nil
 local showCastbarSettingsButton = nil
@@ -493,6 +496,7 @@ local infoSettingsStatus = nil
 local infoSettingsMessage = nil
 local distanceSettingsPreview = nil
 local gearSettingsPreview = nil
+local equipmentSettingsPreview = {}
 local classSettingsPreviewIcon = nil
 local classSettingsPreviewLabel = nil
 local castbarSettingsPreview = nil
@@ -527,10 +531,10 @@ local initOk, initErr = pcall(function()
 	managerWindow = CreateEmptyWindow("targetDebuffTrackerWindow", "UIParent")
 	DebugPrint("init: after CreateEmptyWindow")
 
-	managerWindow:AddAnchor("CENTER", "UIParent", 0, 0)
-	DebugPrint("init: after window anchor")
-	managerWindow:SetExtent(720, 640)
-	DebugPrint("init: after window extent")
+managerWindow:AddAnchor("CENTER", "UIParent", 0, 0)
+DebugPrint("init: after window anchor")
+managerWindow:SetExtent(720, 684)
+DebugPrint("init: after window extent")
 	managerWindow:Show(false)
 	DebugPrint("init: after window hide")
 
@@ -547,10 +551,10 @@ local initOk, initErr = pcall(function()
 	borderBottom:SetExtent(720, 2)
 	local borderLeft = managerWindow:CreateColorDrawable(0.65, 0.55, 0.35, 0.9, "artwork")
 	borderLeft:AddAnchor("TOPLEFT", managerWindow, 0, 0)
-	borderLeft:SetExtent(2, 640)
+	borderLeft:SetExtent(2, 684)
 	local borderRight = managerWindow:CreateColorDrawable(0.65, 0.55, 0.35, 0.9, "artwork")
 	borderRight:AddAnchor("TOPRIGHT", managerWindow, 0, 0)
-	borderRight:SetExtent(2, 640)
+	borderRight:SetExtent(2, 684)
 	DebugPrint("init: after borders")
 
 	local titleBar = managerWindow:CreateColorDrawable(0.16, 0.10, 0.05, 0.95, "artwork")
@@ -647,19 +651,19 @@ availableNextButton:AddAnchor("TOPRIGHT", managerWindow, -18, 302)
 addByIdButton = managerWindow:CreateChildWidget("button", "addByIdButton", 0, true)
 ApplyLocalButtonStyle(addByIdButton)
 addByIdButton:SetExtent(96, 24)
-addByIdButton:AddAnchor("TOPRIGHT", managerWindow, -226, 578)
+addByIdButton:AddAnchor("TOPRIGHT", managerWindow, -226, 622)
 addByIdButton:SetText("Add by ID")
 
 exportButton = managerWindow:CreateChildWidget("button", "exportButton", 0, true)
 ApplyLocalButtonStyle(exportButton)
 exportButton:SetExtent(96, 24)
-exportButton:AddAnchor("TOPRIGHT", managerWindow, -122, 578)
+exportButton:AddAnchor("TOPRIGHT", managerWindow, -122, 622)
 exportButton:SetText("Export")
 
 importButton = managerWindow:CreateChildWidget("button", "importButton", 0, true)
 ApplyLocalButtonStyle(importButton)
 importButton:SetExtent(96, 24)
-importButton:AddAnchor("TOPRIGHT", managerWindow, -18, 578)
+importButton:AddAnchor("TOPRIGHT", managerWindow, -18, 622)
 importButton:SetText("Import")
 
 positionButton = managerWindow:CreateChildWidget("button", "positionButton", 0, true)
@@ -804,6 +808,27 @@ showCastbarSettingsButton:SetHandler("OnClick", function()
 	local settings = shared.GetCastbarSettings()
 	castbarWidthEdit:SetText(tostring(settings.width))
 	castbarHeightEdit:SetText(tostring(settings.height))
+	if infoSettingsWindow ~= nil then
+		infoSettingsWindow:Show(true)
+	end
+end)
+
+showEquipmentButton = managerWindow:CreateChildWidget("button", "showEquipmentButton", 0, true)
+ApplyLocalButtonStyle(showEquipmentButton)
+showEquipmentButton:SetExtent(132, 32)
+showEquipmentButton:AddAnchor("TOPLEFT", managerWindow, 20, 604)
+showEquipmentButton:SetHandler("OnClick", function()
+	uiState.showEquipment = not uiState.showEquipment
+	shared.SaveUiState()
+end)
+
+showEquipmentSettingsButton = managerWindow:CreateChildWidget("button", "showEquipmentSettingsButton", 0, true)
+ApplyLocalButtonStyle(showEquipmentSettingsButton)
+showEquipmentSettingsButton:SetExtent(58, 32)
+showEquipmentSettingsButton:AddAnchor("TOPLEFT", managerWindow, 160, 604)
+showEquipmentSettingsButton:SetText("...")
+showEquipmentSettingsButton:SetHandler("OnClick", function()
+	infoSettingsMode = "equipment"
 	if infoSettingsWindow ~= nil then
 		infoSettingsWindow:Show(true)
 	end
@@ -1328,6 +1353,97 @@ do
 	gearSettingsPreview:SetText("15432")
 	gearSettingsPreview:AddAnchor("LEFT", previewPlate, 90, 0)
 
+	for i = 1, 4 do
+		local icon = infoSettingsWindow:CreateIconDrawable("artwork")
+		icon:SetExtent(25, 25)
+		icon:SetVisible(false)
+
+		local gradeIcon = infoSettingsWindow:CreateIconDrawable("artwork")
+		gradeIcon:SetExtent(25, 25)
+		gradeIcon:SetVisible(false)
+		gradeIcon:AddAnchor("CENTER", icon, 0, 0)
+
+		equipmentSettingsPreview[i] = {
+			icon = icon,
+			gradeIcon = gradeIcon,
+		}
+	end
+
+	local function setEquipmentPreviewSlot(index, slotId, xOffset, yOffset, visible)
+		local preview = equipmentSettingsPreview[index]
+		if preview == nil then
+			return
+		end
+
+		preview.icon:RemoveAllAnchors()
+		preview.icon:AddAnchor("CENTER", previewPlate, xOffset, yOffset)
+		preview.gradeIcon:RemoveAllAnchors()
+		preview.gradeIcon:AddAnchor("CENTER", preview.icon, 0, 0)
+
+		if visible ~= true then
+			preview.icon:SetVisible(false)
+			preview.icon:ClearAllTextures()
+			preview.gradeIcon:SetVisible(false)
+			preview.gradeIcon:ClearAllTextures()
+			return
+		end
+
+		local item = X2Equipment:GetEquippedItemTooltipInfo(slotId, false)
+		if item == nil or item.icon == nil or item.icon == "" then
+			preview.icon:SetVisible(false)
+			preview.icon:ClearAllTextures()
+			preview.gradeIcon:SetVisible(false)
+			preview.gradeIcon:ClearAllTextures()
+			return
+		end
+
+		preview.icon:ClearAllTextures()
+		preview.icon:AddTexture(item.icon)
+		preview.icon:SetVisible(true)
+
+		preview.gradeIcon:ClearAllTextures()
+		if item.gradeIcon ~= nil and item.gradeIcon ~= "" then
+			preview.gradeIcon:AddTexture(item.gradeIcon)
+			preview.gradeIcon:SetVisible(true)
+		else
+			preview.gradeIcon:SetVisible(false)
+		end
+	end
+
+	local function hideEquipmentPreview()
+		for i = 1, #equipmentSettingsPreview do
+			equipmentSettingsPreview[i].icon:SetVisible(false)
+			equipmentSettingsPreview[i].gradeIcon:SetVisible(false)
+		end
+	end
+
+	local function setEquipmentPreviewLayout(settings)
+		local pitch = (settings.iconSize or 25) + 2
+		local previewEntries = {
+			{ slotId = ES_BACKPACK, visible = settings.showGlider == true },
+			{ slotId = ES_MAINHAND, visible = settings.showMainhand == true },
+			{ slotId = ES_OFFHAND, visible = settings.showOffhand == true },
+			{ slotId = ES_RANGED, visible = settings.showRanged == true },
+		}
+
+		for i = 1, #previewEntries do
+			local preview = equipmentSettingsPreview[i]
+			if preview ~= nil then
+				preview.icon:SetExtent(settings.iconSize, settings.iconSize)
+				preview.gradeIcon:SetExtent(settings.iconSize, settings.iconSize)
+			end
+
+			local offsetX = settings.x - (pitch * i)
+			local offsetY = settings.y
+			if settings.layout == "vertical" then
+				offsetX = settings.x
+				offsetY = settings.y + (pitch * (i - 1))
+			end
+
+			setEquipmentPreviewSlot(i, previewEntries[i].slotId, offsetX, offsetY, previewEntries[i].visible)
+		end
+	end
+
 	classSettingsPreviewIcon = infoSettingsWindow:CreateIconDrawable("artwork")
 	classSettingsPreviewIcon:SetExtent(22, 22)
 	classSettingsPreviewIcon:AddTexture("ui/icon/icon_skill_pleasure02.dds")
@@ -1359,6 +1475,8 @@ do
 
 	local controlButtons = {}
 	local castbarControls = {}
+	local equipmentToggleButtons = {}
+	local equipmentLayoutButton = nil
 
 	local function setCastbarControlVisible(visible)
 		for i = 1, #castbarControls do
@@ -1378,6 +1496,7 @@ do
 			end
 		end)
 		controlButtons[#controlButtons + 1] = { button = button, mode = mode }
+		return button
 	end
 
 	makeInfoAdjustButton("distanceFontUpButton", "Font ^", 16, 310, "distance", function()
@@ -1416,6 +1535,40 @@ do
 	end)
 	makeInfoAdjustButton("gearRightButton", ">", 208, 382, "gear", function()
 		shared.AdjustGearSettings("x", 5)
+	end)
+
+	equipmentToggleButtons.mainhand = makeInfoAdjustButton("equipmentMainhandButton", "Mainhand", 16, 310, "equipment", function()
+		shared.ToggleEquipmentSetting("showMainhand")
+	end)
+	equipmentToggleButtons.offhand = makeInfoAdjustButton("equipmentOffhandButton", "Offhand", 112, 310, "equipment", function()
+		shared.ToggleEquipmentSetting("showOffhand")
+	end)
+	equipmentToggleButtons.glider = makeInfoAdjustButton("equipmentGliderButton", "Glider", 208, 310, "equipment", function()
+		shared.ToggleEquipmentSetting("showGlider")
+	end)
+	equipmentToggleButtons.ranged = makeInfoAdjustButton("equipmentRangedButton", "Ranged", 16, 346, "equipment", function()
+		shared.ToggleEquipmentSetting("showRanged")
+	end)
+	equipmentLayoutButton = makeInfoAdjustButton("equipmentLayoutButton", "Horizontal", 208, 346, "equipment", function()
+		shared.ToggleEquipmentLayout()
+	end)
+	makeInfoAdjustButton("equipmentUpButton", "^", 112, 346, "equipment", function()
+		shared.AdjustEquipmentSettings("y", -5)
+	end)
+	makeInfoAdjustButton("equipmentLeftButton", "<", 16, 382, "equipment", function()
+		shared.AdjustEquipmentSettings("x", -5)
+	end)
+	makeInfoAdjustButton("equipmentDownButton", "v", 112, 382, "equipment", function()
+		shared.AdjustEquipmentSettings("y", 5)
+	end)
+	makeInfoAdjustButton("equipmentRightButton", ">", 208, 382, "equipment", function()
+		shared.AdjustEquipmentSettings("x", 5)
+	end)
+	makeInfoAdjustButton("equipmentBiggerButton", "Bigger", 16, 418, "equipment", function()
+		shared.AdjustEquipmentSettings("size", 5)
+	end)
+	makeInfoAdjustButton("equipmentSmallerButton", "Smaller", 112, 418, "equipment", function()
+		shared.AdjustEquipmentSettings("size", -5)
 	end)
 
 	makeInfoAdjustButton("classIconToggleButton", "Icon On/Off", 16, 310, "class", function()
@@ -1546,6 +1699,7 @@ do
 			distanceSettingsPreview:AddAnchor("LEFT", previewPlate, settings.x, settings.y)
 			distanceSettingsPreview:Show(true)
 			gearSettingsPreview:Show(false)
+			hideEquipmentPreview()
 			classSettingsPreviewIcon:SetVisible(false)
 			classSettingsPreviewLabel:Show(false)
 			castbarSettingsPreview:Show(false)
@@ -1568,6 +1722,7 @@ do
 			gearSettingsPreview:RemoveAllAnchors()
 			gearSettingsPreview:AddAnchor("LEFT", previewPlate, settings.x, settings.y)
 			gearSettingsPreview:Show(true)
+			hideEquipmentPreview()
 			classSettingsPreviewIcon:SetVisible(false)
 			classSettingsPreviewLabel:Show(false)
 			castbarSettingsPreview:Show(false)
@@ -1575,6 +1730,38 @@ do
 			castbarSettingsPreviewSpell:Show(false)
 			castbarSettingsPreviewTime:Show(false)
 			setCastbarControlVisible(false)
+		elseif infoSettingsMode == "equipment" then
+			local settings = shared.GetEquipmentSettings()
+			infoSettingsTitle:SetText("Equipment Settings")
+			infoSettingsStatus:SetText(
+				string.format(
+					"Position X: %d\nPosition Y: %d\nSize: %d  Layout: %s\nMH: %s  OH: %s\nGL: %s  RG: %s",
+					settings.x,
+					settings.y,
+					settings.iconSize,
+					settings.layout,
+					settings.showMainhand and "ON" or "OFF",
+					settings.showOffhand and "ON" or "OFF",
+					settings.showGlider and "ON" or "OFF",
+					settings.showRanged and "ON" or "OFF"
+				)
+			)
+			infoSettingsMessage:SetText("Move the self equipment icons and toggle which slots are shown.")
+			distanceSettingsPreview:Show(false)
+			gearSettingsPreview:Show(false)
+			setEquipmentPreviewLayout(settings)
+			classSettingsPreviewIcon:SetVisible(false)
+			classSettingsPreviewLabel:Show(false)
+			castbarSettingsPreview:Show(false)
+			castbarSettingsPreviewFill:Show(false)
+			castbarSettingsPreviewSpell:Show(false)
+			castbarSettingsPreviewTime:Show(false)
+			setCastbarControlVisible(false)
+			equipmentToggleButtons.mainhand:SetText("Mainhand [" .. (settings.showMainhand and "ON" or "OFF") .. "]")
+			equipmentToggleButtons.offhand:SetText("Offhand [" .. (settings.showOffhand and "ON" or "OFF") .. "]")
+			equipmentToggleButtons.glider:SetText("Glider [" .. (settings.showGlider and "ON" or "OFF") .. "]")
+			equipmentToggleButtons.ranged:SetText("Ranged [" .. (settings.showRanged and "ON" or "OFF") .. "]")
+			equipmentLayoutButton:SetText(settings.layout == "vertical" and "Vertical" or "Horizontal")
 		elseif infoSettingsMode == "class" then
 			local settings = shared.GetClassSettings()
 			infoSettingsTitle:SetText("Class Settings")
@@ -1592,6 +1779,7 @@ do
 			infoSettingsMessage:SetText("Move icon and words separately, or toggle them off.")
 			distanceSettingsPreview:Show(false)
 			gearSettingsPreview:Show(false)
+			hideEquipmentPreview()
 			classSettingsPreviewIcon:RemoveAllAnchors()
 			classSettingsPreviewIcon:AddAnchor("LEFT", previewPlate, settings.iconX, settings.iconY)
 			classSettingsPreviewIcon:SetVisible(settings.showIcon == true)
@@ -1618,6 +1806,7 @@ do
 			infoSettingsMessage:SetText("Use the input fields for size and arrows to move the castbar on the nameplate.")
 			distanceSettingsPreview:Show(false)
 			gearSettingsPreview:Show(false)
+			hideEquipmentPreview()
 			classSettingsPreviewIcon:SetVisible(false)
 			classSettingsPreviewLabel:Show(false)
 			castbarSettingsPreview:RemoveAllAnchors()
@@ -1943,6 +2132,7 @@ function refreshWindow()
 	availableTitle:SetText(liveSectionTitle(scope, effectType))
 	filterButton:SetText("Show All [" .. (uiState.filterTrackedOnly and "OFF" or "ON") .. "]")
 	showGearButton:SetText("Show Gear [" .. (uiState.showGear and "ON" or "OFF") .. "]")
+	showEquipmentButton:SetText("Show Equipment [" .. (uiState.showEquipment and "ON" or "OFF") .. "]")
 	showClassButton:SetText("Show Class [" .. (uiState.showClass and "ON" or "OFF") .. "]")
 	showDistanceButton:SetText("Show Distance [" .. (uiState.showDistance and "ON" or "OFF") .. "]")
 	showCastbarButton:SetText("Show Castbar [" .. (uiState.showCastbar and "ON" or "OFF") .. "]")
