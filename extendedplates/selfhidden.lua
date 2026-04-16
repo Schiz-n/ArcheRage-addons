@@ -41,20 +41,21 @@ local function hideUnused(currentIcons)
 	end
 end
 
-local function drawIcon(parent, iconId, iconPath, xOffset, yOffset, duration)
+local function drawIcon(parent, iconId, iconPath, xOffset, yOffset, duration, iconSize)
 	if drawableIcons[iconId] ~= nil then
 		if not drawableIcons[iconId]:IsVisible() then
 			drawableIcons[iconId]:SetVisible(true)
 			drawableDurations[iconId]:Show(true)
 		end
 		drawableIcons[iconId]:AddAnchor("LEFT", parent, xOffset, yOffset)
+		drawableIcons[iconId]:SetExtent(iconSize, iconSize)
 		drawableDurations[iconId]:AddAnchor("LEFT", parent, xOffset, yOffset)
 		drawableDurations[iconId]:SetText(duration)
 		return
 	end
 
 	local drawableIcon = parent:CreateIconDrawable("artwork")
-	drawableIcon:SetExtent(25, 25)
+	drawableIcon:SetExtent(iconSize, iconSize)
 	drawableIcon:ClearAllTextures()
 	drawableIcon:AddTexture(iconPath)
 	drawableIcon:SetVisible(true)
@@ -102,14 +103,16 @@ function buffAnchor:OnUpdate()
 
 			if duration >= 0 and shared.ShouldDisplay("self", "hidden", buffId) then
 				local iconId = "hidden:" .. buffId .. ":" .. tostring(buff["name"])
+				local iconX, iconY = shared.GetIconOffsetForIndex(settings, buffCounter)
 				currentIcons[iconId] = true
 				drawIcon(
 					buffAnchor,
 					iconId,
 					buffExtra["path"],
-					settings.x + ((settings.iconSize + 5) * buffCounter),
-					settings.y,
-					shared.FormatDuration(duration)
+					iconX,
+					iconY,
+					shared.FormatDuration(duration),
+					settings.iconSize
 				)
 				buffCounter = buffCounter + 1
 			end

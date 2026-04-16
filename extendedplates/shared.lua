@@ -426,11 +426,24 @@ function shared.SetCastbarSettings(width, height)
 end
 
 local function normalizeIconSettingEntry(value, defaults)
+	local growth = "horizontal_right"
+	if type(value) == "table" then
+		if
+			value.growth == "horizontal_right"
+			or value.growth == "horizontal_left"
+			or value.growth == "vertical_up"
+			or value.growth == "vertical_down"
+		then
+			growth = value.growth
+		end
+	end
+
 	if type(value) ~= "table" then
 		return {
 			iconSize = defaults.iconSize,
 			x = defaults.x,
 			y = defaults.y,
+			growth = growth,
 		}
 	end
 
@@ -438,14 +451,15 @@ local function normalizeIconSettingEntry(value, defaults)
 		iconSize = tonumber(value.iconSize) or tonumber(value.size) or defaults.iconSize,
 		x = tonumber(value.x) or defaults.x,
 		y = tonumber(value.y) or defaults.y,
+		growth = growth,
 	}
 end
 
 local function loadLegacyScopeSettings(scope)
 	local defaults = {
-		buff = { iconSize = 25, x = 0, y = 0 },
-		debuff = { iconSize = 25, x = 0, y = 35 },
-		hidden = { iconSize = 25, x = 0, y = 0 },
+		buff = { iconSize = 25, x = 0, y = 0, growth = "horizontal_right" },
+		debuff = { iconSize = 25, x = 0, y = 35, growth = "horizontal_right" },
+		hidden = { iconSize = 25, x = 0, y = 0, growth = "horizontal_right" },
 	}
 
 	local filename = shared.legacyIconSettingFiles[scope]
@@ -475,11 +489,13 @@ local function loadLegacyScopeSettings(scope)
 		iconSize = tonumber(iconSize) or 25,
 		x = tonumber(buffsX) or 0,
 		y = tonumber(buffsY) or 0,
+		growth = "horizontal_right",
 	}
 	defaults.debuff = {
 		iconSize = tonumber(iconSize) or 25,
 		x = tonumber(debuffsX) or 0,
 		y = tonumber(debuffsY) or 35,
+		growth = "horizontal_right",
 	}
 
 	return defaults
@@ -526,14 +542,58 @@ function shared.GetIconSettings(scope, effectType)
 	end
 
 	if settings[scope] == nil then
-		return { iconSize = 25, x = 0, y = 0 }
+		return { iconSize = 25, x = 0, y = 0, growth = "horizontal_right" }
 	end
 
 	if settings[scope][effectType] == nil then
-		settings[scope][effectType] = { iconSize = 25, x = 0, y = 0 }
+		settings[scope][effectType] = { iconSize = 25, x = 0, y = 0, growth = "horizontal_right" }
+	end
+
+	if
+		settings[scope][effectType].growth ~= "horizontal_right"
+		and settings[scope][effectType].growth ~= "horizontal_left"
+		and settings[scope][effectType].growth ~= "vertical_up"
+		and settings[scope][effectType].growth ~= "vertical_down"
+	then
+		settings[scope][effectType].growth = "horizontal_right"
 	end
 
 	return settings[scope][effectType]
+end
+
+function shared.GetIconOffsetForIndex(settings, index)
+	local iconSize = tonumber(settings and settings.iconSize) or 25
+	local spacing = iconSize + 5
+	local baseX = tonumber(settings and settings.x) or 0
+	local baseY = tonumber(settings and settings.y) or 0
+	local growth = settings and settings.growth or "horizontal_right"
+
+	if growth == "horizontal_left" then
+		return baseX - (spacing * index), baseY
+	end
+	if growth == "vertical_up" then
+		return baseX, baseY - (spacing * index)
+	end
+	if growth == "vertical_down" then
+		return baseX, baseY + (spacing * index)
+	end
+
+	return baseX + (spacing * index), baseY
+end
+
+function shared.CycleIconGrowth(scope, effectType)
+	local setting = shared.GetIconSettings(scope, effectType)
+	if setting.growth == "horizontal_right" then
+		setting.growth = "horizontal_left"
+	elseif setting.growth == "horizontal_left" then
+		setting.growth = "vertical_up"
+	elseif setting.growth == "vertical_up" then
+		setting.growth = "vertical_down"
+	else
+		setting.growth = "horizontal_right"
+	end
+	shared.SaveIconSettings()
+	return setting
 end
 
 function shared.AdjustIconSettings(scope, effectType, axis, delta)

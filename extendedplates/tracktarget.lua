@@ -190,6 +190,19 @@ local function GetPreviewLayout(effectType)
 	}
 end
 
+local function GrowthModeLabel(growth)
+	if growth == "horizontal_left" then
+		return "Horizontal L"
+	end
+	if growth == "vertical_up" then
+		return "Vertical ^"
+	end
+	if growth == "vertical_down" then
+		return "Vertical v"
+	end
+	return "Horizontal R"
+end
+
 local buffAnchor = CreateEmptyWindow("targetDebuffTrackerWatchTargetAnchor", "UIParent")
 buffAnchor:Show(true)
 DebugPrint("tracktarget.lua loaded")
@@ -282,13 +295,14 @@ function buffAnchor:OnUpdate()
 			local buffId = tostring(buffExtra["buff_id"])
 			if shared.ShouldDisplay("target", "buff", buffId) then
 				local iconId = "watchbuff:" .. buffId .. ":" .. tostring(buff["name"])
+				local iconX, iconY = shared.GetIconOffsetForIndex(settings, buffCounter)
 				currentIcons[iconId] = true
 				drawIcon(
 					buffAnchor,
 					iconId,
 					buffExtra["path"],
-					settings.x + ((settings.iconSize + 5) * buffCounter),
-					settings.y,
+					iconX,
+					iconY,
 					shared.FormatDuration(buff["timeLeft"] and math.floor(buff["timeLeft"] / 1000) or ""),
 					buff["stack"],
 					settings.iconSize
@@ -308,13 +322,14 @@ function buffAnchor:OnUpdate()
 			local debuffId = tostring(debuffExtra["buff_id"])
 			if shared.ShouldDisplay("target", "debuff", debuffId) then
 				local iconId = "watchdebuff:" .. debuffId .. ":" .. tostring(debuff["name"])
+				local iconX, iconY = shared.GetIconOffsetForIndex(settings, debuffCounter)
 				currentIcons[iconId] = true
 				drawIcon(
 					buffAnchor,
 					iconId,
 					debuffExtra["path"],
-					settings.x + ((settings.iconSize + 5) * debuffCounter),
-					settings.y,
+					iconX,
+					iconY,
 					shared.FormatDuration(debuff["timeLeft"] and math.floor(debuff["timeLeft"] / 1000) or ""),
 					debuff["stack"],
 					settings.iconSize
@@ -517,6 +532,7 @@ local importExportActionButton = nil
 local importExportMode = "export"
 local refreshWindow = nil
 local positionStatusLabel
+local positionGrowthButton
 local positionPreviewOrigin
 local positionPreviewBox
 local positionPreviewName
@@ -1911,8 +1927,17 @@ do
 
 	positionStatusLabel = positionWindow:CreateChildWidget("label", "status", 0, true)
 	positionStatusLabel:AddAnchor("TOPLEFT", positionWindow, 16, 156)
-	positionStatusLabel:SetExtent(228, 40)
+	positionStatusLabel:SetExtent(228, 24)
 	ApplyLocalLabelStyle(positionStatusLabel, 14, ALIGN_LEFT, 0.96, 0.90, 0.78)
+
+	positionGrowthButton = positionWindow:CreateChildWidget("button", "growthButton", 0, true)
+	ApplyLocalButtonStyle(positionGrowthButton)
+	positionGrowthButton:SetExtent(228, 24)
+	positionGrowthButton:AddAnchor("TOPLEFT", positionWindow, 16, 182)
+	positionGrowthButton:SetText("Horizontal R")
+	positionGrowthButton:SetHandler("OnClick", function()
+		shared.CycleIconGrowth(positionModeScope, positionModeEffect)
+	end)
 
 	local previewOffsetX = 16
 	local previewOffsetY = 206
@@ -1989,13 +2014,14 @@ do
 		local layout = GetPreviewLayout(positionModeEffect)
 		positionStatusLabel:SetText(
 			string.format(
-				"%s\nX: %d  Y: %d  Size: %d",
+				"%s  X: %d  Y: %d  Size: %d",
 				categoryTitle(positionModeScope, positionModeEffect),
 				current.x,
 				current.y,
 				current.iconSize
 			)
 		)
+		positionGrowthButton:SetText(GrowthModeLabel(current.growth))
 
 		local previewTexture = GetPreviewIconPath(positionModeEffect)
 		positionPreviewOrigin:RemoveAllAnchors()
@@ -2018,16 +2044,12 @@ do
 		positionPreviewName:SetExtent(layout.nameplateWidth - 12, 18)
 		for i = 1, #positionPreviewIcons do
 			local icon = positionPreviewIcons[i]
+			local iconX, iconY = shared.GetIconOffsetForIndex(current, i - 1)
 			icon:ClearAllTextures()
 			icon:AddTexture(previewTexture)
 			icon:SetExtent(current.iconSize, current.iconSize)
 			icon:RemoveAllAnchors()
-			icon:AddAnchor(
-				"LEFT",
-				positionPreviewOrigin,
-				current.x + ((current.iconSize + 5) * (i - 1)),
-				current.y
-			)
+			icon:AddAnchor("LEFT", positionPreviewOrigin, iconX, iconY)
 		end
 
 		for i = 1, #positionModeButtons do

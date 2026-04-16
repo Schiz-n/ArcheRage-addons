@@ -326,13 +326,14 @@ function buffAnchor:OnUpdate()
 			local buffId = tostring(buffExtra["buff_id"])
 			if shared.ShouldDisplay("target", "buff", buffId) then
 				local iconId = "buff:" .. buffId .. ":" .. tostring(buff["name"])
+				local iconX, iconY = shared.GetIconOffsetForIndex(settings, buffCounter)
 				currentIcons[iconId] = true
 				drawIcon(
 					buffAnchor,
 					iconId,
 					buffExtra["path"],
-					settings.x + ((settings.iconSize + 5) * buffCounter),
-					settings.y,
+					iconX,
+					iconY,
 					shared.FormatDuration(buff["timeLeft"] and math.floor(buff["timeLeft"] / 1000) or ""),
 					buff["stack"],
 					settings.iconSize
@@ -352,13 +353,14 @@ function buffAnchor:OnUpdate()
 			local debuffId = tostring(debuffExtra["buff_id"])
 			if shared.ShouldDisplay("target", "debuff", debuffId) then
 				local iconId = "debuff:" .. debuffId .. ":" .. tostring(debuff["name"])
+				local iconX, iconY = shared.GetIconOffsetForIndex(settings, debuffCounter)
 				currentIcons[iconId] = true
 				drawIcon(
 					buffAnchor,
 					iconId,
 					debuffExtra["path"],
-					settings.x + ((settings.iconSize + 5) * debuffCounter),
-					settings.y,
+					iconX,
+					iconY,
 					shared.FormatDuration(debuff["timeLeft"] and math.floor(debuff["timeLeft"] / 1000) or ""),
 					debuff["stack"],
 					settings.iconSize
