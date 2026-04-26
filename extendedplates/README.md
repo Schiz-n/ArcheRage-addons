@@ -1,5 +1,8 @@
 # Target Debuff Tracker
 
+<img width="1312" height="691" alt="image" src="https://github.com/user-attachments/assets/217c7020-843d-41d0-b898-78290298ebc8" />
+
+
 The **Target Debuff Tracker** is a tool that tracks buffs and debuffs of the selected target. It also tracks defiance separately.
 
 ![Buff track example](https://i.imgur.com/mgAFbsp.png)
