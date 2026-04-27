@@ -15,7 +15,11 @@ ADDON:ImportObject(OBJECT_TYPE.TEXTBOX)
 
 ADDON:ImportAPI(API_TYPE.UNIT.id)
 
-local MAGIC_CIRCLE_BUFF_ID = 19037
+local MAGIC_CIRCLE_BUFF_IDS = {
+    [19037] = true,
+    [25850] = true,
+    [25851] = true
+}
 local MAGIC_CIRCLE_MAX_RANGE = 29.9
 local MAGIC_CIRCLE_WARNING_RANGE = 25
 local offsetx = 200
@@ -41,7 +45,8 @@ local function IsMagicCircleBuffActive()
     local buffCount = X2Unit:UnitBuffCount("player")
     for i = 1, buffCount do
         local buff = X2Unit:UnitBuff("player", i)
-        if buff ~= nil and tonumber(buff["buff_id"]) == MAGIC_CIRCLE_BUFF_ID then
+        local buffId = buff ~= nil and tonumber(buff["buff_id"]) or nil
+        if buffId ~= nil and MAGIC_CIRCLE_BUFF_IDS[buffId] then
             return 1
         end
     end
