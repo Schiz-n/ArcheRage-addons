@@ -730,6 +730,31 @@ function shared.FormatDuration(seconds)
 	return string.format("%dd", math.floor(numeric / 86400))
 end
 
+function shared.FormatStackCount(stacks)
+	if stacks == nil or stacks == "" then
+		return ""
+	end
+
+	local numeric = tonumber(stacks)
+	if numeric == nil then
+		return tostring(stacks)
+	end
+
+	if numeric <= 1 then
+		return ""
+	end
+
+	if numeric >= 1000 then
+		return string.format("%dk", math.floor(numeric / 1000))
+	end
+
+	if numeric >= 100 then
+		return string.format("%.1fk", math.floor(numeric / 100) / 10)
+	end
+
+	return tostring(math.floor(numeric))
+end
+
 function shared.GetSortedTrackedEntries(scope, effectType)
 	local tracked = loadTrackedTable(scope, effectType)
 	local entries = {}

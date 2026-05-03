@@ -222,10 +222,7 @@ local function hideUnused(currentIcons)
 end
 
 local function drawIcon(parent, iconId, iconPath, xOffset, yOffset, duration, stacks, iconSize)
-	local stackText = tostring(stacks or "")
-	if stackText == "1" then
-		stackText = ""
-	end
+	local stackText = shared.FormatStackCount(stacks)
 
 	if drawableIcons[iconId] ~= nil then
 		if not drawableIcons[iconId]:IsVisible() then
