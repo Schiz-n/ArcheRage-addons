@@ -3068,7 +3068,7 @@ function drawLinesUpdater:OnUpdate(dt)
 		local distInfo = X2Unit:UnitDistance("watchtarget")
 		if distInfo ~= nil and distInfo.distance ~= nil then
 			local distanceValue = tonumber(distInfo.distance) or 0
-			tracktargetDistanceLabel:SetText(string.format("Distance to watchtarget: %.1fm", distanceValue))
+			tracktargetDistanceLabel:SetText(string.format("%.1fm", distanceValue))
 			if distanceValue >= 200 then
 				tracktargetDistanceLabel.style:SetColor(1.0, 0.2, 0.2, 1)
 			elseif distanceValue >= 150 then
@@ -3077,7 +3077,7 @@ function drawLinesUpdater:OnUpdate(dt)
 				tracktargetDistanceLabel.style:SetColor(1.0, 1.0, 1.0, 1)
 			end
 		else
-			tracktargetDistanceLabel:SetText("Distance to watchtarget: none")
+			tracktargetDistanceLabel:SetText("")
 			tracktargetDistanceLabel.style:SetColor(1.0, 1.0, 1.0, 1)
 		end
 		tracktargetDistanceWindow:Show(true)
