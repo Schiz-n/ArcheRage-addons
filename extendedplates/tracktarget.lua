@@ -190,6 +190,388 @@ local function GetPreviewLayout(effectType)
 	}
 end
 
+local drawLinesEnabled = false
+local drawLinesSettingsWindow = nil
+local drawLinesButton = nil
+local drawLinesSettingsButton = nil
+local drawLinesPairButtons = {}
+local targetLineModeButton = nil
+local trackLineModeButton = nil
+local drawLinesMinLabel = nil
+local drawLinesMaxLabel = nil
+local drawLinesDotSizeLabel = nil
+local drawLinesDotAlphaLabel = nil
+local drawLinesMinDotCount = 8
+local drawLinesMaxDotCount = 64
+local drawLinesDotFontSize = 15
+local drawLinesDotAlpha = 1.0
+local targetToTargetLineFromPlayer = false
+local watchToTargetLineFromPlayer = true
+local showTracktargetAggro = false
+local lockTracktargetAggro = false
+local tracktargetAggroWindow = nil
+local tracktargetAggroLabel = nil
+local tracktargetAggroBackground = nil
+local showTracktargetDistance = false
+local lockTracktargetDistance = false
+local tracktargetDistanceWindow = nil
+local tracktargetDistanceLabel = nil
+local tracktargetDistanceBackground = nil
+local drawLinesPairs = {
+	target = false,
+	targetoftarget = false,
+	watchtarget = false,
+	watchtargettarget = false,
+}
+
+local drawLinesDotSets = {}
+local drawLinesPairOrder = { "target", "targetoftarget", "watchtarget", "watchtargettarget" }
+local drawLinesDebug = false
+local drawLinesDebugElapsed = 0
+local drawLinesDebugIntervalMs = 1000
+local drawLinesPairMeta = {
+	target = { fromUnit = "player", toUnit = "target", color = { 0.25, 1.0, 0.25 } },
+	targetoftarget = { fromUnit = "target", toUnit = "targettarget", color = { 1.0, 0.25, 0.25 } },
+	watchtarget = { fromUnit = "player", toUnit = "watchtarget", color = { 0.25, 0.8, 1.0 } },
+	watchtargettarget = { fromUnit = "player", toUnit = "watchtargettarget", color = { 1.0, 0.85, 0.25 } },
+}
+
+local function SaveDrawLinesSettings()
+	ADDON:ClearData("extendedplates_drawlines")
+	ADDON:SaveData("extendedplates_drawlines", {
+		enabled = drawLinesEnabled,
+		minDots = drawLinesMinDotCount,
+		maxDots = drawLinesMaxDotCount,
+		dotFontSize = drawLinesDotFontSize,
+		dotAlpha = drawLinesDotAlpha,
+		targetToTargetLineFromPlayer = targetToTargetLineFromPlayer,
+		watchToTargetLineFromPlayer = watchToTargetLineFromPlayer,
+		showTracktargetAggro = showTracktargetAggro,
+		lockTracktargetAggro = lockTracktargetAggro,
+		showTracktargetDistance = showTracktargetDistance,
+		lockTracktargetDistance = lockTracktargetDistance,
+		pairs = drawLinesPairs,
+	})
+end
+
+local function LoadDrawLinesSettings()
+	local stored = ADDON:LoadData("extendedplates_drawlines")
+	if stored == nil then
+		return
+	end
+	if stored.enabled ~= nil then
+		drawLinesEnabled = stored.enabled and true or false
+	end
+	if tonumber(stored.minDots) ~= nil then
+		drawLinesMinDotCount = math.max(1, math.floor(tonumber(stored.minDots)))
+	end
+	if tonumber(stored.maxDots) ~= nil then
+		drawLinesMaxDotCount = math.max(drawLinesMinDotCount, math.floor(tonumber(stored.maxDots)))
+	end
+	if tonumber(stored.dotFontSize) ~= nil then
+		drawLinesDotFontSize = math.max(8, math.floor(tonumber(stored.dotFontSize)))
+	end
+	if tonumber(stored.dotAlpha) ~= nil then
+		local alpha = tonumber(stored.dotAlpha)
+		if alpha < 0.1 then
+			alpha = 0.1
+		elseif alpha > 1.0 then
+			alpha = 1.0
+		end
+		drawLinesDotAlpha = alpha
+	end
+	if stored.targetToTargetLineFromPlayer ~= nil then
+		targetToTargetLineFromPlayer = stored.targetToTargetLineFromPlayer and true or false
+	end
+	if stored.watchToTargetLineFromPlayer ~= nil then
+		watchToTargetLineFromPlayer = stored.watchToTargetLineFromPlayer and true or false
+	end
+	if stored.showTracktargetAggro ~= nil then
+		showTracktargetAggro = stored.showTracktargetAggro and true or false
+	end
+	if stored.lockTracktargetAggro ~= nil then
+		lockTracktargetAggro = stored.lockTracktargetAggro and true or false
+	end
+	if stored.showTracktargetDistance ~= nil then
+		showTracktargetDistance = stored.showTracktargetDistance and true or false
+	end
+	if stored.lockTracktargetDistance ~= nil then
+		lockTracktargetDistance = stored.lockTracktargetDistance and true or false
+	end
+	if type(stored.pairs) == "table" then
+		for _, key in ipairs(drawLinesPairOrder) do
+			if stored.pairs[key] ~= nil then
+				drawLinesPairs[key] = stored.pairs[key] and true or false
+			end
+		end
+	end
+end
+
+local function DrawLinesButtonText()
+	return "Draw Lines [" .. (drawLinesEnabled and "ON" or "OFF") .. "]"
+end
+
+local function TracktargetAggroButtonText()
+	return "Show Tracktarget Aggro [" .. (showTracktargetAggro and "ON" or "OFF") .. "]"
+end
+
+local function TracktargetDistanceButtonText()
+	return "Show Distance to Tracktarget [" .. (showTracktargetDistance and "ON" or "OFF") .. "]"
+end
+
+local function DrawPairButtonText(key)
+	local label = key
+	if key == "targetoftarget" then
+		label = "targetoftarget"
+	end
+	return label .. " [" .. (drawLinesPairs[key] and "ON" or "OFF") .. "]"
+end
+
+local function DrawLinesHideDots(dotSet)
+	for i = 1, #dotSet do
+		dotSet[i].container:Show(false)
+	end
+end
+
+local function DrawLinesProjectWorldToScreen(x, y, z)
+	if ConvertWorldToScreen ~= nil then
+		local sx, sy, sz = ConvertWorldToScreen(x, y, z)
+		if sx ~= nil and sy ~= nil and sz ~= nil then
+			return sx, sy, sz
+		end
+	end
+	if WorldToScreen ~= nil then
+		return WorldToScreen(x, y, z)
+	end
+	return nil, nil, nil
+end
+
+local function SaveTracktargetAggroWindowPos(x, y)
+	ADDON:ClearData("extendedplates_tracktarget_aggro_pos")
+	ADDON:SaveData("extendedplates_tracktarget_aggro_pos", { x = x, y = y })
+end
+
+local function LoadTracktargetAggroWindowPos()
+	local pos = ADDON:LoadData("extendedplates_tracktarget_aggro_pos")
+	if pos ~= nil then
+		return tonumber(pos.x) or 0, tonumber(pos.y) or 0
+	end
+	return 0, 0
+end
+
+local function SaveTracktargetDistanceWindowPos(x, y)
+	ADDON:ClearData("extendedplates_tracktarget_distance_pos")
+	ADDON:SaveData("extendedplates_tracktarget_distance_pos", { x = x, y = y })
+end
+
+local function LoadTracktargetDistanceWindowPos()
+	local pos = ADDON:LoadData("extendedplates_tracktarget_distance_pos")
+	if pos ~= nil then
+		return tonumber(pos.x) or 0, tonumber(pos.y) or 0
+	end
+	return 0, 0
+end
+
+local function ApplyTracktargetAggroLockState()
+	if tracktargetAggroWindow == nil then
+		return
+	end
+	if lockTracktargetAggro then
+		tracktargetAggroWindow:EnableDrag(false)
+		if tracktargetAggroWindow.EnablePick ~= nil then
+			tracktargetAggroWindow:EnablePick(false)
+		end
+	else
+		tracktargetAggroWindow:EnableDrag(true)
+		if tracktargetAggroWindow.EnablePick ~= nil then
+			tracktargetAggroWindow:EnablePick(true)
+		end
+	end
+	if tracktargetAggroBackground ~= nil and tracktargetAggroBackground.SetColor ~= nil then
+		if lockTracktargetAggro then
+			tracktargetAggroBackground:SetColor(0.12, 0.12, 0.12, 0.0)
+		else
+			tracktargetAggroBackground:SetColor(0.12, 0.12, 0.12, 0.60)
+		end
+	end
+	if tracktargetAggroLabel ~= nil and tracktargetAggroLabel.EnablePick ~= nil then
+		tracktargetAggroLabel:EnablePick(false)
+	end
+end
+
+local function ApplyTracktargetDistanceLockState()
+	if tracktargetDistanceWindow == nil then
+		return
+	end
+	if lockTracktargetDistance then
+		tracktargetDistanceWindow:EnableDrag(false)
+		if tracktargetDistanceWindow.EnablePick ~= nil then
+			tracktargetDistanceWindow:EnablePick(false)
+		end
+	else
+		tracktargetDistanceWindow:EnableDrag(true)
+		if tracktargetDistanceWindow.EnablePick ~= nil then
+			tracktargetDistanceWindow:EnablePick(true)
+		end
+	end
+	if tracktargetDistanceBackground ~= nil and tracktargetDistanceBackground.SetColor ~= nil then
+		if lockTracktargetDistance then
+			tracktargetDistanceBackground:SetColor(0.12, 0.12, 0.12, 0.0)
+		else
+			tracktargetDistanceBackground:SetColor(0.12, 0.12, 0.12, 0.60)
+		end
+	end
+	if tracktargetDistanceLabel ~= nil and tracktargetDistanceLabel.EnablePick ~= nil then
+		tracktargetDistanceLabel:EnablePick(false)
+	end
+end
+
+local function DrawLinesEnsureDots()
+	for _, pairKey in ipairs(drawLinesPairOrder) do
+		local pair = drawLinesPairMeta[pairKey]
+		if drawLinesDotSets[pairKey] == nil then
+			drawLinesDotSets[pairKey] = {}
+		end
+		local dotSet = drawLinesDotSets[pairKey]
+		for i = 1, drawLinesMaxDotCount do
+			if dotSet[i] == nil then
+				local container = CreateEmptyWindow("extendedPlatesLineDot_" .. pairKey .. "_" .. i, "UIParent")
+				container:Show(false)
+				container:AddAnchor("TOPLEFT", "UIParent", 0, 0)
+				local label = container:CreateChildWidget("label", "dotLabel", 0, true)
+				label:SetText(".")
+				label:SetExtent(18, 18)
+				label.style:SetFontSize(drawLinesDotFontSize)
+				label.style:SetColor(pair.color[1], pair.color[2], pair.color[3], drawLinesDotAlpha)
+				label.style:SetOutline(true)
+				label.style:SetAlign(ALIGN_CENTER)
+				label:AddAnchor("CENTER", container, 0, 0)
+				label:EnablePick(false)
+				dotSet[i] = { container = container, label = label }
+			end
+		end
+	end
+end
+
+local function DrawLinesRenderPair(pairKey)
+	local pair = drawLinesPairMeta[pairKey]
+	local dotSet = drawLinesDotSets[pairKey]
+	if pair == nil or dotSet == nil then
+		return 0
+	end
+	local fromUnit = pair.fromUnit
+	local toUnit = pair.toUnit
+	if pairKey == "targetoftarget" then
+		if targetToTargetLineFromPlayer then
+			fromUnit = "player"
+		else
+			fromUnit = "target"
+		end
+	elseif pairKey == "watchtargettarget" then
+		if watchToTargetLineFromPlayer then
+			fromUnit = "player"
+		else
+			fromUnit = "watchtarget"
+		end
+	end
+	if drawLinesPairs[pairKey] ~= true then
+		DrawLinesHideDots(dotSet)
+		return 0
+	end
+
+	local x1, y1, z1 = X2Unit:GetUnitWorldPositionByTarget(fromUnit, false)
+	local x2, y2, z2 = X2Unit:GetUnitWorldPositionByTarget(toUnit, false)
+	if x1 == nil or y1 == nil or z1 == nil or x2 == nil or y2 == nil or z2 == nil then
+		if drawLinesDebug and drawLinesDebugElapsed >= drawLinesDebugIntervalMs then
+			X2Chat:DispatchChatMessage(
+				CMF_SYSTEM,
+				string.format(
+					"[ExtPlates DrawLines DEBUG] %s worldpos missing | %s=(%s,%s,%s) %s=(%s,%s,%s)",
+					pairKey,
+					fromUnit,
+					tostring(x1),
+					tostring(y1),
+					tostring(z1),
+					toUnit,
+					tostring(x2),
+					tostring(y2),
+					tostring(z2)
+				)
+			)
+		end
+		DrawLinesHideDots(dotSet)
+		return 0
+	end
+
+	-- Preferred endpoint projection: unit API screen coordinates.
+	local sx1, sy1, d1 = X2Unit:GetUnitScreenPosition(fromUnit)
+	local sx2, sy2, d2 = X2Unit:GetUnitScreenPosition(toUnit)
+	if sx1 == nil or sy1 == nil or sx2 == nil or sy2 == nil then
+		-- Fallback to world projection if screen-position API has no coords.
+		sx1, sy1, d1 = DrawLinesProjectWorldToScreen(x1, y1, z1 + 1.0)
+		sx2, sy2, d2 = DrawLinesProjectWorldToScreen(x2, y2, z2 + 1.0)
+	end
+	if sx1 == nil or sy1 == nil or d1 == nil or sx2 == nil or sy2 == nil or d2 == nil or d1 <= 0 or d2 <= 0 then
+		if drawLinesDebug and drawLinesDebugElapsed >= drawLinesDebugIntervalMs then
+			X2Chat:DispatchChatMessage(
+				CMF_SYSTEM,
+				string.format(
+					"[ExtPlates DrawLines DEBUG] %s endpoint projection blocked | a=(%s,%s,%s) b=(%s,%s,%s)",
+					pairKey,
+					tostring(sx1),
+					tostring(sy1),
+					tostring(d1),
+					tostring(sx2),
+					tostring(sy2),
+					tostring(d2)
+				)
+			)
+		end
+		DrawLinesHideDots(dotSet)
+		return 0
+	end
+
+	local dx = sx2 - sx1
+	local dy = sy2 - sy1
+	local screenDistance = math.sqrt((dx * dx) + (dy * dy))
+	local dotCount = math.floor(screenDistance / 24)
+	if dotCount < drawLinesMinDotCount then
+		dotCount = drawLinesMinDotCount
+	elseif dotCount > drawLinesMaxDotCount then
+		dotCount = drawLinesMaxDotCount
+	end
+
+	local visible = 0
+	local projectedFailed = 0
+	for i = 1, dotCount do
+		local t = i / dotCount
+		local sx = sx1 + ((sx2 - sx1) * t)
+		local sy = sy1 + ((sy2 - sy1) * t)
+		dotSet[i].container:RemoveAllAnchors()
+		dotSet[i].container:AddAnchor("TOPLEFT", "UIParent", math.floor(sx + 0.5), math.floor(sy + 0.5))
+		dotSet[i].container:Show(true)
+		visible = visible + 1
+	end
+
+	for i = dotCount + 1, #dotSet do
+		dotSet[i].container:Show(false)
+	end
+	if drawLinesDebug and drawLinesDebugElapsed >= drawLinesDebugIntervalMs then
+		X2Chat:DispatchChatMessage(
+			CMF_SYSTEM,
+			string.format(
+				"[ExtPlates DrawLines DEBUG] %s rendered %d/%d (failed=%d) from=%s to=%s",
+				pairKey,
+				visible,
+				dotCount,
+				projectedFailed,
+				fromUnit,
+				toUnit
+			)
+		)
+	end
+	return visible
+end
 local function GrowthModeLabel(growth)
 	if growth == "horizontal_left" then
 		return "Horizontal L"
@@ -518,6 +900,7 @@ local castbarSettingsPreviewTime = nil
 local castbarWidthEdit = nil
 local castbarHeightEdit = nil
 local infoSettingsMode = "distance"
+local drawLinesUpdater = nil
 local addByIdWindow = nil
 local addByIdNameEdit = nil
 local addByIdIdEdit = nil
@@ -534,6 +917,8 @@ local positionPreviewOrigin
 local positionPreviewBox
 local positionPreviewName
 local positionPreviewIcons = {}
+
+LoadDrawLinesSettings()
 
 local initOk, initErr = pcall(function()
 	DebugPrint("init: before CreateSimpleButton")
@@ -847,6 +1232,26 @@ showEquipmentSettingsButton:SetHandler("OnClick", function()
 	end
 end)
 
+drawLinesButton = managerWindow:CreateChildWidget("button", "drawLinesButton", 0, true)
+ApplyLocalButtonStyle(drawLinesButton)
+drawLinesButton:SetExtent(132, 32)
+drawLinesButton:AddAnchor("TOPLEFT", managerWindow, 20, 646)
+drawLinesButton:SetHandler("OnClick", function()
+	drawLinesEnabled = not drawLinesEnabled
+	SaveDrawLinesSettings()
+end)
+
+drawLinesSettingsButton = managerWindow:CreateChildWidget("button", "drawLinesSettingsButton", 0, true)
+ApplyLocalButtonStyle(drawLinesSettingsButton)
+drawLinesSettingsButton:SetExtent(58, 32)
+drawLinesSettingsButton:AddAnchor("TOPLEFT", managerWindow, 160, 646)
+drawLinesSettingsButton:SetText("...")
+drawLinesSettingsButton:SetHandler("OnClick", function()
+	if drawLinesSettingsWindow ~= nil then
+		drawLinesSettingsWindow:Show(true)
+	end
+end)
+
 positionWindow = CreateEmptyWindow("targetDebuffTrackerPositionWindow", "UIParent")
 positionWindow:AddAnchor("CENTER", "UIParent", 300, 0)
 positionWindow:SetExtent(260, 430)
@@ -866,6 +1271,71 @@ infoSettingsWindow = CreateEmptyWindow("extendedPlatesInfoSettingsWindow", "UIPa
 infoSettingsWindow:AddAnchor("CENTER", "UIParent", 300, 0)
 infoSettingsWindow:SetExtent(320, 470)
 infoSettingsWindow:Show(false)
+
+drawLinesSettingsWindow = CreateEmptyWindow("extendedPlatesDrawLinesSettingsWindow", "UIParent")
+drawLinesSettingsWindow:AddAnchor("CENTER", "UIParent", 340, 0)
+drawLinesSettingsWindow:SetExtent(320, 560)
+drawLinesSettingsWindow:Show(false)
+
+tracktargetAggroWindow = CreateEmptyWindow("extendedPlatesTracktargetAggroWindow", "UIParent")
+tracktargetAggroWindow:SetExtent(230, 52)
+local aggroX, aggroY = LoadTracktargetAggroWindowPos()
+if aggroX ~= 0 or aggroY ~= 0 then
+	tracktargetAggroWindow:AddAnchor("TOPLEFT", "UIParent", aggroX, aggroY)
+else
+	tracktargetAggroWindow:AddAnchor("TOPLEFT", "UIParent", 440, 260)
+end
+tracktargetAggroWindow:Show(false)
+tracktargetAggroWindow:EnableDrag(true)
+tracktargetAggroWindow:SetHandler("OnDragStart", function(self)
+	self:StartMoving()
+end)
+tracktargetAggroWindow:SetHandler("OnDragStop", function(self)
+	self:StopMovingOrSizing()
+	local offsetX, offsetY = self:GetOffset()
+	local uiScale = UIParent:GetUIScale() or 1.0
+	SaveTracktargetAggroWindowPos(offsetX * uiScale, offsetY * uiScale)
+end)
+tracktargetAggroBackground = tracktargetAggroWindow:CreateColorDrawable(0.12, 0.12, 0.12, 0.60, "background")
+tracktargetAggroBackground:AddAnchor("TOPLEFT", tracktargetAggroWindow, 0, 0)
+tracktargetAggroBackground:AddAnchor("BOTTOMRIGHT", tracktargetAggroWindow, 0, 0)
+tracktargetAggroLabel = tracktargetAggroWindow:CreateChildWidget("label", "tracktargetAggroLabel", 0, true)
+tracktargetAggroLabel:AddAnchor("TOPLEFT", tracktargetAggroWindow, 10, 12)
+tracktargetAggroLabel:SetExtent(210, 28)
+ApplyLocalLabelStyle(tracktargetAggroLabel, 18, ALIGN_LEFT, 1, 1, 1)
+tracktargetAggroLabel:SetText("none")
+tracktargetAggroLabel:EnablePick(false)
+ApplyTracktargetAggroLockState()
+
+tracktargetDistanceWindow = CreateEmptyWindow("extendedPlatesTracktargetDistanceWindow", "UIParent")
+tracktargetDistanceWindow:SetExtent(300, 52)
+local distX, distY = LoadTracktargetDistanceWindowPos()
+if distX ~= 0 or distY ~= 0 then
+	tracktargetDistanceWindow:AddAnchor("TOPLEFT", "UIParent", distX, distY)
+else
+	tracktargetDistanceWindow:AddAnchor("TOPLEFT", "UIParent", 440, 320)
+end
+tracktargetDistanceWindow:Show(false)
+tracktargetDistanceWindow:EnableDrag(true)
+tracktargetDistanceWindow:SetHandler("OnDragStart", function(self)
+	self:StartMoving()
+end)
+tracktargetDistanceWindow:SetHandler("OnDragStop", function(self)
+	self:StopMovingOrSizing()
+	local offsetX, offsetY = self:GetOffset()
+	local uiScale = UIParent:GetUIScale() or 1.0
+	SaveTracktargetDistanceWindowPos(offsetX * uiScale, offsetY * uiScale)
+end)
+tracktargetDistanceBackground = tracktargetDistanceWindow:CreateColorDrawable(0.12, 0.12, 0.12, 0.60, "background")
+tracktargetDistanceBackground:AddAnchor("TOPLEFT", tracktargetDistanceWindow, 0, 0)
+tracktargetDistanceBackground:AddAnchor("BOTTOMRIGHT", tracktargetDistanceWindow, 0, 0)
+tracktargetDistanceLabel = tracktargetDistanceWindow:CreateChildWidget("label", "tracktargetDistanceLabel", 0, true)
+tracktargetDistanceLabel:AddAnchor("TOPLEFT", tracktargetDistanceWindow, 10, 12)
+tracktargetDistanceLabel:SetExtent(280, 28)
+ApplyLocalLabelStyle(tracktargetDistanceLabel, 18, ALIGN_LEFT, 1, 1, 1)
+tracktargetDistanceLabel:SetText("Distance: none")
+tracktargetDistanceLabel:EnablePick(false)
+ApplyTracktargetDistanceLockState()
 
 do
 	local bg = addByIdWindow:CreateColorDrawable(0.08, 0.06, 0.04, 0.96, "background")
@@ -1854,6 +2324,289 @@ do
 end
 
 do
+	local bg = drawLinesSettingsWindow:CreateColorDrawable(0.08, 0.06, 0.04, 0.96, "background")
+	bg:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 0, 0)
+	bg:AddAnchor("BOTTOMRIGHT", drawLinesSettingsWindow, 0, 0)
+
+	local title = drawLinesSettingsWindow:CreateChildWidget("label", "title", 0, true)
+	title:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 16, 12)
+	title:SetExtent(220, 24)
+	ApplyLocalLabelStyle(title, 18, ALIGN_LEFT, 1, 0.97, 0.92)
+	title:SetText("Draw Lines")
+
+	local closeButton = drawLinesSettingsWindow:CreateChildWidget("button", "closeButton", 0, true)
+	ApplyLocalButtonStyle(closeButton)
+	closeButton:SetExtent(30, 24)
+	closeButton:AddAnchor("TOPRIGHT", drawLinesSettingsWindow, -12, 8)
+	closeButton:SetText("X")
+	closeButton:SetHandler("OnClick", function()
+		drawLinesSettingsWindow:Show(false)
+	end)
+
+	drawLinesSettingsWindow:EnableDrag(true)
+	drawLinesSettingsWindow:SetHandler("OnDragStart", function(self)
+		self:StartMoving()
+		return true
+	end)
+	drawLinesSettingsWindow:SetHandler("OnDragStop", function(self)
+		self:StopMovingOrSizing()
+	end)
+
+	local function makePairButton(index, key, text)
+		local button = drawLinesSettingsWindow:CreateChildWidget("button", "pairButton", index, true)
+		ApplyLocalButtonStyle(button)
+		button:SetExtent(286, 28)
+		button:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 16, 46 + ((index - 1) * 34))
+		button:SetText(text)
+		button:SetHandler("OnClick", function()
+			drawLinesPairs[key] = not drawLinesPairs[key]
+			SaveDrawLinesSettings()
+		end)
+		drawLinesPairButtons[key] = button
+	end
+
+	makePairButton(1, "target", "target")
+	makePairButton(2, "targetoftarget", "targetoftarget")
+	makePairButton(3, "watchtarget", "watchtarget")
+	makePairButton(4, "watchtargettarget", "watchtargettarget")
+
+	targetLineModeButton = drawLinesSettingsWindow:CreateChildWidget("button", "targetLineModeButton", 0, true)
+	ApplyLocalButtonStyle(targetLineModeButton)
+	targetLineModeButton:SetExtent(286, 28)
+	targetLineModeButton:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 16, 182)
+	targetLineModeButton:SetHandler("OnClick", function()
+		targetToTargetLineFromPlayer = not targetToTargetLineFromPlayer
+		SaveDrawLinesSettings()
+	end)
+
+	trackLineModeButton = drawLinesSettingsWindow:CreateChildWidget("button", "trackLineModeButton", 0, true)
+	ApplyLocalButtonStyle(trackLineModeButton)
+	trackLineModeButton:SetExtent(286, 28)
+	trackLineModeButton:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 16, 214)
+	trackLineModeButton:SetHandler("OnClick", function()
+		watchToTargetLineFromPlayer = not watchToTargetLineFromPlayer
+		SaveDrawLinesSettings()
+	end)
+
+	local densityTitle = drawLinesSettingsWindow:CreateChildWidget("label", "densityTitle", 0, true)
+	densityTitle:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 16, 248)
+	densityTitle:SetExtent(200, 22)
+	ApplyLocalLabelStyle(densityTitle, 14, ALIGN_LEFT, 0.96, 0.90, 0.78)
+	densityTitle:SetText("Line density")
+
+	local minText = drawLinesSettingsWindow:CreateChildWidget("label", "minText", 0, true)
+	minText:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 16, 278)
+	minText:SetExtent(50, 22)
+	ApplyLocalLabelStyle(minText, 14, ALIGN_LEFT, 1, 1, 1)
+	minText:SetText("Min:")
+
+	drawLinesMinLabel = drawLinesSettingsWindow:CreateChildWidget("label", "minValue", 0, true)
+	drawLinesMinLabel:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 62, 278)
+	drawLinesMinLabel:SetExtent(60, 22)
+	ApplyLocalLabelStyle(drawLinesMinLabel, 14, ALIGN_LEFT, 1, 1, 1)
+
+	local minMinus = drawLinesSettingsWindow:CreateChildWidget("button", "minMinus", 0, true)
+	ApplyLocalButtonStyle(minMinus)
+	minMinus:SetExtent(34, 24)
+	minMinus:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 132, 276)
+	minMinus:SetText("-")
+	minMinus:SetHandler("OnClick", function()
+		drawLinesMinDotCount = math.max(1, drawLinesMinDotCount - 1)
+		if drawLinesMaxDotCount < drawLinesMinDotCount then
+			drawLinesMaxDotCount = drawLinesMinDotCount
+		end
+		SaveDrawLinesSettings()
+	end)
+
+	local minPlus = drawLinesSettingsWindow:CreateChildWidget("button", "minPlus", 0, true)
+	ApplyLocalButtonStyle(minPlus)
+	minPlus:SetExtent(34, 24)
+	minPlus:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 222, 276)
+	minPlus:SetText("+")
+	minPlus:SetHandler("OnClick", function()
+		drawLinesMinDotCount = drawLinesMinDotCount + 1
+		if drawLinesMaxDotCount < drawLinesMinDotCount then
+			drawLinesMaxDotCount = drawLinesMinDotCount
+		end
+		SaveDrawLinesSettings()
+	end)
+
+	local maxText = drawLinesSettingsWindow:CreateChildWidget("label", "maxText", 0, true)
+	maxText:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 16, 312)
+	maxText:SetExtent(50, 22)
+	ApplyLocalLabelStyle(maxText, 14, ALIGN_LEFT, 1, 1, 1)
+	maxText:SetText("Max:")
+
+	drawLinesMaxLabel = drawLinesSettingsWindow:CreateChildWidget("label", "maxValue", 0, true)
+	drawLinesMaxLabel:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 62, 312)
+	drawLinesMaxLabel:SetExtent(60, 22)
+	ApplyLocalLabelStyle(drawLinesMaxLabel, 14, ALIGN_LEFT, 1, 1, 1)
+
+	local maxMinus = drawLinesSettingsWindow:CreateChildWidget("button", "maxMinus", 0, true)
+	ApplyLocalButtonStyle(maxMinus)
+	maxMinus:SetExtent(34, 24)
+	maxMinus:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 132, 310)
+	maxMinus:SetText("-")
+	maxMinus:SetHandler("OnClick", function()
+		drawLinesMaxDotCount = math.max(drawLinesMinDotCount, drawLinesMaxDotCount - 1)
+		SaveDrawLinesSettings()
+	end)
+
+	local maxPlus = drawLinesSettingsWindow:CreateChildWidget("button", "maxPlus", 0, true)
+	ApplyLocalButtonStyle(maxPlus)
+	maxPlus:SetExtent(34, 24)
+	maxPlus:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 222, 310)
+	maxPlus:SetText("+")
+	maxPlus:SetHandler("OnClick", function()
+		drawLinesMaxDotCount = drawLinesMaxDotCount + 1
+		SaveDrawLinesSettings()
+	end)
+
+	local dotSizeText = drawLinesSettingsWindow:CreateChildWidget("label", "dotSizeText", 0, true)
+	dotSizeText:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 16, 338)
+	dotSizeText:SetExtent(70, 22)
+	ApplyLocalLabelStyle(dotSizeText, 14, ALIGN_LEFT, 1, 1, 1)
+	dotSizeText:SetText("Dot size:")
+
+	drawLinesDotSizeLabel = drawLinesSettingsWindow:CreateChildWidget("label", "dotSizeValue", 0, true)
+	drawLinesDotSizeLabel:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 88, 338)
+	drawLinesDotSizeLabel:SetExtent(60, 22)
+	ApplyLocalLabelStyle(drawLinesDotSizeLabel, 14, ALIGN_LEFT, 1, 1, 1)
+
+	local dotSizeMinus = drawLinesSettingsWindow:CreateChildWidget("button", "dotSizeMinus", 0, true)
+	ApplyLocalButtonStyle(dotSizeMinus)
+	dotSizeMinus:SetExtent(34, 24)
+	dotSizeMinus:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 132, 336)
+	dotSizeMinus:SetText("-")
+	dotSizeMinus:SetHandler("OnClick", function()
+		drawLinesDotFontSize = math.max(8, drawLinesDotFontSize - 1)
+		SaveDrawLinesSettings()
+	end)
+
+	local dotSizePlus = drawLinesSettingsWindow:CreateChildWidget("button", "dotSizePlus", 0, true)
+	ApplyLocalButtonStyle(dotSizePlus)
+	dotSizePlus:SetExtent(34, 24)
+	dotSizePlus:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 222, 336)
+	dotSizePlus:SetText("+")
+	dotSizePlus:SetHandler("OnClick", function()
+		drawLinesDotFontSize = drawLinesDotFontSize + 1
+		SaveDrawLinesSettings()
+	end)
+
+	local dotAlphaText = drawLinesSettingsWindow:CreateChildWidget("label", "dotAlphaText", 0, true)
+	dotAlphaText:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 16, 372)
+	dotAlphaText:SetExtent(80, 22)
+	ApplyLocalLabelStyle(dotAlphaText, 14, ALIGN_LEFT, 1, 1, 1)
+	dotAlphaText:SetText("Transp:")
+
+	drawLinesDotAlphaLabel = drawLinesSettingsWindow:CreateChildWidget("label", "dotAlphaValue", 0, true)
+	drawLinesDotAlphaLabel:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 88, 372)
+	drawLinesDotAlphaLabel:SetExtent(60, 22)
+	ApplyLocalLabelStyle(drawLinesDotAlphaLabel, 14, ALIGN_LEFT, 1, 1, 1)
+
+	local dotAlphaMinus = drawLinesSettingsWindow:CreateChildWidget("button", "dotAlphaMinus", 0, true)
+	ApplyLocalButtonStyle(dotAlphaMinus)
+	dotAlphaMinus:SetExtent(34, 24)
+	dotAlphaMinus:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 132, 370)
+	dotAlphaMinus:SetText("-")
+	dotAlphaMinus:SetHandler("OnClick", function()
+		drawLinesDotAlpha = drawLinesDotAlpha - 0.1
+		if drawLinesDotAlpha < 0.1 then
+			drawLinesDotAlpha = 0.1
+		end
+		drawLinesDotAlpha = math.floor((drawLinesDotAlpha * 10) + 0.5) / 10
+		SaveDrawLinesSettings()
+	end)
+
+	local dotAlphaPlus = drawLinesSettingsWindow:CreateChildWidget("button", "dotAlphaPlus", 0, true)
+	ApplyLocalButtonStyle(dotAlphaPlus)
+	dotAlphaPlus:SetExtent(34, 24)
+	dotAlphaPlus:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 222, 370)
+	dotAlphaPlus:SetText("+")
+	dotAlphaPlus:SetHandler("OnClick", function()
+		drawLinesDotAlpha = drawLinesDotAlpha + 0.1
+		if drawLinesDotAlpha > 1.0 then
+			drawLinesDotAlpha = 1.0
+		end
+		drawLinesDotAlpha = math.floor((drawLinesDotAlpha * 10) + 0.5) / 10
+		SaveDrawLinesSettings()
+	end)
+
+	local showTrackAggroInPaneButton = drawLinesSettingsWindow:CreateChildWidget("button", "showTrackAggroInPaneButton", 0, true)
+	ApplyLocalButtonStyle(showTrackAggroInPaneButton)
+	showTrackAggroInPaneButton:SetExtent(286, 28)
+	showTrackAggroInPaneButton:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 16, 406)
+	showTrackAggroInPaneButton:SetHandler("OnClick", function()
+		showTracktargetAggro = not showTracktargetAggro
+		SaveDrawLinesSettings()
+	end)
+
+	local lockAggroButton = drawLinesSettingsWindow:CreateChildWidget("button", "lockAggroButton", 0, true)
+	ApplyLocalButtonStyle(lockAggroButton)
+	lockAggroButton:SetExtent(286, 28)
+	lockAggroButton:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 16, 438)
+	lockAggroButton:SetHandler("OnClick", function()
+		lockTracktargetAggro = not lockTracktargetAggro
+		ApplyTracktargetAggroLockState()
+		SaveDrawLinesSettings()
+	end)
+
+	local showTrackDistanceButton = drawLinesSettingsWindow:CreateChildWidget("button", "showTrackDistanceButton", 0, true)
+	ApplyLocalButtonStyle(showTrackDistanceButton)
+	showTrackDistanceButton:SetExtent(286, 28)
+	showTrackDistanceButton:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 16, 470)
+	showTrackDistanceButton:SetHandler("OnClick", function()
+		showTracktargetDistance = not showTracktargetDistance
+		SaveDrawLinesSettings()
+	end)
+
+	local lockTrackDistanceButton = drawLinesSettingsWindow:CreateChildWidget("button", "lockTrackDistanceButton", 0, true)
+	ApplyLocalButtonStyle(lockTrackDistanceButton)
+	lockTrackDistanceButton:SetExtent(286, 28)
+	lockTrackDistanceButton:AddAnchor("TOPLEFT", drawLinesSettingsWindow, 16, 502)
+	lockTrackDistanceButton:SetHandler("OnClick", function()
+		lockTracktargetDistance = not lockTracktargetDistance
+		ApplyTracktargetDistanceLockState()
+		SaveDrawLinesSettings()
+	end)
+
+	function drawLinesSettingsWindow:OnUpdate(dt)
+		if not self:IsVisible() then
+			return
+		end
+		for _, key in ipairs(drawLinesPairOrder) do
+			local btn = drawLinesPairButtons[key]
+			if btn ~= nil then
+				btn:SetText(DrawPairButtonText(key))
+			end
+		end
+		if targetLineModeButton ~= nil then
+			targetLineModeButton:SetText(
+				targetToTargetLineFromPlayer and "TargetLineFromPlayer" or "TargetLineFromTarget"
+			)
+		end
+		if trackLineModeButton ~= nil then
+			trackLineModeButton:SetText(
+				watchToTargetLineFromPlayer and "TrackLineFromPlayer" or "TrackLineFromTarget"
+			)
+		end
+		drawLinesMinLabel:SetText(tostring(drawLinesMinDotCount))
+		drawLinesMaxLabel:SetText(tostring(drawLinesMaxDotCount))
+		if drawLinesDotSizeLabel ~= nil then
+			drawLinesDotSizeLabel:SetText(tostring(drawLinesDotFontSize))
+		end
+		if drawLinesDotAlphaLabel ~= nil then
+			drawLinesDotAlphaLabel:SetText(string.format("%.1f", drawLinesDotAlpha))
+		end
+		showTrackAggroInPaneButton:SetText("Show Tracktarget Aggro [" .. (showTracktargetAggro and "ON" or "OFF") .. "]")
+		lockAggroButton:SetText("Lock Tracktarget Aggro [" .. (lockTracktargetAggro and "ON" or "OFF") .. "]")
+		showTrackDistanceButton:SetText(TracktargetDistanceButtonText())
+		lockTrackDistanceButton:SetText("Lock Distance to Tracktarget [" .. (lockTracktargetDistance and "ON" or "OFF") .. "]")
+	end
+	drawLinesSettingsWindow:SetHandler("OnUpdate", drawLinesSettingsWindow.OnUpdate)
+end
+
+do
 	local bg = positionWindow:CreateColorDrawable(0.08, 0.06, 0.04, 0.96, "background")
 	bg:AddAnchor("TOPLEFT", positionWindow, 0, 0)
 	bg:AddAnchor("BOTTOMRIGHT", positionWindow, 0, 0)
@@ -2155,6 +2908,9 @@ function refreshWindow()
 	showClassButton:SetText("Show Class [" .. (uiState.showClass and "ON" or "OFF") .. "]")
 	showDistanceButton:SetText("Show Distance [" .. (uiState.showDistance and "ON" or "OFF") .. "]")
 	showCastbarButton:SetText("Show Castbar [" .. (uiState.showCastbar and "ON" or "OFF") .. "]")
+	if drawLinesButton ~= nil then
+		drawLinesButton:SetText(DrawLinesButtonText())
+	end
 
 	for _, scopeName in ipairs({ "target", "self" }) do
 		for _, effectName in ipairs({ "buff", "debuff", "hidden" }) do
@@ -2293,6 +3049,75 @@ end
 
 managerWindow:SetHandler("OnUpdate", managerWindow.OnUpdate)
 managerWindow.ShowProc = refreshWindow
+
+DrawLinesEnsureDots()
+drawLinesUpdater = CreateEmptyWindow("extendedPlatesDrawLinesUpdater", "UIParent")
+drawLinesUpdater:Show(true)
+function drawLinesUpdater:OnUpdate(dt)
+	drawLinesDebugElapsed = drawLinesDebugElapsed + dt
+	if showTracktargetAggro and tracktargetAggroWindow ~= nil then
+		local name = X2Unit:UnitName("watchtargettarget") or "none"
+		tracktargetAggroLabel:SetText(name)
+		tracktargetAggroWindow:Show(true)
+	else
+		if tracktargetAggroWindow ~= nil then
+			tracktargetAggroWindow:Show(false)
+		end
+	end
+	if showTracktargetDistance and tracktargetDistanceWindow ~= nil then
+		local distInfo = X2Unit:UnitDistance("watchtarget")
+		if distInfo ~= nil and distInfo.distance ~= nil then
+			local distanceValue = tonumber(distInfo.distance) or 0
+			tracktargetDistanceLabel:SetText(string.format("Distance to watchtarget: %.1fm", distanceValue))
+			if distanceValue >= 200 then
+				tracktargetDistanceLabel.style:SetColor(1.0, 0.2, 0.2, 1)
+			elseif distanceValue >= 150 then
+				tracktargetDistanceLabel.style:SetColor(1.0, 0.6, 0.1, 1)
+			else
+				tracktargetDistanceLabel.style:SetColor(1.0, 1.0, 1.0, 1)
+			end
+		else
+			tracktargetDistanceLabel:SetText("Distance to watchtarget: none")
+			tracktargetDistanceLabel.style:SetColor(1.0, 1.0, 1.0, 1)
+		end
+		tracktargetDistanceWindow:Show(true)
+	else
+		if tracktargetDistanceWindow ~= nil then
+			tracktargetDistanceWindow:Show(false)
+		end
+	end
+	DrawLinesEnsureDots()
+	for _, key in ipairs(drawLinesPairOrder) do
+		local dotSet = drawLinesDotSets[key]
+		if dotSet ~= nil then
+			for i = 1, #dotSet do
+				if dotSet[i] ~= nil and dotSet[i].label ~= nil and dotSet[i].label.style ~= nil then
+					dotSet[i].label.style:SetFontSize(drawLinesDotFontSize)
+					local pair = drawLinesPairMeta[key]
+					if pair ~= nil then
+						dotSet[i].label.style:SetColor(pair.color[1], pair.color[2], pair.color[3], drawLinesDotAlpha)
+					end
+				end
+			end
+		end
+	end
+	if drawLinesEnabled ~= true then
+		for _, key in ipairs(drawLinesPairOrder) do
+			local dotSet = drawLinesDotSets[key]
+			if dotSet ~= nil then
+				DrawLinesHideDots(dotSet)
+			end
+		end
+		return
+	end
+	for _, key in ipairs(drawLinesPairOrder) do
+		DrawLinesRenderPair(key)
+	end
+	if drawLinesDebugElapsed >= drawLinesDebugIntervalMs then
+		drawLinesDebugElapsed = 0
+	end
+end
+drawLinesUpdater:SetHandler("OnUpdate", drawLinesUpdater.OnUpdate)
 
 managerButton:SetHandler("OnClick", function()
 	DebugPrint(string.format("managerButton clicked visibleBefore=%s", tostring(managerWindow:IsVisible())))
