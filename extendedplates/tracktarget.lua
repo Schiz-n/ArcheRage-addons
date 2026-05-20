@@ -1284,7 +1284,6 @@ drawLinesSettingsWindow:SetExtent(320, 560)
 drawLinesSettingsWindow:Show(false)
 
 tracktargetAggroWindow = CreateEmptyWindow("extendedPlatesTracktargetAggroWindow", "UIParent")
-tracktargetAggroWindow:SetCloseOnEscape(true)
 tracktargetAggroWindow:SetExtent(230, 52)
 local aggroX, aggroY = LoadTracktargetAggroWindowPos()
 if aggroX ~= 0 or aggroY ~= 0 then
@@ -1315,7 +1314,6 @@ tracktargetAggroLabel:EnablePick(false)
 ApplyTracktargetAggroLockState()
 
 tracktargetDistanceWindow = CreateEmptyWindow("extendedPlatesTracktargetDistanceWindow", "UIParent")
-tracktargetDistanceWindow:SetCloseOnEscape(true)
 tracktargetDistanceWindow:SetExtent(300, 52)
 local distX, distY = LoadTracktargetDistanceWindowPos()
 if distX ~= 0 or distY ~= 0 then
