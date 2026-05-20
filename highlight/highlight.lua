@@ -101,6 +101,7 @@ LoadSettings()
 ApplyStateToCVars()
 
 local menuWindow = CreateEmptyWindow("highlightConfigWindow", "UIParent")
+menuWindow:SetCloseOnEscape(true)
 menuWindow:SetExtent(395, 270)
 menuWindow:AddAnchor("BOTTOM", "UIParent", 700, -520)
 menuWindow:Show(false)

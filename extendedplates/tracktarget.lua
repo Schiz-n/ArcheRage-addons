@@ -927,6 +927,7 @@ local initOk, initErr = pcall(function()
 
 	DebugPrint("init: before CreateWindow")
 	managerWindow = CreateEmptyWindow("targetDebuffTrackerWindow", "UIParent")
+	managerWindow:SetCloseOnEscape(true)
 	DebugPrint("init: after CreateEmptyWindow")
 
 managerWindow:AddAnchor("CENTER", "UIParent", 0, 0)
@@ -1253,31 +1254,37 @@ drawLinesSettingsButton:SetHandler("OnClick", function()
 end)
 
 positionWindow = CreateEmptyWindow("targetDebuffTrackerPositionWindow", "UIParent")
+positionWindow:SetCloseOnEscape(true)
 positionWindow:AddAnchor("CENTER", "UIParent", 300, 0)
 positionWindow:SetExtent(260, 430)
 positionWindow:Show(false)
 
 addByIdWindow = CreateEmptyWindow("extendedPlatesAddByIdWindow", "UIParent")
+addByIdWindow:SetCloseOnEscape(true)
 addByIdWindow:AddAnchor("CENTER", "UIParent", 180, 40)
 addByIdWindow:SetExtent(260, 170)
 addByIdWindow:Show(false)
 
 importExportWindow = CreateEmptyWindow("extendedPlatesImportExportWindow", "UIParent")
+importExportWindow:SetCloseOnEscape(true)
 importExportWindow:AddAnchor("CENTER", "UIParent", 200, 20)
 importExportWindow:SetExtent(470, 340)
 importExportWindow:Show(false)
 
 infoSettingsWindow = CreateEmptyWindow("extendedPlatesInfoSettingsWindow", "UIParent")
+infoSettingsWindow:SetCloseOnEscape(true)
 infoSettingsWindow:AddAnchor("CENTER", "UIParent", 300, 0)
 infoSettingsWindow:SetExtent(320, 470)
 infoSettingsWindow:Show(false)
 
 drawLinesSettingsWindow = CreateEmptyWindow("extendedPlatesDrawLinesSettingsWindow", "UIParent")
+drawLinesSettingsWindow:SetCloseOnEscape(true)
 drawLinesSettingsWindow:AddAnchor("CENTER", "UIParent", 340, 0)
 drawLinesSettingsWindow:SetExtent(320, 560)
 drawLinesSettingsWindow:Show(false)
 
 tracktargetAggroWindow = CreateEmptyWindow("extendedPlatesTracktargetAggroWindow", "UIParent")
+tracktargetAggroWindow:SetCloseOnEscape(true)
 tracktargetAggroWindow:SetExtent(230, 52)
 local aggroX, aggroY = LoadTracktargetAggroWindowPos()
 if aggroX ~= 0 or aggroY ~= 0 then
@@ -1308,6 +1315,7 @@ tracktargetAggroLabel:EnablePick(false)
 ApplyTracktargetAggroLockState()
 
 tracktargetDistanceWindow = CreateEmptyWindow("extendedPlatesTracktargetDistanceWindow", "UIParent")
+tracktargetDistanceWindow:SetCloseOnEscape(true)
 tracktargetDistanceWindow:SetExtent(300, 52)
 local distX, distY = LoadTracktargetDistanceWindowPos()
 if distX ~= 0 or distY ~= 0 then
